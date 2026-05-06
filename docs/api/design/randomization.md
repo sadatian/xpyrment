@@ -1,0 +1,3 @@
+# Randomization
+
+::: xpyrment.design.randomization

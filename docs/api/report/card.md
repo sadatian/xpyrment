@@ -1,0 +1,3 @@
+# Card
+
+::: xpyrment.report.card

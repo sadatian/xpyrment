@@ -1,0 +1,3 @@
+# Splits
+
+::: xpyrment.design.splits

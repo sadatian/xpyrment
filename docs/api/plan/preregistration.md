@@ -1,0 +1,3 @@
+# Preregistration
+
+::: xpyrment.plan.preregistration

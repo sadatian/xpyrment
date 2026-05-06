@@ -1,0 +1,3 @@
+# Stratification
+
+::: xpyrment.design.stratification

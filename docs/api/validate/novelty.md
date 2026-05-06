@@ -1,0 +1,3 @@
+# Novelty
+
+::: xpyrment.validate.novelty

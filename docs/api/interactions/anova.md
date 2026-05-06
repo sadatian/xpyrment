@@ -1,0 +1,3 @@
+# ANOVA
+
+::: xpyrment.interactions.anova

@@ -1,0 +1,3 @@
+# Power
+
+::: xpyrment.plan.power

@@ -1,0 +1,3 @@
+# Detector
+
+::: xpyrment.interactions.detector

@@ -1,0 +1,3 @@
+# Decision
+
+::: xpyrment.interpret.decision

@@ -1,0 +1,148 @@
+site_name: xpyrment
+site_url: https://xpyrment.example.com
+site_description: A low-code Python library for enterprise-grade experiment design, classical DoE, and statistical analysis.
+site_author: Dan Sadatian
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_root_heading: true
+            inherited_members: true
+            members_order: alphabetical
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - Overview: api/index.md
+      - Core Module:
+          - Overview: api/core/index.md
+          - Experiment: api/core/experiment.md
+          - State: api/core/state.md
+          - Registry: api/core/registry.md
+          - Exceptions: api/core/exceptions.md
+          - Types: api/core/types.md
+      - Metrics Module:
+          - Overview: api/metrics/index.md
+          - Taxonomy: api/metrics/taxonomy.md
+          - Guardrails: api/metrics/guardrails.md
+          - Transformations: api/metrics/transformations.md
+      - Plan Module:
+          - Overview: api/plan/index.md
+          - Hypothesis: api/plan/hypothesis.md
+          - Power: api/plan/power.md
+          - Duration: api/plan/duration.md
+          - Preregistration: api/plan/preregistration.md
+      - Design Module:
+          - Overview: api/design/index.md
+          - Randomization: api/design/randomization.md
+          - Stratification: api/design/stratification.md
+          - Splits: api/design/splits.md
+          - Design of Experiments (DoE):
+              - Overview: api/design/doe/index.md
+              - Base Design: api/design/doe/base.md
+              - Full Factorial: api/design/doe/full_factorial.md
+              - Fractional Factorial: api/design/doe/fractional_factorial.md
+              - Plackett-Burman: api/design/doe/plackett_burman.md
+              - Taguchi: api/design/doe/taguchi.md
+              - Definitive Screening Design (DSD): api/design/doe/dsd.md
+              - Central Composite Design (CCD): api/design/doe/ccd.md
+              - Box-Behnken: api/design/doe/box_behnken.md
+              - D-Optimal: api/design/doe/d_optimal.md
+              - Latin Hypercube (LHS): api/design/doe/lhs.md
+              - Mixture: api/design/doe/mixture.md
+              - Switchback: api/design/doe/switchback.md
+              - EVOP: api/design/doe/evop.md
+      - Validate Module:
+          - Overview: api/validate/index.md
+          - SRM: api/validate/srm.md
+          - A/A Test: api/validate/aa_test.md
+          - Balance: api/validate/balance.md
+          - Novelty: api/validate/novelty.md
+      - Run Module:
+          - Overview: api/run/index.md
+          - Ingestion: api/run/ingestion.md
+          - Assignment: api/run/assignment.md
+          - Monitor: api/run/monitor.md
+          - Stopping: api/run/stopping.md
+      - Analyze Module:
+          - Overview: api/analyze/index.md
+          - Orchestrator: api/analyze/orchestrator.md
+          - Variance Reduction: api/analyze/variance_reduction.md
+          - Corrections: api/analyze/corrections.md
+          - Inference:
+              - Overview: api/analyze/inference/index.md
+              - Router: api/analyze/inference/router.md
+              - Frequentist: api/analyze/inference/frequentist.md
+              - Bayesian: api/analyze/inference/bayesian.md
+              - Sequential: api/analyze/inference/sequential.md
+              - Bootstrap: api/analyze/inference/bootstrap.md
+      - Interactions Module:
+          - Overview: api/interactions/index.md
+          - Detector: api/interactions/detector.md
+          - ANOVA: api/interactions/anova.md
+          - Regression: api/interactions/regression.md
+          - SHAP: api/interactions/shap.md
+          - H-Statistic: api/interactions/hstat.md
+          - Plots: api/interactions/plots.md
+      - Interpret Module:
+          - Overview: api/interpret/index.md
+          - Effect Size: api/interpret/effect_size.md
+          - HTE: api/interpret/hte.md
+          - Decision: api/interpret/decision.md
+          - Significance: api/interpret/significance.md
+      - Report Module:
+          - Overview: api/report/index.md
+          - Card: api/report/card.md
+          - Audit: api/report/audit.md
+          - Export: api/report/export.md
+      - Simulation: api/simulation.md

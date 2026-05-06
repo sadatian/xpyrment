@@ -1,0 +1,3 @@
+# Exceptions
+
+::: xpyrment.core.exceptions

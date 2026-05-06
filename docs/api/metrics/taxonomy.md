@@ -1,0 +1,3 @@
+# Taxonomy
+
+::: xpyrment.metrics.taxonomy
