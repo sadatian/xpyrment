@@ -3309,6 +3309,31 @@ mathematical directionality (one-sided vs. two-sided) of the downstream inferenc
 
 
 
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">CLASS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            HypothesisSpec (xpyrment.plan.hypothesis.HypothesisSpec)" href="#xpyrment.plan.hypothesis.HypothesisSpec">HypothesisSpec</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>Specifies the hypothesis under test and binds it to a primary metric.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3365,35 +3390,60 @@ of the control and treatment groups, respectively, for the bound <code>primary_m
 </ol>
 </details>
 
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.plan.hypothesis.HypothesisSpec.primary_metric">primary_metric</span></code></b>
-              (<code><a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The registered metric used as the primary outcome variable
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.plan.hypothesis.HypothesisSpec.primary_metric">primary_metric</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The registered metric used as the primary outcome variable
 for evaluating this hypothesis.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.plan.hypothesis.HypothesisSpec.direction">direction</span></code></b>
-              (<code><span title="typing.Literal">Literal</span>[&#39;two-sided&#39;, &#39;greater&#39;, &#39;less&#39;]</code>)
-          –
-          <div class="doc-md-description">
-            <p>The directional mathematical sign of the
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.plan.hypothesis.HypothesisSpec.direction">direction</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The directional mathematical sign of the
 statistical test. Defaults to "two-sided".</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.plan.hypothesis.HypothesisSpec.description">description</span></code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Text describing the business or scientific hypothesis in natural language.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Literal">Literal</span>[&#39;two-sided&#39;, &#39;greater&#39;, &#39;less&#39;]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.plan.hypothesis.HypothesisSpec.description">description</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Text describing the business or scientific hypothesis in natural language.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -3414,38 +3464,78 @@ statistical test. Defaults to "two-sided".</p>
 
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>primary_metric</code></b>
-              (<code><a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The evaluation metric being tested.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>direction</code></b>
-              (<code><span title="typing.Literal">Literal</span>[&#39;two-sided&#39;, &#39;greater&#39;, &#39;less&#39;]</code>, default:
-                  <code>&#39;two-sided&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The statistical test directionality.
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>primary_metric</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The evaluation metric being tested.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>direction</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The statistical test directionality.
 Options are <code>"two-sided"</code>, <code>"greater"</code>, or <code>"less"</code>. Defaults to <code>"two-sided"</code>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>description</code></b>
-              (<code><span title="str">str</span></code>, default:
-                  <code>&#39;&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>A descriptive summary of the business hypothesis. Defaults to "".</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Literal">Literal</span>[&#39;two-sided&#39;, &#39;greater&#39;, &#39;less&#39;]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;two-sided&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>description</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>A descriptive summary of the business hypothesis. Defaults to "".</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 
 
 

@@ -3309,6 +3309,31 @@ calendar time (days) using observed traffic rates and ramp-up schedules.</p>
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            estimate_duration_days (xpyrment.plan.duration.estimate_duration_days)" href="#xpyrment.plan.duration.estimate_duration_days">estimate_duration_days</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Estimates the required experiment run duration in days.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3348,51 +3373,102 @@ where <span class="arithmatex">\(N_{      ext{required}}\)</span> represents the
 (control + treatment arms) or the single-arm requirement multiplied by the number of arms.</p>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>required_sample_size</code></b>
-              (<code><span title="int">int</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The total sample size needed across all arms combined
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>required_sample_size</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The total sample size needed across all arms combined
 (e.g., control <span class="arithmatex">\(n\)</span> + treatment <span class="arithmatex">\(n\)</span>). Must be greater than zero.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>daily_traffic</code></b>
-              (<code><span title="int">int</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The expected number of unique qualifying experimental units (e.g., users,
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>daily_traffic</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The expected number of unique qualifying experimental units (e.g., users,
 sessions, or pageviews) entering the experiment pipeline per day. Must be greater than zero.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>float</code></b> (              <code><span title="float">float</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>Estimated run duration in decimal calendar days.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>float</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>Estimated run duration in decimal calendar days.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="ValueError">ValueError</span></code>
-            –
-          <div class="doc-md-description">
-            <p>If <code>required_sample_size</code> or <code>daily_traffic</code> is less than or equal to zero.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><span title="ValueError">ValueError</span></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If <code>required_sample_size</code> or <code>daily_traffic</code> is less than or equal to zero.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>

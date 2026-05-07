@@ -3366,6 +3366,31 @@ unauthorized post-hoc changes to experimental parameters.</p>
 
 
 
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">CLASS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            ExperimentRegistry (xpyrment.core.registry.ExperimentRegistry)" href="#xpyrment.core.registry.ExperimentRegistry">ExperimentRegistry</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>Manages immutable experiment specifications to prevent post-hoc changes (pre-registration).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3399,18 +3424,31 @@ parameters (such as target sample sizes, significance levels, and chosen metrics
 match the registered plan, preventing retrospective optimization of analysis parameters.</p>
 
 
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.registry.ExperimentRegistry._registry">_registry</span></code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Internal store mapping experiment IDs to their
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.registry.ExperimentRegistry._registry">_registry</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Internal store mapping experiment IDs to their
 registered specification dictionaries and pre-computed hashes.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -3433,6 +3471,39 @@ registered specification dictionaries and pre-computed hashes.</p>
 
 
 
+
+
+
+
+
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">METHOD</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            register_spec (xpyrment.core.registry.ExperimentRegistry.register_spec)" href="#xpyrment.core.registry.ExperimentRegistry.register_spec">register_spec</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Serializes the experiment specification, hashes it, and stores it in the registry.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            verify_spec (xpyrment.core.registry.ExperimentRegistry.verify_spec)" href="#xpyrment.core.registry.ExperimentRegistry.verify_spec">verify_spec</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Verifies if the current spec_dict matches the registered hash to prevent p-hacking.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
 
 
 
@@ -3486,38 +3557,77 @@ The registered hash <span class="arithmatex">\(H\)</span> is:
 $<span class="arithmatex">\(H =       ext{SHA256}(S)\)</span>$</p>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>experiment_id</code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Unique identifier of the experiment.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>spec_dict</code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Structural parameters representing the experiment plan,
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>experiment_id</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Unique identifier of the experiment.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>spec_dict</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Structural parameters representing the experiment plan,
 including registered metrics, statistical thresholds (<span class="arithmatex">\(lpha, eta\)</span>), and design configurations.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>str</code></b> (              <code><span title="str">str</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>The hexadecimal representation of the SHA-256 signature hash.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>str</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The hexadecimal representation of the SHA-256 signature hash.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
@@ -3601,38 +3711,77 @@ including registered metrics, statistical thresholds (<span class="arithmatex">\
 a constant-time comparison against the stored hash for the given experiment ID.</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>experiment_id</code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Registered ID of the experiment to verify.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>spec_dict</code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>The active specification dictionary to validate.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>experiment_id</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Registered ID of the experiment to verify.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>spec_dict</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The active specification dictionary to validate.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>bool</code></b> (              <code><span title="bool">bool</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>True if the current specification matches the pre-registered specification exactly,
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>bool</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>True if the current specification matches the pre-registered specification exactly,
 False if there is a mismatch or if the experiment ID was never registered.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

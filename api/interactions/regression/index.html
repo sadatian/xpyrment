@@ -3308,6 +3308,31 @@ models and performing Likelihood Ratio Tests.</p>
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            check_treatment_covariate_interaction (xpyrment.interactions.regression.check_treatment_covariate_interaction)" href="#xpyrment.interactions.regression.check_treatment_covariate_interaction">check_treatment_covariate_interaction</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Computes a Likelihood Ratio Test (LRT) to check if a covariate significantly interacts with the treatment split.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3370,53 +3395,108 @@ If $p &lt; 0.05$, the alternative model is selected, confirming that the treatme
 </code></pre></div>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>df</code></b>
-              (<code><span title="pandas.DataFrame">DataFrame</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The experimental dataset.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>treatment_col</code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Column containing treatment assignments.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>covariate_col</code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Column containing the target pre-period covariate under evaluation.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>target_col</code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Column containing the outcome response variable (<span class="arithmatex">\(Y\)</span>).</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>df</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The experimental dataset.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>treatment_col</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Column containing treatment assignments.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>covariate_col</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Column containing the target pre-period covariate under evaluation.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target_col</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Column containing the outcome response variable (<span class="arithmatex">\(Y\)</span>).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>float</code></b> (              <code><span title="float">float</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>The calculated p-value of the Likelihood Ratio Test. A value <span class="arithmatex">\(&lt; 0.05\)</span> indicates a significant interaction.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>float</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The calculated p-value of the Likelihood Ratio Test. A value <span class="arithmatex">\(&lt; 0.05\)</span> indicates a significant interaction.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

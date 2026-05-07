@@ -3365,6 +3365,31 @@ and final analytical outcomes.</p>
 
 
 
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">CLASS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            ExperimentCard (xpyrment.report.card.ExperimentCard)" href="#xpyrment.report.card.ExperimentCard">ExperimentCard</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>Consumes metadata, planning state, and calculations to compile a unified report card.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3423,84 +3448,187 @@ p-value distributions, or measuring historical power).</p>
 </ol>
 </details>
 
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.report.card.ExperimentCard.experiment_id">experiment_id</span></code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Unique tracking identifier for the experiment.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.report.card.ExperimentCard.plan_spec">plan_spec</span></code></b>
-              (<code><span title="dict">dict</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Setup configurations, expected metrics, and calculated power parameters.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.report.card.ExperimentCard.validation_spec">validation_spec</span></code></b>
-              (<code><span title="dict">dict</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Summary of SRM and covariate balance diagnostics.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.report.card.ExperimentCard.analysis_summary">analysis_summary</span></code></b>
-              (<code><span title="dict">dict</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Calculated point estimates, confidence intervals, and launch recommendations.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.report.card.ExperimentCard.experiment_id">experiment_id</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Unique tracking identifier for the experiment.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.report.card.ExperimentCard.plan_spec">plan_spec</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Setup configurations, expected metrics, and calculated power parameters.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="dict">dict</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.report.card.ExperimentCard.validation_spec">validation_spec</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Summary of SRM and covariate balance diagnostics.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="dict">dict</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.report.card.ExperimentCard.analysis_summary">analysis_summary</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Calculated point estimates, confidence intervals, and launch recommendations.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="dict">dict</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>experiment_id</code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The unique ID of the experiment.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>plan_spec</code></b>
-              (<code><span title="dict">dict</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Setup and design characteristics dictionary.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>validation_spec</code></b>
-              (<code><span title="dict">dict</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Pre-analysis quality check outcomes.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>analysis_summary</code></b>
-              (<code><span title="dict">dict</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Post-analysis statistical summaries.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>experiment_id</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The unique ID of the experiment.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>plan_spec</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Setup and design characteristics dictionary.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="dict">dict</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>validation_spec</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Pre-analysis quality check outcomes.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="dict">dict</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>analysis_summary</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Post-analysis statistical summaries.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="dict">dict</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 
 
 
+
+
+
+
+
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">METHOD</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            to_dict (xpyrment.report.card.ExperimentCard.to_dict)" href="#xpyrment.report.card.ExperimentCard.to_dict">to_dict</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Serializes the experiment card metadata to a standard python dictionary.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            to_json (xpyrment.report.card.ExperimentCard.to_json)" href="#xpyrment.report.card.ExperimentCard.to_json">to_json</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Dumps the card as a formatted JSON document.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
 
 
 
@@ -3563,16 +3691,32 @@ p-value distributions, or measuring historical power).</p>
         <p>Serializes the experiment card metadata to a standard python dictionary.</p>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>dict</code></b> (              <code><span title="dict">dict</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>The nested dictionary of card metadata.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>dict</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The nested dictionary of card metadata.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="dict">dict</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
@@ -3622,16 +3766,32 @@ p-value distributions, or measuring historical power).</p>
         <p>Dumps the card as a formatted JSON document.</p>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>str</code></b> (              <code><span title="str">str</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>Indented, pretty-printed JSON string of the complete experiment card ledger.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>str</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>Indented, pretty-printed JSON string of the complete experiment card ledger.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

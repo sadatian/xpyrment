@@ -3308,6 +3308,31 @@ sufficient physical or economic magnitude to be considered of practical business
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            check_practical_significance (xpyrment.interpret.significance.check_practical_significance)" href="#xpyrment.interpret.significance.check_practical_significance">check_practical_significance</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Verifies if the measured lift satisfies the minimal valuable business effect (MVE).</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3358,37 +3383,76 @@ This function evaluates whether the observed effect size meets or exceeds a pre-
 </code></pre></div>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>relative_lift</code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The estimated relative difference between treatment and control (point estimate).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>min_valuable_effect</code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The minimum relative lift required to be practically valuable (<span class="arithmatex">\(\delta_{\text{MVE}}\)</span>).</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>relative_lift</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The estimated relative difference between treatment and control (point estimate).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>min_valuable_effect</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The minimum relative lift required to be practically valuable (<span class="arithmatex">\(\delta_{\text{MVE}}\)</span>).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>bool</code></b> (              <code><span title="bool">bool</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>True if the estimated relative lift meets or exceeds the minimum valuable effect threshold.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>bool</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>True if the estimated relative lift meets or exceeds the minimum valuable effect threshold.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

@@ -3308,6 +3308,31 @@ statistical significance with business economics (deployment costs, margins) to 
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            generate_launch_recommendation (xpyrment.interpret.decision.generate_launch_recommendation)" href="#xpyrment.interpret.decision.generate_launch_recommendation">generate_launch_recommendation</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Generates automated ship, no-ship, or inconclusive launch recommendations based on statistical and economic bounds.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3364,47 +3389,96 @@ required to offset the feature's operational costs.</p>
    is actually zero.</p>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>p_value</code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The calculated p-value of the primary metric test.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>relative_lift</code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The estimated relative difference between treatment and control (<span class="arithmatex">\(\bar{Y}_T - \bar{Y}_C) / \bar{Y}_C\)</span>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>cost_threshold</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The minimum relative benefit required to warrant deployment (<span class="arithmatex">\(C\)</span>). Defaults to 0.0.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>p_value</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The calculated p-value of the primary metric test.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>relative_lift</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The estimated relative difference between treatment and control (<span class="arithmatex">\(\bar{Y}_T - \bar{Y}_C) / \bar{Y}_C\)</span>.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cost_threshold</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The minimum relative benefit required to warrant deployment (<span class="arithmatex">\(C\)</span>). Defaults to 0.0.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.0</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>str</code></b> (              <code><span title="str">str</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>A structured recommendation string outlining the statistical and economic rationale.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>str</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>A structured recommendation string outlining the statistical and economic rationale.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

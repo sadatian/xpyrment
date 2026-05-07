@@ -3343,6 +3343,31 @@ supporting both screen designs (fractional, screening, Plackett-Burman) and resp
 
 
 
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">CLASS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            DesignMatrix (xpyrment.design.doe.base.DesignMatrix)" href="#xpyrment.design.doe.base.DesignMatrix">DesignMatrix</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>Abstract base class representing a Design Matrix in Classical Design of Experiments (DoE).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3391,37 +3416,95 @@ $<span class="arithmatex">\(Y = Xeta + arepsilon\)</span>$
 is minimized, which is equivalent to maximizing the information matrix <span class="arithmatex">\(X^T X\)</span>.</p>
 </details>
 
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.design.doe.base.DesignMatrix.factors">factors</span></code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="float">float</span>]]</code>)
-          –
-          <div class="doc-md-description">
-            <p>A dictionary mapping factor names (str) to their list
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.design.doe.base.DesignMatrix.factors">factors</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>A dictionary mapping factor names (str) to their list
 of possible levels (floats/integers). For example: <code>{"temperature": [100.0, 150.0], "pressure": [1.0, 2.0]}</code>.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="float">float</span>]]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>factors</code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="float">float</span>]]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Mapping of factor labels to their designated levels.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>factors</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Mapping of factor labels to their designated levels.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="float">float</span>]]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 
 
 
+
+
+
+
+
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">METHOD</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            generate
+
+
+  
+      abstractmethod
+   (xpyrment.design.doe.base.DesignMatrix.generate)" href="#xpyrment.design.doe.base.DesignMatrix.generate">generate</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Generates and returns the specific classical DoE design matrix.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
 
 
 
@@ -3476,17 +3559,29 @@ of possible levels (floats/integers). For example: <code>{"temperature": [100.0,
         <p>Generates and returns the specific classical DoE design matrix.</p>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="pandas.DataFrame">DataFrame</span></code>
-          –
-          <div class="doc-md-description">
-            <p>pd.DataFrame: A pandas DataFrame containing the design matrix, where columns represent
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="pandas.DataFrame">DataFrame</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>pd.DataFrame: A pandas DataFrame containing the design matrix, where columns represent
 factors and rows represent specific experimental runs.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

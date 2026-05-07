@@ -3308,6 +3308,31 @@ interaction values to decompose joint black-box predictions into main and intera
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            calculate_shap_interactions (xpyrment.interactions.shap.calculate_shap_interactions)" href="#xpyrment.interactions.shap.calculate_shap_interactions">calculate_shap_interactions</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3365,38 +3390,77 @@ exact tree-based Shapley interaction values in <span class="arithmatex">\(O(T L 
 and <span class="arithmatex">\(D\)</span> is max depth.</p>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>model</code></b>
-              (<code><span title="typing.Any">Any</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>A trained model (typically a tree ensemble like XGBoost or LightGBM).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>X_data</code></b>
-              (<code><span title="typing.Any">Any</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The background evaluation matrix of covariate features.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>A trained model (typically a tree ensemble like XGBoost or LightGBM).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Any">Any</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_data</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The background evaluation matrix of covariate features.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Any">Any</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>list</code></b> (              <code><span title="list">list</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>A nested list or 3D numpy array of shape <code>(num_samples, num_features, num_features)</code> containing
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>list</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>A nested list or 3D numpy array of shape <code>(num_samples, num_features, num_features)</code> containing
 individual Shapley interaction matrices.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="list">list</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

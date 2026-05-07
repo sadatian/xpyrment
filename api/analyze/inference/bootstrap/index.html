@@ -3309,6 +3309,31 @@ without relying on asymptotic parametric assumptions.</p>
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            run_bootstrap_ci (xpyrment.analyze.inference.bootstrap.run_bootstrap_ci)" href="#xpyrment.analyze.inference.bootstrap.run_bootstrap_ci">run_bootstrap_ci</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Computes non-parametric bootstrap confidence intervals for arbitrary complex metrics.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3382,49 +3407,100 @@ be the point estimate of interest.</p>
 </ol>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>data_group</code></b>
-              (<code><span title="numpy.ndarray">ndarray</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The raw 1D array of observed values.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>num_resamples</code></b>
-              (<code><span title="int">int</span></code>, default:
-                  <code>2000</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The number of bootstrap iterations (<span class="arithmatex">\(B\)</span>). Defaults to 2000.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>confidence_level</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.95</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The desired confidence interval width (<span class="arithmatex">\(1 - \alpha\)</span>). Defaults to 0.95.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>data_group</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The raw 1D array of observed values.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="numpy.ndarray">ndarray</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>num_resamples</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The number of bootstrap iterations (<span class="arithmatex">\(B\)</span>). Defaults to 2000.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>2000</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>confidence_level</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The desired confidence interval width (<span class="arithmatex">\(1 - \alpha\)</span>). Defaults to 0.95.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.95</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>tuple</code></b> (              <code><span title="tuple">tuple</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>A tuple of floats <code>(lower_bound, upper_bound)</code> representing the calculated interval.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>tuple</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>A tuple of floats <code>(lower_bound, upper_bound)</code> representing the calculated interval.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="tuple">tuple</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

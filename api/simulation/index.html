@@ -3306,6 +3306,31 @@ binary, and ratio variables across pre-period and post-period windows with stoch
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            generate_ab_data (xpyrment.simulation.generate_ab_data)" href="#xpyrment.simulation.generate_ab_data">generate_ab_data</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Generates synthetic A/B test data simulating continuous, binary, and ratio metrics.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3387,128 +3412,255 @@ It generates both pre-period and post-period metrics to support covariate-adjust
 </ol>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>n_samples</code></b>
-              (<code><span title="int">int</span></code>, default:
-                  <code>10000</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The total number of experimental units (users) to simulate. Defaults to 10000.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>treatment_fraction</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.5</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The probability of assignment to the Treatment group. Defaults to 0.5.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>baseline_revenue</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>10.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The baseline mean revenue (<span class="arithmatex">\(\mu_{\text{baseline}}\)</span>). Defaults to 10.0.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>treatment_effect_revenue</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.5</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The absolute revenue lift in Treatment (<span class="arithmatex">\(\delta_{\text{rev}}\)</span>). Defaults to 0.5.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>baseline_conversion</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.15</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The baseline conversion rate (<span class="arithmatex">\(p_{\text{baseline}}\)</span>). Defaults to 0.15.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>treatment_effect_conversion</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.02</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The absolute conversion lift in Treatment (<span class="arithmatex">\(\delta_{\text{conv}}\)</span>). Defaults to 0.02.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>baseline_clicks_mean</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>5.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Baseline expected clicks. Defaults to 5.0.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>baseline_impressions_mean</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>100.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Baseline expected impressions (<span class="arithmatex">\(\lambda\)</span>). Defaults to 100.0.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>treatment_effect_clicks</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.3</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Incremental clicks in Treatment. Defaults to 0.3.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>pre_period_correlation</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.7</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The target correlation coefficient (<span class="arithmatex">\(\rho\)</span>) between pre and post continuous revenue. Defaults to 0.70.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>random_seed</code></b>
-              (<code><span title="int">int</span></code>, default:
-                  <code>42</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Pseudo-random seed to guarantee reproducibility. Defaults to 42.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_samples</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The total number of experimental units (users) to simulate. Defaults to 10000.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>10000</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>treatment_fraction</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The probability of assignment to the Treatment group. Defaults to 0.5.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.5</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>baseline_revenue</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The baseline mean revenue (<span class="arithmatex">\(\mu_{\text{baseline}}\)</span>). Defaults to 10.0.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>10.0</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>treatment_effect_revenue</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The absolute revenue lift in Treatment (<span class="arithmatex">\(\delta_{\text{rev}}\)</span>). Defaults to 0.5.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.5</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>baseline_conversion</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The baseline conversion rate (<span class="arithmatex">\(p_{\text{baseline}}\)</span>). Defaults to 0.15.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.15</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>treatment_effect_conversion</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The absolute conversion lift in Treatment (<span class="arithmatex">\(\delta_{\text{conv}}\)</span>). Defaults to 0.02.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.02</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>baseline_clicks_mean</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Baseline expected clicks. Defaults to 5.0.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>5.0</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>baseline_impressions_mean</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Baseline expected impressions (<span class="arithmatex">\(\lambda\)</span>). Defaults to 100.0.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>100.0</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>treatment_effect_clicks</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Incremental clicks in Treatment. Defaults to 0.3.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.3</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>pre_period_correlation</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The target correlation coefficient (<span class="arithmatex">\(\rho\)</span>) between pre and post continuous revenue. Defaults to 0.70.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.7</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>random_seed</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Pseudo-random seed to guarantee reproducibility. Defaults to 42.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>42</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="pandas.DataFrame">DataFrame</span></code>
-          –
-          <div class="doc-md-description">
-            <p>pd.DataFrame: A DataFrame containing simulated user IDs, variant assignments, and pre/post metrics:
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="pandas.DataFrame">DataFrame</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>pd.DataFrame: A DataFrame containing simulated user IDs, variant assignments, and pre/post metrics:
 - <code>"user_id"</code> (str): Unique identifier formatted as <code>USER_######</code>.
 - <code>"variant"</code> (str): Assignment labels (<code>"control"</code> or <code>"treatment"</code>).
 - <code>"pre_revenue"</code> (float): Pre-period continuous covariate metric.
@@ -3518,9 +3670,11 @@ It generates both pre-period and post-period metrics to support covariate-adjust
 - <code>"pre_clicks"</code> (int): Pre-period ratio numerator.
 - <code>"impressions"</code> (int): Post-period ratio denominator.
 - <code>"clicks"</code> (int): Post-period ratio numerator.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

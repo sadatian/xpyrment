@@ -3331,6 +3331,39 @@ standard designs to variance-reduced (CUPED) designs.</p>
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            plot_forest (xpyrment.report.export.plot_forest)" href="#xpyrment.report.export.plot_forest">plot_forest</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Generates a horizontal forest plot visualizing relative lift and confidence intervals.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            plot_power_curve (xpyrment.report.export.plot_power_curve)" href="#xpyrment.report.export.plot_power_curve">plot_power_curve</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Plots required sample size per variant across a range of Minimum Detectable Effects (MDE).</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3379,66 +3412,127 @@ or negative, and how much uncertainty surrounds each estimate.</p>
 </ul>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>df_raw</code></b>
-              (<code><span title="pandas.DataFrame">DataFrame</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>A DataFrame containing the statistical summary. Must include the columns:
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>df_raw</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>A DataFrame containing the statistical summary. Must include the columns:
 - <code>"metric_name"</code> (str): Name of the target metric.
 - <code>"relative_lift"</code> (float): The point estimate of relative lift.
 - <code>"rel_ci_lower"</code> (float): The lower bound of the relative confidence interval.
 - <code>"rel_ci_upper"</code> (float): The upper bound of the relative confidence interval.
 - <code>"p_value"</code> (float): The calculated p-value of the hypothesis test.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>alpha</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.05</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Nominal significance level used to color-code significance. Defaults to 0.05.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>title</code></b>
-              (<code><span title="str">str</span></code>, default:
-                  <code>&#39;A/B Test Results - Relative Lift &amp; 95% CIs&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Title of the rendered plot. Defaults to <code>"A/B Test Results - Relative Lift &amp; 95% CIs"</code>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>figsize</code></b>
-              (<code><span title="tuple">tuple</span></code>, default:
-                  <code>(10, 5)</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Dimensions of the figure canvas. Defaults to <code>(10, 5)</code>.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>alpha</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Nominal significance level used to color-code significance. Defaults to 0.05.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.05</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>title</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Title of the rendered plot. Defaults to <code>"A/B Test Results - Relative Lift &amp; 95% CIs"</code>.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;A/B Test Results - Relative Lift &amp; 95% CIs&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>figsize</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Dimensions of the figure canvas. Defaults to <code>(10, 5)</code>.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="tuple">tuple</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>(10, 5)</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>tuple</code></b> (              <code><span title="tuple">tuple</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>A tuple <code>(fig, ax)</code> containing:
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>tuple</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>A tuple <code>(fig, ax)</code> containing:
 - <code>fig</code> (matplotlib.figure.Figure): The active matplotlib Figure canvas.
 - <code>ax</code> (matplotlib.axes.Axes): The axes container housing the rendered forest plot.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="tuple">tuple</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
@@ -3682,54 +3776,105 @@ when applying CUPED variance reduction.
   (and consequently, the timeline savings) gained by utilizing pre-period covariate adjustment.</p>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>power_curve_data</code></b>
-              (<code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="numpy.ndarray">ndarray</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>A dictionary containing:
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>power_curve_data</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>A dictionary containing:
 - <code>"mde_relative"</code> (np.ndarray): 1D array of hypothetical MDE percentages.
 - <code>"sample_size_per_variant"</code> (np.ndarray): Required sample size under standard Wald designs.
 - <code>"cuped_sample_size_per_variant"</code> (np.ndarray, optional): Required sample size under CUPED adjustments.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>title</code></b>
-              (<code><span title="str">str</span></code>, default:
-                  <code>&#39;A/B Test Design - Required Sample Size vs. MDE&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Title of the rendered plot. Defaults to <code>"A/B Test Design - Required Sample Size vs. MDE"</code>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>figsize</code></b>
-              (<code><span title="tuple">tuple</span></code>, default:
-                  <code>(10, 6)</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Dimensions of the figure canvas. Defaults to <code>(10, 6)</code>.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="numpy.ndarray">ndarray</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>title</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Title of the rendered plot. Defaults to <code>"A/B Test Design - Required Sample Size vs. MDE"</code>.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;A/B Test Design - Required Sample Size vs. MDE&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>figsize</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Dimensions of the figure canvas. Defaults to <code>(10, 6)</code>.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="tuple">tuple</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>(10, 6)</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>tuple</code></b> (              <code><span title="tuple">tuple</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>A tuple <code>(fig, ax)</code> containing:
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>tuple</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>A tuple <code>(fig, ax)</code> containing:
 - <code>fig</code> (matplotlib.figure.Figure): The active matplotlib Figure canvas.
 - <code>ax</code> (matplotlib.axes.Axes): The axes container housing the curves.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="tuple">tuple</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

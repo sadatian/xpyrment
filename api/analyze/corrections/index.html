@@ -3309,6 +3309,31 @@ of false positives (Type I errors).</p>
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            apply_multiple_testing_correction (xpyrment.analyze.corrections.apply_multiple_testing_correction)" href="#xpyrment.analyze.corrections.apply_multiple_testing_correction">apply_multiple_testing_correction</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Applies multiple testing corrections on p-values using statsmodels.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3377,50 +3402,97 @@ $<span class="arithmatex">\(\text{FWER} = P(\text{at least one false positive}) 
 </ol>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>p_values</code></b>
-              (<code><span title="typing.List">List</span>[<span title="float">float</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>List of raw, unadjusted p-values calculated from various metric tests.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>alpha</code></b>
-              (<code><span title="float">float</span></code>, default:
-                  <code>0.05</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Nominal significance level (e.g., 0.05). Defaults to 0.05.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>method</code></b>
-              (<code><span title="str">str</span></code>, default:
-                  <code>&#39;fdr_bh&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Correction algorithm. Options include <code>"bonferroni"</code>, <code>"holm"</code>, <code>"fdr_bh"</code>.
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>p_values</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>List of raw, unadjusted p-values calculated from various metric tests.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.List">List</span>[<span title="float">float</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>alpha</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Nominal significance level (e.g., 0.05). Defaults to 0.05.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0.05</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>method</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Correction algorithm. Options include <code>"bonferroni"</code>, <code>"holm"</code>, <code>"fdr_bh"</code>.
 Defaults to <code>"fdr_bh"</code>.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;fdr_bh&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="typing.List">List</span>[<span title="float">float</span>]</code>
-          –
-          <div class="doc-md-description">
-            <p>List[float]: A list of adjusted p-values, in the same index order as the input.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="typing.List">List</span>[<span title="float">float</span>]</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>List[float]: A list of adjusted p-values, in the same index order as the input.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

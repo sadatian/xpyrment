@@ -569,10 +569,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#xpyrment.core.experiment.Experiment.add_metrics" class="md-nav__link">
+  <a href="#xpyrment.core.experiment.Experiment.transition_to" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_metrics
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;transition_to
       
     </span>
   </a>
@@ -580,10 +580,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#xpyrment.core.experiment.Experiment.transition_to" class="md-nav__link">
+  <a href="#xpyrment.core.experiment.Experiment.add_metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;transition_to
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_metrics
       
     </span>
   </a>
@@ -3288,10 +3288,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#xpyrment.core.experiment.Experiment.add_metrics" class="md-nav__link">
+  <a href="#xpyrment.core.experiment.Experiment.transition_to" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_metrics
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;transition_to
       
     </span>
   </a>
@@ -3299,10 +3299,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#xpyrment.core.experiment.Experiment.transition_to" class="md-nav__link">
+  <a href="#xpyrment.core.experiment.Experiment.add_metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;transition_to
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add_metrics
       
     </span>
   </a>
@@ -3366,6 +3366,31 @@ the <code>ExperimentState</code> state machine.</p>
 
 
 
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">CLASS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            Experiment (xpyrment.core.experiment.Experiment)" href="#xpyrment.core.experiment.Experiment">Experiment</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>The central orchestration class for setting up, configuring, and executing experiments.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3403,49 +3428,86 @@ Through the state-machine rules, it ensures that all calculations are performed 
 and reproducibly, eliminating retrospective tampering or incorrect state usage.</p>
 
 
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.experiment.Experiment.data">data</span></code></b>
-              (<code><span title="pandas.DataFrame">DataFrame</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>A copy of the input DataFrame containing assignments and telemetry.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.experiment.Experiment.treatment_col">treatment_col</span></code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The column in <code>data</code> identifying the treatment arm assignments.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.experiment.Experiment.id_col">id_col</span></code></b>
-              (<code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>The column in <code>data</code> representing unique unit IDs.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.experiment.Experiment.metrics">metrics</span></code></b>
-              (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>List of metrics registered for statistical calculation.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.experiment.Experiment.state">state</span></code></b>
-              (<code><a class="autorefs autorefs-internal" title="            ExperimentState (xpyrment.core.state.ExperimentState)" href="../state/#xpyrment.core.state.ExperimentState">ExperimentState</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The current lifecycle phase of the experiment.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.experiment.Experiment.data">data</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>A copy of the input DataFrame containing assignments and telemetry.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.experiment.Experiment.treatment_col">treatment_col</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The column in <code>data</code> identifying the treatment arm assignments.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.experiment.Experiment.id_col">id_col</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The column in <code>data</code> representing unique unit IDs.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.experiment.Experiment.metrics">metrics</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>List of metrics registered for statistical calculation.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.experiment.Experiment.state">state</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The current lifecycle phase of the experiment.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="            ExperimentState (xpyrment.core.state.ExperimentState)" href="../state/#xpyrment.core.state.ExperimentState">ExperimentState</a></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <details class="state-gating-mechanism" open>
@@ -3477,53 +3539,131 @@ Analyzing results requires a transition to <code>ANALYZED</code>.</p>
 state transitions and potential data transformations (e.g., CUPED alignment or log scaling).</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>data</code></b>
-              (<code><span title="pandas.DataFrame">DataFrame</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The source DataFrame containing unit-level data.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>treatment_col</code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Name of the column designating experimental groups/arms.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>id_col</code></b>
-              (<code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Name of the column containing unique identifiers for each experimental unit.
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>data</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The source DataFrame containing unit-level data.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>treatment_col</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Name of the column designating experimental groups/arms.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>id_col</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Name of the column containing unique identifiers for each experimental unit.
 Required for certain operations like sequential analysis and user assignments.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="ValueError">ValueError</span></code>
-            –
-          <div class="doc-md-description">
-            <p>If <code>treatment_col</code> or <code>id_col</code> is not found in the input DataFrame columns.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><span title="ValueError">ValueError</span></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If <code>treatment_col</code> or <code>id_col</code> is not found in the input DataFrame columns.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 
 
 
+
+
+
+
+
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">METHOD</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            transition_to (xpyrment.core.experiment.Experiment.transition_to)" href="#xpyrment.core.experiment.Experiment.transition_to">transition_to</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Enforces transition logic to guarantee the phase-gated execution flow.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            add_metrics (xpyrment.core.experiment.Experiment.add_metrics)" href="#xpyrment.core.experiment.Experiment.add_metrics">add_metrics</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Adds statistical metrics to the experiment configuration.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
 
 
 
@@ -3597,136 +3737,6 @@ Required for certain operations like sequential analysis and user assignments.</
 <div class="doc doc-object doc-function">
 
 
-<h4 id="xpyrment.core.experiment.Experiment.add_metrics" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">add_metrics</span>
-
-
-</h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_metrics</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">metrics</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></span><span class="p">]],</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Experiment (xpyrment.core.experiment.Experiment)" href="#xpyrment.core.experiment.Experiment">Experiment</a></span>
-</span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Adds statistical metrics to the experiment configuration.</p>
-<p>Successfully registering a metric moves the experiment from <code>CREATED</code> to <code>PLANNED</code> state, representing
-that the evaluation criteria have been defined prior to running designs, validations, or analyses.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>metrics</code></b>
-              (<code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a>, <span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a>]]</code>)
-          –
-          <div class="doc-md-description">
-            <p>A single metric object or a list of metrics
-(inheriting from <code>BaseMetric</code>) to bind to the experiment lifecycle.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>Experiment</code></b> (              <code><a class="autorefs autorefs-internal" title="            Experiment (xpyrment.core.experiment.Experiment)" href="#xpyrment.core.experiment.Experiment">Experiment</a></code>
-)          –
-          <div class="doc-md-description">
-            <p>The experiment instance itself (for fluent API chaining).</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            PhaseOrderError (xpyrment.core.exceptions.PhaseOrderError)" href="../exceptions/#xpyrment.core.exceptions.PhaseOrderError">PhaseOrderError</a></code>
-            –
-          <div class="doc-md-description">
-            <p>If the experiment has already progressed past the <code>PLANNED</code> phase. This restriction
-prevents retrospectively adding metrics to match statistical noise (post-hoc metrics selection/p-hacking).</p>
-          </div>
-        </li>
-    </ul>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src\xpyrment\core\experiment.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-115">115</a></span>
-<span class="normal"><a href="#__codelineno-0-116">116</a></span>
-<span class="normal"><a href="#__codelineno-0-117">117</a></span>
-<span class="normal"><a href="#__codelineno-0-118">118</a></span>
-<span class="normal"><a href="#__codelineno-0-119">119</a></span>
-<span class="normal"><a href="#__codelineno-0-120">120</a></span>
-<span class="normal"><a href="#__codelineno-0-121">121</a></span>
-<span class="normal"><a href="#__codelineno-0-122">122</a></span>
-<span class="normal"><a href="#__codelineno-0-123">123</a></span>
-<span class="normal"><a href="#__codelineno-0-124">124</a></span>
-<span class="normal"><a href="#__codelineno-0-125">125</a></span>
-<span class="normal"><a href="#__codelineno-0-126">126</a></span>
-<span class="normal"><a href="#__codelineno-0-127">127</a></span>
-<span class="normal"><a href="#__codelineno-0-128">128</a></span>
-<span class="normal"><a href="#__codelineno-0-129">129</a></span>
-<span class="normal"><a href="#__codelineno-0-130">130</a></span>
-<span class="normal"><a href="#__codelineno-0-131">131</a></span>
-<span class="normal"><a href="#__codelineno-0-132">132</a></span>
-<span class="normal"><a href="#__codelineno-0-133">133</a></span>
-<span class="normal"><a href="#__codelineno-0-134">134</a></span>
-<span class="normal"><a href="#__codelineno-0-135">135</a></span>
-<span class="normal"><a href="#__codelineno-0-136">136</a></span>
-<span class="normal"><a href="#__codelineno-0-137">137</a></span>
-<span class="normal"><a href="#__codelineno-0-138">138</a></span>
-<span class="normal"><a href="#__codelineno-0-139">139</a></span>
-<span class="normal"><a href="#__codelineno-0-140">140</a></span>
-<span class="normal"><a href="#__codelineno-0-141">141</a></span>
-<span class="normal"><a href="#__codelineno-0-142">142</a></span>
-<span class="normal"><a href="#__codelineno-0-143">143</a></span>
-<span class="normal"><a href="#__codelineno-0-144">144</a></span>
-<span class="normal"><a href="#__codelineno-0-145">145</a></span>
-<span class="normal"><a href="#__codelineno-0-146">146</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="k">def</span><span class="w"> </span><span class="nf">add_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">BaseMetric</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMetric</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Experiment&quot;</span><span class="p">:</span>
-</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds statistical metrics to the experiment configuration.</span>
-</span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a>
-</span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">    Successfully registering a metric moves the experiment from `CREATED` to `PLANNED` state, representing</span>
-</span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">    that the evaluation criteria have been defined prior to running designs, validations, or analyses.</span>
-</span><span id="__span-0-120"><a id="__codelineno-0-120" name="__codelineno-0-120"></a>
-</span><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-122"><a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="sd">        metrics (Union[BaseMetric, List[BaseMetric]]): A single metric object or a list of metrics</span>
-</span><span id="__span-0-123"><a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">            (inheriting from `BaseMetric`) to bind to the experiment lifecycle.</span>
-</span><span id="__span-0-124"><a id="__codelineno-0-124" name="__codelineno-0-124"></a>
-</span><span id="__span-0-125"><a id="__codelineno-0-125" name="__codelineno-0-125"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-126"><a id="__codelineno-0-126" name="__codelineno-0-126"></a><span class="sd">        Experiment: The experiment instance itself (for fluent API chaining).</span>
-</span><span id="__span-0-127"><a id="__codelineno-0-127" name="__codelineno-0-127"></a>
-</span><span id="__span-0-128"><a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="sd">    Raises:</span>
-</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="sd">        PhaseOrderError: If the experiment has already progressed past the `PLANNED` phase. This restriction</span>
-</span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a><span class="sd">            prevents retrospectively adding metrics to match statistical noise (post-hoc metrics selection/p-hacking).</span>
-</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ExperimentState</span><span class="o">.</span><span class="n">CREATED</span><span class="p">,</span> <span class="n">ExperimentState</span><span class="o">.</span><span class="n">PLANNED</span><span class="p">]:</span>
-</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>        <span class="k">raise</span> <span class="n">PhaseOrderError</span><span class="p">(</span>
-</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>            <span class="sa">f</span><span class="s2">&quot;Cannot add metrics while in state </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s2">. Must be in CREATED or PLANNED.&quot;</span>
-</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a>        <span class="p">)</span>
-</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>
-</span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-</span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
-</span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
-</span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a>
-</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a>    <span class="c1"># Transition the experiment from CREATED to PLANNED if metrics are added</span>
-</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">ExperimentState</span><span class="o">.</span><span class="n">CREATED</span><span class="p">:</span>
-</span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">transition_to</span><span class="p">(</span><span class="n">ExperimentState</span><span class="o">.</span><span class="n">PLANNED</span><span class="p">)</span>
-</span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a>
-</span><span id="__span-0-146"><a id="__codelineno-0-146" name="__codelineno-0-146"></a>    <span class="k">return</span> <span class="bp">self</span>
-</span></code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
 <h4 id="xpyrment.core.experiment.Experiment.transition_to" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">transition_to</span>
 
@@ -3749,29 +3759,56 @@ monotonically increasing (forward-only).</p>
     re-running statistical engines on the locked design data.</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>target_state</code></b>
-              (<code><a class="autorefs autorefs-internal" title="            ExperimentState (xpyrment.core.state.ExperimentState)" href="../state/#xpyrment.core.state.ExperimentState">ExperimentState</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>The state the experiment is attempting to transition into.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>target_state</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The state the experiment is attempting to transition into.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="            ExperimentState (xpyrment.core.state.ExperimentState)" href="../state/#xpyrment.core.state.ExperimentState">ExperimentState</a></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="            PhaseOrderError (xpyrment.core.exceptions.PhaseOrderError)" href="../exceptions/#xpyrment.core.exceptions.PhaseOrderError">PhaseOrderError</a></code>
-            –
-          <div class="doc-md-description">
-            <p>If a backwards state transition is attempted, or if transition is otherwise unauthorized.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="            PhaseOrderError (xpyrment.core.exceptions.PhaseOrderError)" href="../exceptions/#xpyrment.core.exceptions.PhaseOrderError">PhaseOrderError</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If a backwards state transition is attempted, or if transition is otherwise unauthorized.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
@@ -3839,6 +3876,179 @@ monotonically increasing (forward-only).</p>
 </span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111"></a>        <span class="p">)</span>
 </span><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112"></a>
 </span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">target_state</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="xpyrment.core.experiment.Experiment.add_metrics" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">add_metrics</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_metrics</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">metrics</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></span><span class="p">]],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Experiment (xpyrment.core.experiment.Experiment)" href="#xpyrment.core.experiment.Experiment">Experiment</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Adds statistical metrics to the experiment configuration.</p>
+<p>Successfully registering a metric moves the experiment from <code>CREATED</code> to <code>PLANNED</code> state, representing
+that the evaluation criteria have been defined prior to running designs, validations, or analyses.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>metrics</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>A single metric object or a list of metrics
+(inheriting from <code>BaseMetric</code>) to bind to the experiment lifecycle.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a>, <span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="            BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a>]]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>Experiment</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The experiment instance itself (for fluent API chaining).</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="            Experiment (xpyrment.core.experiment.Experiment)" href="#xpyrment.core.experiment.Experiment">Experiment</a></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="            PhaseOrderError (xpyrment.core.exceptions.PhaseOrderError)" href="../exceptions/#xpyrment.core.exceptions.PhaseOrderError">PhaseOrderError</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the experiment has already progressed past the <code>PLANNED</code> phase. This restriction
+prevents retrospectively adding metrics to match statistical noise (post-hoc metrics selection/p-hacking).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\xpyrment\core\experiment.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span>
+<span class="normal"><a href="#__codelineno-0-121">121</a></span>
+<span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span>
+<span class="normal"><a href="#__codelineno-0-125">125</a></span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span>
+<span class="normal"><a href="#__codelineno-0-127">127</a></span>
+<span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span>
+<span class="normal"><a href="#__codelineno-0-131">131</a></span>
+<span class="normal"><a href="#__codelineno-0-132">132</a></span>
+<span class="normal"><a href="#__codelineno-0-133">133</a></span>
+<span class="normal"><a href="#__codelineno-0-134">134</a></span>
+<span class="normal"><a href="#__codelineno-0-135">135</a></span>
+<span class="normal"><a href="#__codelineno-0-136">136</a></span>
+<span class="normal"><a href="#__codelineno-0-137">137</a></span>
+<span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span>
+<span class="normal"><a href="#__codelineno-0-144">144</a></span>
+<span class="normal"><a href="#__codelineno-0-145">145</a></span>
+<span class="normal"><a href="#__codelineno-0-146">146</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="k">def</span><span class="w"> </span><span class="nf">add_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">BaseMetric</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMetric</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Experiment&quot;</span><span class="p">:</span>
+</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds statistical metrics to the experiment configuration.</span>
+</span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a>
+</span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">    Successfully registering a metric moves the experiment from `CREATED` to `PLANNED` state, representing</span>
+</span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">    that the evaluation criteria have been defined prior to running designs, validations, or analyses.</span>
+</span><span id="__span-0-120"><a id="__codelineno-0-120" name="__codelineno-0-120"></a>
+</span><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-122"><a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="sd">        metrics (Union[BaseMetric, List[BaseMetric]]): A single metric object or a list of metrics</span>
+</span><span id="__span-0-123"><a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">            (inheriting from `BaseMetric`) to bind to the experiment lifecycle.</span>
+</span><span id="__span-0-124"><a id="__codelineno-0-124" name="__codelineno-0-124"></a>
+</span><span id="__span-0-125"><a id="__codelineno-0-125" name="__codelineno-0-125"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-126"><a id="__codelineno-0-126" name="__codelineno-0-126"></a><span class="sd">        Experiment: The experiment instance itself (for fluent API chaining).</span>
+</span><span id="__span-0-127"><a id="__codelineno-0-127" name="__codelineno-0-127"></a>
+</span><span id="__span-0-128"><a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="sd">    Raises:</span>
+</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="sd">        PhaseOrderError: If the experiment has already progressed past the `PLANNED` phase. This restriction</span>
+</span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a><span class="sd">            prevents retrospectively adding metrics to match statistical noise (post-hoc metrics selection/p-hacking).</span>
+</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ExperimentState</span><span class="o">.</span><span class="n">CREATED</span><span class="p">,</span> <span class="n">ExperimentState</span><span class="o">.</span><span class="n">PLANNED</span><span class="p">]:</span>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>        <span class="k">raise</span> <span class="n">PhaseOrderError</span><span class="p">(</span>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>            <span class="sa">f</span><span class="s2">&quot;Cannot add metrics while in state </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s2">. Must be in CREATED or PLANNED.&quot;</span>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a>        <span class="p">)</span>
+</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>
+</span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+</span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+</span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+</span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a>
+</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a>    <span class="c1"># Transition the experiment from CREATED to PLANNED if metrics are added</span>
+</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">ExperimentState</span><span class="o">.</span><span class="n">CREATED</span><span class="p">:</span>
+</span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">transition_to</span><span class="p">(</span><span class="n">ExperimentState</span><span class="o">.</span><span class="n">PLANNED</span><span class="p">)</span>
+</span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a>
+</span><span id="__span-0-146"><a id="__codelineno-0-146" name="__codelineno-0-146"></a>    <span class="k">return</span> <span class="bp">self</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>

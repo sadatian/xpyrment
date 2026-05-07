@@ -3308,6 +3308,31 @@ to evaluate the practical (rather than just statistical) magnitude of experiment
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            compute_cohens_d (xpyrment.interpret.effect_size.compute_cohens_d)" href="#xpyrment.interpret.effect_size.compute_cohens_d">compute_cohens_d</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Computes standard standardized effect size using Cohen's d formula.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3361,37 +3386,76 @@ $<span class="arithmatex">\(d = \frac{\bar{X}_B - \bar{X}_A}{s_{\text{pooled}}}\
 </ul>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>group_a</code></b>
-              (<code><span title="numpy.ndarray">ndarray</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>1D array of outcomes for Control (Group A).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>group_b</code></b>
-              (<code><span title="numpy.ndarray">ndarray</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>1D array of outcomes for Treatment (Group B).</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>group_a</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>1D array of outcomes for Control (Group A).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="numpy.ndarray">ndarray</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>group_b</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>1D array of outcomes for Treatment (Group B).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="numpy.ndarray">ndarray</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>float</code></b> (              <code><span title="float">float</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>The calculated Cohen's d statistic.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>float</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The calculated Cohen's d statistic.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

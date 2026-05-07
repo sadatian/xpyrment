@@ -3342,6 +3342,31 @@ sequential monitoring boundaries to allow safe, continuous visual exploration of
 
 
 
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">CLASS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            SequentialInference (xpyrment.analyze.inference.sequential.SequentialInference)" href="#xpyrment.analyze.inference.sequential.SequentialInference">SequentialInference</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>Computes sequential monitoring bounds and always-valid confidence intervals (AVCIs).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3403,6 +3428,31 @@ $<span class="arithmatex">\(W_n = \sqrt{\frac{2\sigma^2(\sigma^2 + n\tau^2)}{n^2
 
 
 
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">METHOD</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            calculate_always_valid_ci (xpyrment.analyze.inference.sequential.SequentialInference.calculate_always_valid_ci)" href="#xpyrment.analyze.inference.sequential.SequentialInference.calculate_always_valid_ci">calculate_always_valid_ci</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Computes continuous monitoring boundaries to prevent alpha inflation from peeking.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3434,38 +3484,77 @@ $<span class="arithmatex">\(W_n = \sqrt{\frac{2\sigma^2(\sigma^2 + n\tau^2)}{n^2
 always-valid confidence bounds around the observed effect size.</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>sample_size</code></b>
-              (<code><span title="int">int</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The current accumulated number of units/trials (<span class="arithmatex">\(n\)</span>).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>alpha</code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The target false-positive rate (<span class="arithmatex">\(\alpha\)</span>).</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>sample_size</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The current accumulated number of units/trials (<span class="arithmatex">\(n\)</span>).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>alpha</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The target false-positive rate (<span class="arithmatex">\(\alpha\)</span>).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>tuple</code></b> (              <code><span title="tuple">tuple</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>A tuple of floats <code>(lower_bound, upper_bound)</code> representing the always-valid interval bounds
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>tuple</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>A tuple of floats <code>(lower_bound, upper_bound)</code> representing the always-valid interval bounds
 relative to the mean difference.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="tuple">tuple</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">

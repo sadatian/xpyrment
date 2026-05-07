@@ -3309,6 +3309,31 @@ zero-latency, horizontal scaling, and perfect repeatability across distributed e
 
 
 
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">FUNCTION</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            hash_assign (xpyrment.design.randomization.hash_assign)" href="#xpyrment.design.randomization.hash_assign">hash_assign</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Assigns a unit to a variant deterministically using MD5 hashing and modulo arithmetic.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 <div class="doc doc-children">
 
 
@@ -3369,58 +3394,117 @@ The assigned variant is <span class="arithmatex">\(V_i\)</span>.</p>
 </ol>
 </details>
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>unit_id</code></b>
-              (<code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="int">int</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Unique identifier for the experimental unit (e.g., visitor ID, account code).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>salt</code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>A unique string identifying the active experiment. Acting as the cryptographic salt,
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>unit_id</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Unique identifier for the experimental unit (e.g., visitor ID, account code).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="int">int</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>salt</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>A unique string identifying the active experiment. Acting as the cryptographic salt,
 this prevents correlation between different active experiments.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>variants</code></b>
-              (<code><span title="typing.List">List</span>[<span title="str">str</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Ordered list of variant labels (e.g., <code>["control", "treatment_a", "treatment_b"]</code>).</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>variants</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Ordered list of variant labels (e.g., <code>["control", "treatment_a", "treatment_b"]</code>).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>str</code></b> (              <code><span title="str">str</span></code>
-)          –
-          <div class="doc-md-description">
-            <p>The selected variant label from the <code>variants</code> list.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>str</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The selected variant label from the <code>variants</code> list.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="ValueError">ValueError</span></code>
-            –
-          <div class="doc-md-description">
-            <p>If the <code>variants</code> list is empty.</p>
-          </div>
-        </li>
-    </ul>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><span title="ValueError">ValueError</span></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the <code>variants</code> list is empty.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>

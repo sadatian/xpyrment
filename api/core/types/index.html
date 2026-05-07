@@ -3331,6 +3331,58 @@ perfect alignment between metrics, validation engines, statistical routers, and 
 
 
 
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">CLASS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            MetricResult (xpyrment.core.types.MetricResult)" href="#xpyrment.core.types.MetricResult">MetricResult</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>The canonical data schema representing the output of a statistical metric analysis.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            MetricType
+
+
+  
+      module-attribute
+   (xpyrment.core.types.MetricType)" href="#xpyrment.core.types.MetricType">MetricType</a></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Literal representing the supported category of metrics.</p>
+              </div>
+              <p>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
 <div class="doc doc-children">
 
 
@@ -3405,163 +3457,283 @@ and sequential) and reporting utilities, ensuring that every calculated metric c
 both descriptive statistics and rigorous statistical validation metrics.</p>
 
 
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.metric_name">metric_name</span></code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The unique identifier assigned to the analyzed metric.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.metric_type">metric_type</span></code></b>
-              (<code><span title="str">str</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The standardized type string (e.g., "Mean", "Proportion", "Ratio", "Revenue").</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.control_mean">control_mean</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The sample mean (<span class="arithmatex">\(\bar{Y}_C\)</span>) or proportion (<span class="arithmatex">\(p_C\)</span>) calculated for the control group.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.treatment_mean">treatment_mean</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The sample mean (<span class="arithmatex">\(\bar{Y}_T\)</span>) or proportion (<span class="arithmatex">\(p_T\)</span>) calculated for the treatment group.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.control_var">control_var</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The sample variance (<span class="arithmatex">\(s^2_C\)</span>) calculated for the control group.
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.metric_name">metric_name</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The unique identifier assigned to the analyzed metric.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.metric_type">metric_type</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The standardized type string (e.g., "Mean", "Proportion", "Ratio", "Revenue").</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.control_mean">control_mean</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The sample mean (<span class="arithmatex">\(\bar{Y}_C\)</span>) or proportion (<span class="arithmatex">\(p_C\)</span>) calculated for the control group.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.treatment_mean">treatment_mean</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The sample mean (<span class="arithmatex">\(\bar{Y}_T\)</span>) or proportion (<span class="arithmatex">\(p_T\)</span>) calculated for the treatment group.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.control_var">control_var</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The sample variance (<span class="arithmatex">\(s^2_C\)</span>) calculated for the control group.
 For ratios, this represents the Delta-method approximated variance.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.treatment_var">treatment_var</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The sample variance (<span class="arithmatex">\(s^2_T\)</span>) calculated for the treatment group.
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.treatment_var">treatment_var</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The sample variance (<span class="arithmatex">\(s^2_T\)</span>) calculated for the treatment group.
 For ratios, this represents the Delta-method approximated variance.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.control_n">control_n</span></code></b>
-              (<code><span title="int">int</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The total count of unique units in the control group (<span class="arithmatex">\(N_C\)</span>).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.treatment_n">treatment_n</span></code></b>
-              (<code><span title="int">int</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The total count of unique units in the treatment group (<span class="arithmatex">\(N_T\)</span>).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.absolute_difference">absolute_difference</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The point estimate of the absolute treatment effect:
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.control_n">control_n</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The total count of unique units in the control group (<span class="arithmatex">\(N_C\)</span>).</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.treatment_n">treatment_n</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The total count of unique units in the treatment group (<span class="arithmatex">\(N_T\)</span>).</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.absolute_difference">absolute_difference</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The point estimate of the absolute treatment effect:
 $<span class="arithmatex">\(\Delta = \bar{Y}_T - \bar{Y}_C\)</span>$</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.relative_lift">relative_lift</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The percentage increase or decrease of the treatment mean relative to the control mean:
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.relative_lift">relative_lift</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The percentage increase or decrease of the treatment mean relative to the control mean:
 $<span class="arithmatex">\(\text{Lift} = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}\)</span>$</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.cuped_applied">cuped_applied</span></code></b>
-              (<code><span title="bool">bool</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>True if Controlled-comparison Using Pre-Existing Data (CUPED) was applied
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.cuped_applied">cuped_applied</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>True if Controlled-comparison Using Pre-Existing Data (CUPED) was applied
 to adjust the variance of this metric. False otherwise.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.variance_reduction">variance_reduction</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The percentage reduction in variance achieved by CUPED, bounded in <span class="arithmatex">\([0, 1)\)</span>:
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.variance_reduction">variance_reduction</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The percentage reduction in variance achieved by CUPED, bounded in <span class="arithmatex">\([0, 1)\)</span>:
 $<span class="arithmatex">\(\text{Reduction} = 1 - \frac{\text{Var}(Y_{\text{CUPED}})}{\text{Var}(Y_{\text{original}})}\)</span>$</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.p_value">p_value</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The statistical p-value associated with the hypothesis test. For frequentist, this represents the
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.p_value">p_value</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The statistical p-value associated with the hypothesis test. For frequentist, this represents the
 probability of observing a test statistic at least as extreme as the one computed, under the null hypothesis (<span class="arithmatex">\(H_0\)</span>).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.ci_lower">ci_lower</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The lower bound of the absolute confidence/credible interval at the <span class="arithmatex">\((1 - \alpha)\)</span> confidence level.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.ci_upper">ci_upper</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The upper bound of the absolute confidence/credible interval at the <span class="arithmatex">\((1 - \alpha)\)</span> confidence level.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.rel_ci_lower">rel_ci_lower</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The lower bound of the relative confidence/credible interval, scaled relative to the control mean:
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.ci_lower">ci_lower</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The lower bound of the absolute confidence/credible interval at the <span class="arithmatex">\((1 - \alpha)\)</span> confidence level.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.ci_upper">ci_upper</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The upper bound of the absolute confidence/credible interval at the <span class="arithmatex">\((1 - \alpha)\)</span> confidence level.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.rel_ci_lower">rel_ci_lower</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The lower bound of the relative confidence/credible interval, scaled relative to the control mean:
 $<span class="arithmatex">\(\text{Rel CI Lower} = \frac{\text{CI Lower}}{\bar{Y}_C}\)</span>$</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.rel_ci_upper">rel_ci_upper</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The upper bound of the relative confidence/credible interval, scaled relative to the control mean:
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.rel_ci_upper">rel_ci_upper</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The upper bound of the relative confidence/credible interval, scaled relative to the control mean:
 $<span class="arithmatex">\(\text{Rel CI Upper} = \frac{\text{CI Upper}}{\bar{Y}_C}\)</span>$</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="xpyrment.core.types.MetricResult.power">power</span></code></b>
-              (<code><span title="float">float</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>The statistical power (<span class="arithmatex">\(1 - \beta\)</span>) achieved by the sample size, denoting the probability of
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.power">power</span></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>The statistical power (<span class="arithmatex">\(1 - \beta\)</span>) achieved by the sample size, denoting the probability of
 correctly rejecting the null hypothesis when the true treatment effect equals the observed difference.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
 
 
 
