@@ -31,7 +31,7 @@ class FullFactorialDesign(DesignMatrix):
         unfeasible for large numbers of factors (where fractional designs are preferred).
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Constructing a 2^2 full factorial design

@@ -166,7 +166,7 @@ def design_experiment(
         ValueError: If standard deviation is missing for mean/ratio metrics.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Planning a conversion rate proportion test (10% baseline, relative MDE of 5%)

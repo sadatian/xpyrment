@@ -32,7 +32,7 @@ def log_transform(df: pd.DataFrame, col: str) -> pd.Series:
         pd.Series: A new pandas Series containing the log-transformed values.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> import pandas as pd

@@ -31,7 +31,7 @@ def estimate_duration_days(required_sample_size: int, daily_traffic: int) -> flo
         ValueError: If `required_sample_size` or `daily_traffic` is less than or equal to zero.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> estimate_duration_days(required_sample_size=50000, daily_traffic=5000)

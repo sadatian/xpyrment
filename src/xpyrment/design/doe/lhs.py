@@ -58,7 +58,7 @@ class LatinHypercubeDesign(DesignMatrix):
         num_samples (int): The exact number of samples (runs) to draw.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Drawing 50 space-filling points to explore temperature and speed bounds

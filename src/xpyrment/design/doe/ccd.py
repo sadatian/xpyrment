@@ -57,7 +57,7 @@ class CentralCompositeDesign(DesignMatrix):
             Options are `"rotatable"`, `"face-centered"`, `"orthogonal"`. Defaults to `"orthogonal"`.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Constructing a face-centered CCD for 2 factors

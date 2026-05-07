@@ -36,7 +36,7 @@ class Experiment:
         Analyzing results requires a transition to `ANALYZED`.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> import pandas as pd

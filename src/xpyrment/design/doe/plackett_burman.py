@@ -48,7 +48,7 @@ class PlackettBurmanDesign(DesignMatrix):
         ```
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # If we want to screen 10 factors, we can use an N=12 Plackett-Burman design, requiring only 12 runs!

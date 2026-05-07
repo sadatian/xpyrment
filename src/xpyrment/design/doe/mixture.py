@@ -49,7 +49,7 @@ class MixtureDesign(DesignMatrix):
         ```
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Constructing a {3, 2} Simplex Lattice design (3 ingredients, quadratic model)

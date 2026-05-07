@@ -50,7 +50,7 @@ def check_srm(observed_counts: List[int], expected_ratios: List[float]) -> float
         SRMError: If the computed p-value is strictly less than 0.001, indicating a severe, non-random mismatch.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Perfectly fine allocation (p ~ 0.81)

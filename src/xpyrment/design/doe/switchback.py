@@ -51,7 +51,7 @@ class SwitchbackDesign(DesignMatrix):
         unit_window_hours (int): The duration in hours of each discrete experimental block. Defaults to 2.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Scheduling a switchback test with 4-hour window blocks

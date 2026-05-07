@@ -29,7 +29,7 @@ class PreregistrationCard:
         hash_signature (str): Cryptographic SHA-256 hash representing the serialized `spec` dictionary.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> spec = {"metric": "conversion_rate", "alpha": 0.05, "target_n": 10000}

@@ -37,7 +37,7 @@ class StoppingRules:
         alpha (float): The target Type I error rate (e.g., 0.05).
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Monitoring a live test with alpha = 0.05

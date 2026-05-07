@@ -59,7 +59,7 @@ class DefinitiveScreeningDesign(DesignMatrix):
         ```
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # If we have k=4 factors, a full factorial 3-level design requires 3^4 = 81 runs.

@@ -39,7 +39,7 @@ class HypothesisSpec:
         description (str): Text describing the business or scientific hypothesis in natural language.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> from xpyrment.metrics.taxonomy import ProportionMetric

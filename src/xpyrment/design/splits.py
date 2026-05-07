@@ -31,7 +31,7 @@ class TrafficSplitter:
             and routed to a static holdout arm. Bounded in $[0, 1]$.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> allocations = {"control": 0.45, "treatment": 0.45}

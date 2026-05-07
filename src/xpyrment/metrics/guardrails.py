@@ -24,7 +24,7 @@ class GuardrailMetric:
             expressed as a fraction (e.g., `0.01` represents a 1% threshold).
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> from xpyrment.metrics.taxonomy import MeanMetric

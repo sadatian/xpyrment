@@ -28,7 +28,7 @@ class PhaseOrderError(Exception):
         message (str): Explains the invalid state transition attempt and the active state.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> from xpyrment.core.state import ExperimentState

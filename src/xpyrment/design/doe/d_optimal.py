@@ -49,7 +49,7 @@ class DOptimalDesign(DesignMatrix):
         num_runs (int): The exact target trial budget (number of runs in the final matrix).
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Planning a 12-run custom design for 3 factors with safety constraints

@@ -51,7 +51,7 @@ def hash_assign(unit_id: Union[str, int], salt: str, variants: List[str]) -> str
         ValueError: If the `variants` list is empty.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> variants = ["control", "variant_a", "variant_b"]

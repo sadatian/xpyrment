@@ -51,7 +51,7 @@ class TaguchiDesign(DesignMatrix):
         array_name (str): The name of the target Taguchi Orthogonal Array (e.g., `"L9"`, `"L18"`, `"L27"`).
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> # Selecting an L9 array (supports up to 4 factors at 3 levels)

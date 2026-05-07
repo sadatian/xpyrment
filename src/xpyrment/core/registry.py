@@ -24,7 +24,7 @@ class ExperimentRegistry:
             registered specification dictionaries and pre-computed hashes.
 
     Examples:
-        ??? example "Examples"
+        ??? example "Example"
 
             ```python
             >>> registry = ExperimentRegistry()
