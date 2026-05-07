@@ -1,16 +1,58 @@
+r"""Power analysis and sample-size planning calculators.
+
+This module provides industry-standard power calculators for experimental design, helping
+experimenters determine the minimum required sample size per variant to detect a target Minimum
+Detectable Effect (MDE) with specified Type I and Type II error thresholds ($\alpha, \beta$).
+It also handles variance reduction credit (CUPED sample-size deflation) and estimated experiment
+runtimes.
+
+Mathematical Specifications:
+    The required sample size per variant $n$ for a two-sample t-test is given by:
+    $$n = \frac{2 \sigma^2 \left(Z_{1 - \alpha/2} + Z_{1 - \beta}\right)^2}{\delta^2}$$
+    where:
+    - $\sigma^2$: Population variance. For binary proportions ($p$), $\sigma^2 = p(1 - p)$.
+    - $Z_{1 - \alpha/2}$: Standard normal critical value for a two-sided test at significance level $\alpha$.
+    - $Z_{1 - \beta}$: Standard normal quantile corresponding to the desired statistical power ($1 - \beta$).
+    - $\delta$: The target absolute Minimum Detectable Effect (MDE).
+    
+    If pre-period baseline covariates are available, the CUPED variance-adjusted sample size is:
+    $$n_{\text{CUPED}} = n \left(1 - \rho^2\right)$$
+    where $\rho$ is the correlation between pre-period and experiment-period values.
+"""
+
 from typing import Dict, Any, Optional
 import numpy as np
 from scipy import stats
 
 
 class ExperimentDesignResult:
-    """Class to hold and format experiment design and power analysis results."""
+    """Class to hold, format, and present experiment design and statistical power analysis results.
+
+    Provides high-fidelity text-based representations and structured summaries of design outputs
+    to help experimenters evaluate sizing requirements, potential CUPED savings, and run runtimes.
+
+    Attributes:
+        details (Dict[str, Any]): Dictionary containing raw parameter values and sizing outputs
+            from the power analysis engine.
+    """
 
     def __init__(self, details: Dict[str, Any]):
+        """Initializes an ExperimentDesignResult wrapper.
+
+        Args:
+            details (Dict[str, Any]): Dictionary of design details from `design_experiment`.
+        """
         self.details = details
 
     def summary(self) -> Dict[str, list]:
-        """Returns a summary of the experiment design parameters."""
+        """Compiles a structured summary of the experiment design parameters.
+
+        Formats raw numbers into clear, readable text elements (e.g., currency, percentages,
+        and human-readable sample sizes with digit grouping).
+
+        Returns:
+            Dict[str, list]: A dictionary mapping parameter names to formatted value strings.
+        """
         summary = {
             "Parameter": [
                 "Metric Type",
@@ -66,6 +108,7 @@ class ExperimentDesignResult:
         return summary
 
     def __repr__(self) -> str:
+        """Generates an aesthetic text block summary of the experiment design parameters."""
         s = "=========================================\n"
         s += "       Experiment Design Summary        \n"
         s += "=========================================\n"
@@ -87,7 +130,52 @@ def design_experiment(
     pre_post_correlation: Optional[float] = None,
     daily_traffic: Optional[int] = None,
 ) -> ExperimentDesignResult:
-    """Computes the required sample size for an experiment based on design constraints."""
+    """Computes the required sample size and duration for an experiment based on design constraints.
+
+    This function performs rigorous a priori power analysis to determine required sample sizes.
+    It supports continuous means, proportions, and ratio metrics, integrates pre-post correlation
+    for CUPED calculation, and maps sizes to daily traffic to compute duration.
+
+    Args:
+        metric_type (str): The statistical distribution type. Options are `'mean'`,
+            `'proportion'`, or `'ratio'`.
+        baseline_value (float): The current historical control group value (mean or rate).
+        standard_deviation (Optional[float]): The historical standard deviation of the metric.
+            Required for `'mean'` and `'ratio'` metric types. Ignored for `'proportion'`.
+        mde (float): The target Minimum Detectable Effect. Expressed as a fraction of baseline for
+            `"relative"` (e.g., `0.05` is 5%) or directly as a raw difference for `"absolute"`.
+            Defaults to 0.05.
+        mde_type (str): Dictates how `mde` is interpreted. Options are `'relative'` or `'absolute'`.
+            Defaults to `'relative'`.
+        alpha (float): The probability of a Type I error (significance level, e.g., 0.05 for 95% confidence).
+            Defaults to 0.05.
+        power (float): The desired statistical power ($1 - \beta$, e.g., 0.80 to capture true effects 80% of the time).
+            Defaults to 0.80.
+        pre_post_correlation (Optional[float]): The correlation coefficient ($\rho$) between baseline pre-period
+            values and active experiment-period values. If provided, calculates CUPED-deflated sizing.
+            Defaults to None.
+        daily_traffic (Optional[int]): Expected daily volume of unique units entering the experiment. If provided,
+            calculates duration. Defaults to None.
+
+    Returns:
+        ExperimentDesignResult: A wrapper object containing formatted parameters and sample sizing calculations.
+
+    Raises:
+        ValueError: If statistical inputs are out of logical bounds (e.g., negative traffic, proportion baseline
+            not in $(0, 1)$, or correlation not in $[-1, 1]$).
+        ValueError: If standard deviation is missing for mean/ratio metrics.
+
+    Example:
+        >>> # Planning a conversion rate proportion test (10% baseline, relative MDE of 5%)
+        >>> result = design_experiment(
+        ...     metric_type="proportion",
+        ...     baseline_value=0.10,
+        ...     mde=0.05,
+        ...     mde_type="relative"
+        ... )
+        >>> int(result.details["sample_size_per_variant"])
+        141258
+    """
     metric_type = metric_type.lower()
     mde_type = mde_type.lower()
 
@@ -161,7 +249,28 @@ def generate_power_curve_data(
     mde_range: Optional[np.ndarray] = None,
     pre_post_correlation: Optional[float] = None,
 ) -> Dict[str, np.ndarray]:
-    """Generates sample size coordinates across a range of MDE values to plot a power curve."""
+    """Generates sample size coordinates across a range of relative MDE values.
+
+    This function calculates required sizing across a coordinate spectrum of possible MDEs,
+    allowing downstream reporting tools to plot an interactive or static "power curve"
+    graph (sample size vs. effect size).
+
+    Args:
+        metric_type (str): Metric type ('mean', 'proportion', 'ratio').
+        baseline_value (float): Historical control average value.
+        standard_deviation (Optional[float]): Historical metric standard deviation. Required for continuous.
+        alpha (float): Significance level. Defaults to 0.05.
+        power (float): Desired statistical power. Defaults to 0.80.
+        mde_range (Optional[np.ndarray]): Array of relative MDE points to evaluate. If not provided,
+            evaluates 50 linear coordinates in $[0.01, 0.15]$. Defaults to None.
+        pre_post_correlation (Optional[float]): Pre-post correlation coefficient for CUPED-adjusted curve.
+            Defaults to None.
+
+    Returns:
+        Dict[str, np.ndarray]: Dictionary mapping coordinate names to numpy arrays of results.
+            Contains keys `'mde_relative'` and `'sample_size_per_variant'`, and optionally
+            `'cuped_sample_size_per_variant'`.
+    """
     if mde_range is None:
         mde_range = np.linspace(0.01, 0.15, 50)
 

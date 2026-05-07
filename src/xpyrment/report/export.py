@@ -1,3 +1,10 @@
+"""Statistical visualization and plot generation for experimental reports.
+
+This module provides standard reporting visualizations, including horizontal forest plots
+for treatment lifts and confidence intervals, and required sample size curves comparing
+standard designs to variance-reduced (CUPED) designs.
+"""
+
 from typing import Optional, Dict
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,7 +18,37 @@ def plot_forest(
     title: str = "A/B Test Results - Relative Lift & 95% CIs",
     figsize: tuple = (10, 5),
 ) -> tuple:
-    """Generates a horizontal forest plot visualizing relative lift and confidence intervals."""
+    """Generates a horizontal forest plot visualizing relative lift and confidence intervals.
+
+    A Forest Plot is the industrial standard for reviewing multiple metrics simultaneously. It displays
+    each metric's estimated treatment lift along with its surrounding confidence bounds. This allows rapid,
+    visual identification of which metrics experienced significant shifts, whether the shifts are positive
+    or negative, and how much uncertainty surrounds each estimate.
+
+    Visual Elements:
+        - **Center Dots**: Represent the point estimate of the relative lift ($\\hat{\\theta}$).
+        - **Horizontal Bars**: Represent the $1 - \\alpha$ confidence interval ($[\\theta_{\\text{lower}}, \\ \\theta_{\\text{upper}}]$).
+        - **Vertical Reference Line**: Placed at $x = 0$ (represented as a dashed red line) to denote the Null Hypothesis
+          (no effect). If a metric's horizontal bar does not cross this dashed line, the effect is statistically significant.
+        - **Color Coding**: Significant shifts ($p < \\alpha$) are colored in high-contrast teal, while insignificant
+          shifts are shaded in neutral slate-grey.
+
+    Args:
+        df_raw (pd.DataFrame): A DataFrame containing the statistical summary. Must include the columns:
+            - `"metric_name"` (str): Name of the target metric.
+            - `"relative_lift"` (float): The point estimate of relative lift.
+            - `"rel_ci_lower"` (float): The lower bound of the relative confidence interval.
+            - `"rel_ci_upper"` (float): The upper bound of the relative confidence interval.
+            - `"p_value"` (float): The calculated p-value of the hypothesis test.
+        alpha (float): Nominal significance level used to color-code significance. Defaults to 0.05.
+        title (str): Title of the rendered plot. Defaults to `"A/B Test Results - Relative Lift & 95% CIs"`.
+        figsize (tuple): Dimensions of the figure canvas. Defaults to `(10, 5)`.
+
+    Returns:
+        tuple: A tuple `(fig, ax)` containing:
+            - `fig` (matplotlib.figure.Figure): The active matplotlib Figure canvas.
+            - `ax` (matplotlib.axes.Axes): The axes container housing the rendered forest plot.
+    """
     df = df_raw.copy().sort_values(by="metric_name")
 
     sns.set_theme(style="whitegrid")
@@ -81,7 +118,36 @@ def plot_power_curve(
     title: str = "A/B Test Design - Required Sample Size vs. MDE",
     figsize: tuple = (10, 6),
 ) -> tuple:
-    """Plots required sample size per variant across a range of Minimum Detectable Effects (MDE)."""
+    """Plots required sample size per variant across a range of Minimum Detectable Effects (MDE).
+
+    This plotting function illustrates the fundamental trade-off in experimental planning between the
+    Minimum Detectable Effect ($\\delta$, MDE) and the required sample size per variant ($N$).
+    Because sample size scales quadratically with the inverse of the MDE:
+    $$N \\propto \\frac{1}{\\delta^2}$$
+    small increases in the precision requirements (smaller MDE) trigger massive increases in the required sample size.
+
+    Demonstrating CUPED Sample Size Savings:
+        If a pre-period covariate is registered, the plot overlays a second curve displaying the required sample size
+        when applying CUPED variance reduction.
+        - Let $\\rho$ be the correlation coefficient between the pre-period covariate and the post-period outcome.
+        - The required sample size under CUPED ($N_{\\text{CUPED}}$) is deflated by a factor of $(1 - \\rho^2)$:
+          $$N_{\\text{CUPED}} = N_{\\text{standard}} \\times (1 - \\rho^2)$$
+        - The visual shaded gap between the standard curve and the CUPED curve demonstrates the direct **sample size savings**
+          (and consequently, the timeline savings) gained by utilizing pre-period covariate adjustment.
+
+    Args:
+        power_curve_data (Dict[str, np.ndarray]): A dictionary containing:
+            - `"mde_relative"` (np.ndarray): 1D array of hypothetical MDE percentages.
+            - `"sample_size_per_variant"` (np.ndarray): Required sample size under standard Wald designs.
+            - `"cuped_sample_size_per_variant"` (np.ndarray, optional): Required sample size under CUPED adjustments.
+        title (str): Title of the rendered plot. Defaults to `"A/B Test Design - Required Sample Size vs. MDE"`.
+        figsize (tuple): Dimensions of the figure canvas. Defaults to `(10, 6)`.
+
+    Returns:
+        tuple: A tuple `(fig, ax)` containing:
+            - `fig` (matplotlib.figure.Figure): The active matplotlib Figure canvas.
+            - `ax` (matplotlib.axes.Axes): The axes container housing the curves.
+    """
     sns.set_theme(style="darkgrid")
     fig, ax = plt.subplots(figsize=figsize)
 
@@ -132,3 +198,4 @@ def plot_power_curve(
 
     plt.tight_layout()
     return fig, ax
+

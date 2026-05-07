@@ -1,3 +1,9 @@
+"""Synthetic data generators for validation, profiling, and unit testing.
+
+This module provides the `generate_ab_data` utility, which generates realistic experimental datasets containing continuous,
+binary, and ratio variables across pre-period and post-period windows with stochastic correlation structures.
+"""
+
 import numpy as np
 import pandas as pd
 
@@ -15,9 +21,65 @@ def generate_ab_data(
     pre_period_correlation: float = 0.70,
     random_seed: int = 42,
 ) -> pd.DataFrame:
-    """Generates synthetic A/B test data simulating continuous, binary, and ratio metrics.
+    r"""Generates synthetic A/B test data simulating continuous, binary, and ratio metrics.
 
-    Includes correlated pre-period values for CUPED analysis.
+    Constructs a high-fidelity synthetic evaluation dataset. This generator is crucial for testing the validity of the
+    statistical engines, validating Type I / Type II error rates, and profiling variance reduction (CUPED) performance.
+    It generates both pre-period and post-period metrics to support covariate-adjustment modeling.
+
+    Mathematical and Generative Specifications:
+        1. **Continuous Metric (Revenue) with Pre/Post Covariance**:
+           Revenue is modeled using a bivariate normal distribution to inject a pre-defined correlation ($\rho$)
+           between pre-period (covariate) and post-period (outcome) performance.
+           - Let $Y_i = [Y_{i, \text{pre}}, Y_{i, \text{post}}]^T$ be the revenue vector for unit $i$.
+           - Under the Control variant, the mean vector is $\boldsymbol{\mu}_C = [\mu_{\text{baseline}}, \mu_{\text{baseline}}]^T$.
+           - Under the Treatment variant, the mean vector is $\boldsymbol{\mu}_T = [\mu_{\text{baseline}}, \mu_{\text{baseline}} + \delta_{\text{rev}}]^T$.
+           - The covariance matrix $\boldsymbol{\Sigma}$ is configured using standard deviation $\sigma$ and target correlation $\rho$:
+             $$\boldsymbol{\Sigma} = \begin{bmatrix} \sigma^2 & \rho \sigma^2 \\ \rho \sigma^2 & \sigma^2 \end{bmatrix}$$
+           - We sample $Y_i \sim \mathcal{N}_2(\boldsymbol{\mu}_k, \boldsymbol{\Sigma})$ and apply a non-negative floor:
+             $$Y_{i} \leftarrow \max(Y_i, 0)$$
+
+        2. **Binary Rate Metric (Conversions)**:
+           Conversions are modeled as independent Bernoulli trials:
+           - For Control: $Converted_i \sim \text{Bernoulli}(p_C)$ where $p_C = p_{\text{baseline}}$.
+           - For Treatment: $Converted_i \sim \text{Bernoulli}(p_T)$ where $p_T = \min(\max(p_{\text{baseline}} + \delta_{\text{conv}}, 0), 1)$.
+
+        3. **Ratio Metric (Clicks and Impressions for Click-Through Rate)**:
+           Simulates CTR stochastically, introducing user-level heterogeneity and a positive skew:
+           - Post-period impressions follow a Poisson distribution:
+             $$Impressions_i \sim \text{Poisson}(\lambda_{\text{baseline\_impressions}})$$
+             with a minimum threshold of $1$ to prevent divisions by zero.
+           - Click probabilities for each user follow a Beta distribution to model user variance (Beta-Binomial stochastics):
+             $$p_{i, \text{CTR}} \sim \text{Beta}(a_k, b_k)$$
+             where the shape parameters $a_k, b_k$ are derived to match the expected CTR of the respective group:
+             $$a_k = \text{CTR}_k \times 10, \quad b_k = (1 - \text{CTR}_k) \times 10$$
+           - Finally, individual clicks are simulated using Binomial trials:
+             $$Clicks_i \sim \text{Binomial}(Impressions_i, \ p_{i, \text{CTR}})$$
+
+    Args:
+        n_samples (int): The total number of experimental units (users) to simulate. Defaults to 10000.
+        treatment_fraction (float): The probability of assignment to the Treatment group. Defaults to 0.5.
+        baseline_revenue (float): The baseline mean revenue ($\mu_{\text{baseline}}$). Defaults to 10.0.
+        treatment_effect_revenue (float): The absolute revenue lift in Treatment ($\delta_{\text{rev}}$). Defaults to 0.5.
+        baseline_conversion (float): The baseline conversion rate ($p_{\text{baseline}}$). Defaults to 0.15.
+        treatment_effect_conversion (float): The absolute conversion lift in Treatment ($\delta_{\text{conv}}$). Defaults to 0.02.
+        baseline_clicks_mean (float): Baseline expected clicks. Defaults to 5.0.
+        baseline_impressions_mean (float): Baseline expected impressions ($\lambda$). Defaults to 100.0.
+        treatment_effect_clicks (float): Incremental clicks in Treatment. Defaults to 0.3.
+        pre_period_correlation (float): The target correlation coefficient ($\rho$) between pre and post continuous revenue. Defaults to 0.70.
+        random_seed (int): Pseudo-random seed to guarantee reproducibility. Defaults to 42.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing simulated user IDs, variant assignments, and pre/post metrics:
+            - `"user_id"` (str): Unique identifier formatted as `USER_######`.
+            - `"variant"` (str): Assignment labels (`"control"` or `"treatment"`).
+            - `"pre_revenue"` (float): Pre-period continuous covariate metric.
+            - `"revenue"` (float): Post-period continuous outcome metric.
+            - `"converted"` (int): Binary conversion indicator ($0$ or $1$).
+            - `"pre_impressions"` (int): Pre-period ratio denominator.
+            - `"pre_clicks"` (int): Pre-period ratio numerator.
+            - `"impressions"` (int): Post-period ratio denominator.
+            - `"clicks"` (int): Post-period ratio numerator.
     """
     rng = np.random.default_rng(random_seed)
 
@@ -114,3 +176,4 @@ def generate_ab_data(
     )
 
     return df
+

@@ -1,3 +1,18 @@
+"""Experiment analysis, variance reduction, multiple testing corrections, and statistical inference.
+
+This package houses the core statistical analysis engine of `xpyrment`. It coordinates the calculation of treatment
+effects, computes variance-reduced adjusted statistics, corrects for multiple simultaneous comparisons, and
+provides a modular statistical inference suite (frequentist, bayesian, sequential, and bootstrap).
+
+Fluent API Integration:
+    To preserve elegant, object-oriented fluent API chaining, this package dynamically registers the
+    `run_analysis` method on the main `Experiment` orchestrator class when imported:
+    ```python
+    # Equivalent to:
+    result = setup(data, "variant").run_analysis()
+    ```
+"""
+
 from xpyrment.core.experiment import Experiment
 from xpyrment.analyze.orchestrator import AnalysisResult, run_analysis, setup
 from xpyrment.analyze.variance_reduction import apply_cuped
@@ -19,3 +34,4 @@ __all__ = [
     "apply_multiple_testing_correction",
     "inference",
 ]
+

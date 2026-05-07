@@ -1,3 +1,13 @@
+"""Core engine abstractions, state management, exception classes, and shared types.
+
+This package provides the foundational structural mechanisms for the `xpyrment` package:
+- `Experiment`: The central orchestration state container that governs execution.
+- `ExperimentState`: The rigid phase-gating mechanism (CREATED -> PLANNED -> DESIGNED -> RUNNING -> ANALYZED -> REPORTED).
+- `ExperimentRegistry`: Cryptographic hashing and pre-registration validator to prevent post-hoc changes.
+- Custom Exceptions: Robust, informative error feedback to protect experimental integrity (`PhaseOrderError`, `SRMError`, `AliasError`).
+- Strict Typing schemas: Standardized TypedDict representation (`MetricResult`) of calculation outputs.
+"""
+
 from xpyrment.core.exceptions import PhaseOrderError, SRMError, AliasError
 from xpyrment.core.experiment import Experiment
 from xpyrment.core.registry import ExperimentRegistry
@@ -14,3 +24,4 @@ __all__ = [
     "MetricType",
     "MetricResult",
 ]
+
