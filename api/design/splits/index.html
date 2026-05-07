@@ -3416,7 +3416,7 @@ and routed to a static holdout arm. Bounded in <span class="arithmatex">\([0, 1]
 
 <p><span class="doc-section-title">Examples:</span></p>
     <details class="example">
-<summary>Examples</summary>
+<summary>Example</summary>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">allocations</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;control&quot;</span><span class="p">:</span> <span class="mf">0.45</span><span class="p">,</span> <span class="s2">&quot;treatment&quot;</span><span class="p">:</span> <span class="mf">0.45</span><span class="p">}</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">splitter</span> <span class="o">=</span> <span class="n">TrafficSplitter</span><span class="p">(</span><span class="n">allocations</span><span class="o">=</span><span class="n">allocations</span><span class="p">,</span> <span class="n">holdout_percentage</span><span class="o">=</span><span class="mf">0.10</span><span class="p">)</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">splitter</span><span class="o">.</span><span class="n">holdout_percentage</span>

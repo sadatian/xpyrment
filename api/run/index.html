@@ -4021,7 +4021,7 @@ rate controlled at <span class="arithmatex">\(\alpha\)</span>.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <details class="example">
-<summary>Examples</summary>
+<summary>Example</summary>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="c1"># Monitoring a live test with alpha = 0.05</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">rules</span> <span class="o">=</span> <span class="n">StoppingRules</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="c1"># If the calculated likelihood ratio lambda_value crosses 1/alpha = 20.0, we stop early.</span>

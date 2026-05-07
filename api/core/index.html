@@ -3779,7 +3779,7 @@ Analyzing results requires a transition to <code>ANALYZED</code>.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <details class="example">
-<summary>Examples</summary>
+<summary>Example</summary>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">xpyrment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">xpyrment.metrics.taxonomy</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeanMetric</span>
@@ -4213,7 +4213,7 @@ registered specification dictionaries and pre-computed hashes.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <details class="example">
-<summary>Examples</summary>
+<summary>Example</summary>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">registry</span> <span class="o">=</span> <span class="n">ExperimentRegistry</span><span class="p">()</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;primary_metric&quot;</span><span class="p">:</span> <span class="s2">&quot;conversion_rate&quot;</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;target_n&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">}</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">spec_hash</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">register_spec</span><span class="p">(</span><span class="s2">&quot;EXP-101&quot;</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
@@ -4833,7 +4833,7 @@ correctly rejecting the null hypothesis when the true treatment effect equals th
 
 <p><span class="doc-section-title">Examples:</span></p>
     <details class="example">
-<summary>Examples</summary>
+<summary>Example</summary>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">xpyrment.core.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentState</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">xpyrment.core.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhaseOrderError</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="k">raise</span> <span class="n">PhaseOrderError</span><span class="p">(</span><span class="s2">&quot;Cannot transition backwards from RUNNING to PLANNED.&quot;</span><span class="p">)</span>
