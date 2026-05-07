@@ -50,11 +50,15 @@ class SwitchbackDesign(DesignMatrix):
     Attributes:
         unit_window_hours (int): The duration in hours of each discrete experimental block. Defaults to 2.
 
-    Example:
-        >>> # Scheduling a switchback test with 4-hour window blocks
-        >>> factors = {"dispatch_algorithm": ["greedy", "predictive"]}
-        >>> design = SwitchbackDesign(factors, unit_window_hours=4)
-        >>> # The output schedule allocates the marketplace state dynamically across the experimental window.
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Scheduling a switchback test with 4-hour window blocks
+            >>> factors = {"dispatch_algorithm": ["greedy", "predictive"]}
+            >>> design = SwitchbackDesign(factors, unit_window_hours=4)
+            >>> # The output schedule allocates the marketplace state dynamically across the experimental window.
+            ```
     """
 
     def __init__(self, factors: dict, unit_window_hours: int = 2):
@@ -78,4 +82,3 @@ class SwitchbackDesign(DesignMatrix):
         """
         # TODO: Implement switchback crossover matrix allocations
         return pd.DataFrame()
-

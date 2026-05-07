@@ -39,4 +39,3 @@ def check_practical_significance(relative_lift: float, min_valuable_effect: floa
         bool: True if the estimated relative lift meets or exceeds the minimum valuable effect threshold.
     """
     return relative_lift >= min_valuable_effect
-

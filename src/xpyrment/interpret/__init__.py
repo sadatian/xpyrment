@@ -21,4 +21,3 @@ __all__ = [
     "scan_subgroups_for_hte",
     "check_practical_significance",
 ]
-

@@ -31,14 +31,18 @@ def log_transform(df: pd.DataFrame, col: str) -> pd.Series:
     Returns:
         pd.Series: A new pandas Series containing the log-transformed values.
 
-    Example:
-        >>> import pandas as pd
-        >>> df = pd.DataFrame({"revenue": [0.0, 10.0, 150.5]})
-        >>> log_transform(df, "revenue")
-        0    0.000000
-        1    2.397895
-        2    5.020586
-        Name: revenue, dtype: float64
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> import pandas as pd
+            >>> df = pd.DataFrame({"revenue": [0.0, 10.0, 150.5]})
+            >>> log_transform(df, "revenue")
+            0    0.000000
+            1    2.397895
+            2    5.020586
+            Name: revenue, dtype: float64
+            ```
     """
     return np.log1p(df[col])
 
@@ -71,4 +75,3 @@ def delta_normalization(df: pd.DataFrame, col: str) -> pd.Series:
     """
     # TODO: Implement full delta normalization
     return df[col]
-

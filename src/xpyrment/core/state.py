@@ -56,4 +56,3 @@ class ExperimentState(Enum):
     RUNNING = "RUNNING"
     ANALYZED = "ANALYZED"
     REPORTED = "REPORTED"
-

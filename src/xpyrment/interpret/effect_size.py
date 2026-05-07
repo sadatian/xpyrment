@@ -46,4 +46,3 @@ def compute_cohens_d(group_a: np.ndarray, group_b: np.ndarray) -> float:
     if pooled_std > 0:
         return (mean_b - mean_a) / pooled_std
     return 0.0
-

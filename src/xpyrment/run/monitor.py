@@ -65,4 +65,3 @@ class LiveMonitor:
         """
         # TODO: Implement cumulative plotting helper data
         return pd.DataFrame()
-

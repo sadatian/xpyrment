@@ -48,4 +48,3 @@ def calculate_shap_interactions(model: Any, X_data: Any) -> list:
     """
     # TODO: Implement optional shap dependency check and interaction calculation
     return []
-

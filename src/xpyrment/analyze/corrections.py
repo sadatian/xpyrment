@@ -71,4 +71,3 @@ def apply_multiple_testing_correction(
     adjusted_p[mask] = adj
 
     return adjusted_p.tolist()
-

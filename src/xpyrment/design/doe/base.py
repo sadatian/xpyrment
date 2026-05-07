@@ -52,4 +52,3 @@ class DesignMatrix(ABC):
                 factors and rows represent specific experimental runs.
         """
         pass
-

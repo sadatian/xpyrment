@@ -38,17 +38,21 @@ class HypothesisSpec:
             statistical test. Defaults to "two-sided".
         description (str): Text describing the business or scientific hypothesis in natural language.
 
-    Example:
-        >>> from xpyrment.metrics.taxonomy import ProportionMetric
-        >>> from xpyrment.plan.hypothesis import HypothesisSpec
-        >>> conv_metric = ProportionMetric("Conversion Rate", value_col="converted")
-        >>> spec = HypothesisSpec(
-        ...     primary_metric=conv_metric,
-        ...     direction="greater",
-        ...     description="Redesigned checkout button increases conversion rates."
-        ... )
-        >>> spec.direction
-        'greater'
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> from xpyrment.metrics.taxonomy import ProportionMetric
+            >>> from xpyrment.plan.hypothesis import HypothesisSpec
+            >>> conv_metric = ProportionMetric("Conversion Rate", value_col="converted")
+            >>> spec = HypothesisSpec(
+            ...     primary_metric=conv_metric,
+            ...     direction="greater",
+            ...     description="Redesigned checkout button increases conversion rates."
+            ... )
+            >>> spec.direction
+            'greater'
+            ```
     """
 
     def __init__(
@@ -68,4 +72,3 @@ class HypothesisSpec:
         self.primary_metric = primary_metric
         self.direction = direction
         self.description = description
-

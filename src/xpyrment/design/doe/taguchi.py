@@ -50,15 +50,19 @@ class TaguchiDesign(DesignMatrix):
     Attributes:
         array_name (str): The name of the target Taguchi Orthogonal Array (e.g., `"L9"`, `"L18"`, `"L27"`).
 
-    Example:
-        >>> # Selecting an L9 array (supports up to 4 factors at 3 levels)
-        >>> factors = {
-        ...     "temperature": [100, 150, 200],
-        ...     "pressure": [1.0, 1.5, 2.0],
-        ...     "catalyst": [0.01, 0.05, 0.10]
-        ... }
-        >>> design = TaguchiDesign(factors, array_name="L9")
-        >>> # Generated matrix will contain exactly 9 balanced runs.
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Selecting an L9 array (supports up to 4 factors at 3 levels)
+            >>> factors = {
+            ...     "temperature": [100, 150, 200],
+            ...     "pressure": [1.0, 1.5, 2.0],
+            ...     "catalyst": [0.01, 0.05, 0.10]
+            ... }
+            >>> design = TaguchiDesign(factors, array_name="L9")
+            >>> # Generated matrix will contain exactly 9 balanced runs.
+            ```
     """
 
     def __init__(self, factors: dict, array_name: str):
@@ -82,4 +86,3 @@ class TaguchiDesign(DesignMatrix):
         """
         # TODO: Implement Taguchi orthogonal array database selection
         return pd.DataFrame()
-

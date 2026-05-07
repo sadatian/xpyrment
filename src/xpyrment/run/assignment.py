@@ -67,4 +67,3 @@ class AssignmentLogger:
         if df.empty:
             return df
         return df.sort_values("timestamp").drop_duplicates(subset=["unit_id"], keep="first")
-

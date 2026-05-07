@@ -28,15 +28,19 @@ class PreregistrationCard:
         spec (Dict[str, Any]): Structural dictionary outlining the planned experimental parameters.
         hash_signature (str): Cryptographic SHA-256 hash representing the serialized `spec` dictionary.
 
-    Example:
-        >>> spec = {"metric": "conversion_rate", "alpha": 0.05, "target_n": 10000}
-        >>> card = PreregistrationCard("EXP-999", spec)
-        >>> card.hash_signature[:8]
-        '88e6e885'
-        >>> card.verify({"metric": "conversion_rate", "alpha": 0.05, "target_n": 10000})
-        True
-        >>> card.verify({"metric": "conversion_rate", "alpha": 0.10, "target_n": 10000}) # alpha altered!
-        False
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> spec = {"metric": "conversion_rate", "alpha": 0.05, "target_n": 10000}
+            >>> card = PreregistrationCard("EXP-999", spec)
+            >>> card.hash_signature[:8]
+            '88e6e885'
+            >>> card.verify({"metric": "conversion_rate", "alpha": 0.05, "target_n": 10000})
+            True
+            >>> card.verify({"metric": "conversion_rate", "alpha": 0.10, "target_n": 10000}) # alpha altered!
+            False
+            ```
     """
 
     def __init__(self, experiment_id: str, spec: Dict[str, Any]):
@@ -77,4 +81,3 @@ class PreregistrationCard:
             "spec": self.spec,
             "signature": self.hash_signature
         }, indent=2)
-

@@ -56,11 +56,15 @@ class CentralCompositeDesign(DesignMatrix):
         alpha_type (str): Geometric configuration for axial star point distance.
             Options are `"rotatable"`, `"face-centered"`, `"orthogonal"`. Defaults to `"orthogonal"`.
 
-    Example:
-        >>> # Constructing a face-centered CCD for 2 factors
-        >>> factors = {"temp": [100, 200], "pressure": [1.5, 3.0]}
-        >>> design = CentralCompositeDesign(factors, alpha="face-centered")
-        >>> # The coded levels generated will be -1 (low), 0 (midpoint), +1 (high).
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Constructing a face-centered CCD for 2 factors
+            >>> factors = {"temp": [100, 200], "pressure": [1.5, 3.0]}
+            >>> design = CentralCompositeDesign(factors, alpha="face-centered")
+            >>> # The coded levels generated will be -1 (low), 0 (midpoint), +1 (high).
+            ```
     """
 
     def __init__(self, factors: dict, alpha: str = "orthogonal"):
@@ -85,4 +89,3 @@ class CentralCompositeDesign(DesignMatrix):
         """
         # TODO: Implement CCD factorial, axial, and center points generation
         return pd.DataFrame()
-

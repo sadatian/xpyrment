@@ -72,4 +72,3 @@ class BayesianInference:
         """
         # TODO: Implement conjugate Bayesian engines (Beta-Binomial, Normal-IG, Gamma-Poisson)
         return {}
-

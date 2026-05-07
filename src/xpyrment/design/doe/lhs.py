@@ -57,11 +57,15 @@ class LatinHypercubeDesign(DesignMatrix):
     Attributes:
         num_samples (int): The exact number of samples (runs) to draw.
 
-    Example:
-        >>> # Drawing 50 space-filling points to explore temperature and speed bounds
-        >>> factors = {"temp": [100, 500], "speed": [0, 100]}
-        >>> design = LatinHypercubeDesign(factors, num_samples=50)
-        >>> # The generated DataFrame will contain 50 runs covering the entire rectangular region.
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Drawing 50 space-filling points to explore temperature and speed bounds
+            >>> factors = {"temp": [100, 500], "speed": [0, 100]}
+            >>> design = LatinHypercubeDesign(factors, num_samples=50)
+            >>> # The generated DataFrame will contain 50 runs covering the entire rectangular region.
+            ```
     """
 
     def __init__(self, factors: dict, num_samples: int):
@@ -85,4 +89,3 @@ class LatinHypercubeDesign(DesignMatrix):
         """
         # TODO: Implement LHS random/maximim stratification
         return pd.DataFrame()
-

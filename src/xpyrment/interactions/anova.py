@@ -55,4 +55,3 @@ def run_factorial_anova(df: pd.DataFrame, formula: str) -> pd.DataFrame:
     """
     # TODO: Implement statsmodels OLS and anova_lm integration
     return pd.DataFrame()
-

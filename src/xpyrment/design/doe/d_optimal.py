@@ -48,11 +48,15 @@ class DOptimalDesign(DesignMatrix):
     Attributes:
         num_runs (int): The exact target trial budget (number of runs in the final matrix).
 
-    Example:
-        >>> # Planning a 12-run custom design for 3 factors with safety constraints
-        >>> factors = {"temp": [100, 150, 200], "speed": [10, 20, 30]}
-        >>> design = DOptimalDesign(factors, num_runs=12)
-        >>> # The generated DataFrame will contain exactly 12 runs, maximizing parameter estimation power.
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Planning a 12-run custom design for 3 factors with safety constraints
+            >>> factors = {"temp": [100, 150, 200], "speed": [10, 20, 30]}
+            >>> design = DOptimalDesign(factors, num_runs=12)
+            >>> # The generated DataFrame will contain exactly 12 runs, maximizing parameter estimation power.
+            ```
     """
 
     def __init__(self, factors: dict, num_runs: int):
@@ -76,4 +80,3 @@ class DOptimalDesign(DesignMatrix):
         """
         # TODO: Implement D-optimal coordinate exchange algorithm
         return pd.DataFrame()
-

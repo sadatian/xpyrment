@@ -27,10 +27,14 @@ class PhaseOrderError(Exception):
     Attributes:
         message (str): Explains the invalid state transition attempt and the active state.
 
-    Example:
-        >>> from xpyrment.core.state import ExperimentState
-        >>> from xpyrment.core.exceptions import PhaseOrderError
-        >>> raise PhaseOrderError("Cannot transition backwards from RUNNING to PLANNED.")
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> from xpyrment.core.state import ExperimentState
+            >>> from xpyrment.core.exceptions import PhaseOrderError
+            >>> raise PhaseOrderError("Cannot transition backwards from RUNNING to PLANNED.")
+            ```
     """
     pass
 
@@ -94,4 +98,3 @@ class AliasError(Exception):
         message (str): Details the confounded factors or resolution constraint violated.
     """
     pass
-

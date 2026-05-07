@@ -55,4 +55,3 @@ def scan_subgroups_for_hte(df: pd.DataFrame, treatment_col: str, metric_col: str
     """
     # TODO: Implement causal tree or subgroup t-test sweep
     return {}
-

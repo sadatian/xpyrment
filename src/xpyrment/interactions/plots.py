@@ -39,4 +39,3 @@ def plot_interaction_heatmap(df_interactions: pd.DataFrame) -> tuple:
     # TODO: Implement plotting code
     fig, ax = plt.subplots()
     return fig, ax
-

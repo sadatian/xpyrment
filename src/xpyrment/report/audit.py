@@ -65,4 +65,3 @@ class AuditTrail:
             List[Dict[str, str]]: A list of dictionary objects representing the serialized ledger blocks.
         """
         return self.logs
-

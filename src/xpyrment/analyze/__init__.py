@@ -34,4 +34,3 @@ __all__ = [
     "apply_multiple_testing_correction",
     "inference",
 ]
-

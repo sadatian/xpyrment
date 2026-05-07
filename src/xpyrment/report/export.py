@@ -198,4 +198,3 @@ def plot_power_curve(
 
     plt.tight_layout()
     return fig, ax
-

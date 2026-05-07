@@ -220,4 +220,3 @@ def setup(
 
     exp = Experiment(data, treatment_col, id_col)
     return exp
-

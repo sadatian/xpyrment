@@ -54,4 +54,3 @@ def stratified_randomization(df: pd.DataFrame, strata_cols: list) -> pd.DataFram
     """
     # TODO: Implement full stratified assignment
     return df
-

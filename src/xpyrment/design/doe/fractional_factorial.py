@@ -56,14 +56,18 @@ class FractionalFactorialDesign(DesignMatrix):
     Attributes:
         generator_string (str): Defining relation generator string, such as `"E=ABCD"` or `"E=AB, F=AC"`.
 
-    Example:
-        >>> # Planning a 2^{5-1} resolution V design
-        >>> # Base factors are A, B, C, D. E is generated as ABCD.
-        >>> factors = {
-        ...     "A": [10, 20], "B": [0, 1], "C": [-1, 1], "D": [5, 10], "E": [100, 200]
-        ... }
-        >>> design = FractionalFactorialDesign(factors, generator_string="E = ABCD")
-        >>> # In the generated DataFrame, we will have 2^(5-1) = 16 runs instead of 32.
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Planning a 2^{5-1} resolution V design
+            >>> # Base factors are A, B, C, D. E is generated as ABCD.
+            >>> factors = {
+            ...     "A": [10, 20], "B": [0, 1], "C": [-1, 1], "D": [5, 10], "E": [100, 200]
+            ... }
+            >>> design = FractionalFactorialDesign(factors, generator_string="E = ABCD")
+            >>> # In the generated DataFrame, we will have 2^(5-1) = 16 runs instead of 32.
+            ```
     """
 
     def __init__(self, factors: dict, generator_string: str):
@@ -88,4 +92,3 @@ class FractionalFactorialDesign(DesignMatrix):
         """
         # TODO: Implement generator parsing and fractional matrix construction
         return pd.DataFrame()
-

@@ -23,17 +23,21 @@ class ExperimentRegistry:
         _registry (Dict[str, Dict[str, Any]]): Internal store mapping experiment IDs to their
             registered specification dictionaries and pre-computed hashes.
 
-    Example:
-        >>> registry = ExperimentRegistry()
-        >>> spec = {"primary_metric": "conversion_rate", "alpha": 0.05, "target_n": 10000}
-        >>> spec_hash = registry.register_spec("EXP-101", spec)
-        >>> len(spec_hash)
-        64
-        >>> registry.verify_spec("EXP-101", spec)
-        True
-        >>> modified_spec = {"primary_metric": "conversion_rate", "alpha": 0.10, "target_n": 10000}
-        >>> registry.verify_spec("EXP-101", modified_spec)
-        False
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> registry = ExperimentRegistry()
+            >>> spec = {"primary_metric": "conversion_rate", "alpha": 0.05, "target_n": 10000}
+            >>> spec_hash = registry.register_spec("EXP-101", spec)
+            >>> len(spec_hash)
+            64
+            >>> registry.verify_spec("EXP-101", spec)
+            True
+            >>> modified_spec = {"primary_metric": "conversion_rate", "alpha": 0.10, "target_n": 10000}
+            >>> registry.verify_spec("EXP-101", modified_spec)
+            False
+            ```
     """
 
     def __init__(self):
@@ -89,4 +93,3 @@ class ExperimentRegistry:
         current_hash = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
         return current_hash == self._registry[experiment_id]["hash"]
-

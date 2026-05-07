@@ -58,9 +58,13 @@ class DefinitiveScreeningDesign(DesignMatrix):
             8. Return DataFrame.
         ```
 
-    Example:
-        >>> # If we have k=4 factors, a full factorial 3-level design requires 3^4 = 81 runs.
-        >>> # A DSD requires only 2(4) + 1 = 9 runs! It can still identify active quadratic curvature terms.
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # If we have k=4 factors, a full factorial 3-level design requires 3^4 = 81 runs.
+            >>> # A DSD requires only 2(4) + 1 = 9 runs! It can still identify active quadratic curvature terms.
+            ```
     """
 
     def generate(self) -> pd.DataFrame:
@@ -74,4 +78,3 @@ class DefinitiveScreeningDesign(DesignMatrix):
         """
         # TODO: Implement DSD algorithm (using conference matrices)
         return pd.DataFrame()
-

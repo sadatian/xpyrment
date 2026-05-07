@@ -24,4 +24,3 @@ __all__ = [
     "estimate_duration_days",
     "PreregistrationCard",
 ]
-

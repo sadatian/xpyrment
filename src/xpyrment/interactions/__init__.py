@@ -28,4 +28,3 @@ __all__ = [
     "compute_friedman_h_statistic",
     "plot_interaction_heatmap",
 ]
-

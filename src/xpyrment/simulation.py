@@ -176,4 +176,3 @@ def generate_ab_data(
     )
 
     return df
-

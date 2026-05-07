@@ -30,11 +30,15 @@ class TrafficSplitter:
         holdout_percentage (float): Percentage of global traffic completely excluded from selection
             and routed to a static holdout arm. Bounded in $[0, 1]$.
 
-    Example:
-        >>> allocations = {"control": 0.45, "treatment": 0.45}
-        >>> splitter = TrafficSplitter(allocations=allocations, holdout_percentage=0.10)
-        >>> splitter.holdout_percentage
-        0.1
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> allocations = {"control": 0.45, "treatment": 0.45}
+            >>> splitter = TrafficSplitter(allocations=allocations, holdout_percentage=0.10)
+            >>> splitter.holdout_percentage
+            0.1
+            ```
     """
 
     def __init__(self, allocations: Dict[str, float], holdout_percentage: float = 0.0):
@@ -81,4 +85,3 @@ class TrafficSplitter:
         """
         # TODO: Implement full ramp-up schedule generator
         return [0.01, 0.10, 0.50, 1.0]
-

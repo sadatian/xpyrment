@@ -50,12 +50,16 @@ def hash_assign(unit_id: Union[str, int], salt: str, variants: List[str]) -> str
     Raises:
         ValueError: If the `variants` list is empty.
 
-    Example:
-        >>> variants = ["control", "variant_a", "variant_b"]
-        >>> hash_assign(unit_id="user_12345", salt="EXP-201_checkout_revamp", variants=variants)
-        'variant_a'
-        >>> hash_assign(unit_id="user_12345", salt="EXP-202_price_test", variants=variants) # Orthogonal salt
-        'control'
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> variants = ["control", "variant_a", "variant_b"]
+            >>> hash_assign(unit_id="user_12345", salt="EXP-201_checkout_revamp", variants=variants)
+            'variant_a'
+            >>> hash_assign(unit_id="user_12345", salt="EXP-202_price_test", variants=variants) # Orthogonal salt
+            'control'
+            ```
     """
     if not variants:
         raise ValueError("variants list cannot be empty.")
@@ -67,4 +71,3 @@ def hash_assign(unit_id: Union[str, int], salt: str, variants: List[str]) -> str
     hash_val = int(hash_hex[:8], 16)
     idx = hash_val % len(variants)
     return variants[idx]
-

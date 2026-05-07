@@ -47,4 +47,3 @@ def generate_launch_recommendation(p_value: float, relative_lift: float, cost_th
         else:
             return "NO-SHIP: Statistically significant but falls below economic margins."
     return "INCONCLUSIVE: No statistical evidence to assert a positive lift."
-

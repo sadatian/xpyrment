@@ -48,9 +48,13 @@ class MixtureDesign(DesignMatrix):
             4. Return DataFrame.
         ```
 
-    Example:
-        >>> # Constructing a {3, 2} Simplex Lattice design (3 ingredients, quadratic model)
-        >>> # Proportions will be: [1, 0, 0], [0.5, 0.5, 0], [0, 1, 0], [0, 0.5, 0.5], [0, 0, 1], [0.5, 0, 0.5]
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Constructing a {3, 2} Simplex Lattice design (3 ingredients, quadratic model)
+            >>> # Proportions will be: [1, 0, 0], [0.5, 0.5, 0], [0, 1, 0], [0, 0.5, 0.5], [0, 0, 1], [0.5, 0, 0.5]
+            ```
     """
 
     def generate(self) -> pd.DataFrame:
@@ -64,4 +68,3 @@ class MixtureDesign(DesignMatrix):
         """
         # TODO: Implement Simplex Lattice or Simplex Centroid mixture designs
         return pd.DataFrame()
-

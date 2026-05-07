@@ -36,12 +36,16 @@ class StoppingRules:
     Attributes:
         alpha (float): The target Type I error rate (e.g., 0.05).
 
-    Example:
-        >>> # Monitoring a live test with alpha = 0.05
-        >>> rules = StoppingRules(alpha=0.05)
-        >>> # If the calculated likelihood ratio lambda_value crosses 1/alpha = 20.0, we stop early.
-        >>> rules.check_msprt_stop(lambda_value=25.4)
-        True
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Monitoring a live test with alpha = 0.05
+            >>> rules = StoppingRules(alpha=0.05)
+            >>> # If the calculated likelihood ratio lambda_value crosses 1/alpha = 20.0, we stop early.
+            >>> rules.check_msprt_stop(lambda_value=25.4)
+            True
+            ```
     """
 
     def __init__(self, alpha: float = 0.05):
@@ -65,4 +69,3 @@ class StoppingRules:
         # Boundaries typically equal 1 / alpha
         boundary = 1.0 / self.alpha
         return lambda_value > boundary
-

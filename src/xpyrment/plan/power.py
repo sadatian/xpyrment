@@ -165,16 +165,20 @@ def design_experiment(
             not in $(0, 1)$, or correlation not in $[-1, 1]$).
         ValueError: If standard deviation is missing for mean/ratio metrics.
 
-    Example:
-        >>> # Planning a conversion rate proportion test (10% baseline, relative MDE of 5%)
-        >>> result = design_experiment(
-        ...     metric_type="proportion",
-        ...     baseline_value=0.10,
-        ...     mde=0.05,
-        ...     mde_type="relative"
-        ... )
-        >>> int(result.details["sample_size_per_variant"])
-        141258
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Planning a conversion rate proportion test (10% baseline, relative MDE of 5%)
+            >>> result = design_experiment(
+            ...     metric_type="proportion",
+            ...     baseline_value=0.10,
+            ...     mde=0.05,
+            ...     mde_type="relative"
+            ... )
+            >>> int(result.details["sample_size_per_variant"])
+            141258
+            ```
     """
     metric_type = metric_type.lower()
     mde_type = mde_type.lower()

@@ -56,4 +56,3 @@ def run_bootstrap_ci(data_group: np.ndarray, num_resamples: int = 2000, confiden
     """
     # TODO: Implement bootstrap resampler (using percentile or BCa methods)
     return (float(np.percentile(data_group, 2.5)), float(np.percentile(data_group, 97.5)))
-

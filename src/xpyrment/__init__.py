@@ -59,4 +59,3 @@ __all__ = [
     "plot_power_curve",
     "generate_ab_data",
 ]
-

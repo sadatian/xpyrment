@@ -66,4 +66,3 @@ class BoxBehnkenDesign(DesignMatrix):
         """
         # TODO: Implement Box-Behnken matrix builder
         return pd.DataFrame()
-

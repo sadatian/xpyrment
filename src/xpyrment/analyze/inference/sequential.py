@@ -50,4 +50,3 @@ class SequentialInference:
         """
         # TODO: Implement sequential boundary functions (mSPRT or Pocock)
         return (-1.0, 1.0)
-

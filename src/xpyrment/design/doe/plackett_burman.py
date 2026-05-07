@@ -47,9 +47,13 @@ class PlackettBurmanDesign(DesignMatrix):
             6. Return DataFrame.
         ```
 
-    Example:
-        >>> # If we want to screen 10 factors, we can use an N=12 Plackett-Burman design, requiring only 12 runs!
-        >>> # Compare this with a full factorial which would require 2^10 = 1024 runs.
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # If we want to screen 10 factors, we can use an N=12 Plackett-Burman design, requiring only 12 runs!
+            >>> # Compare this with a full factorial which would require 2^10 = 1024 runs.
+            ```
     """
 
     def generate(self) -> pd.DataFrame:
@@ -63,4 +67,3 @@ class PlackettBurmanDesign(DesignMatrix):
         """
         # TODO: Implement Plackett-Burman matrix builder
         return pd.DataFrame()
-

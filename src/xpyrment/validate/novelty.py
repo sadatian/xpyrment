@@ -64,4 +64,3 @@ def check_novelty_effects(df: pd.DataFrame, treatment_col: str, metric_col: str,
     """
     # TODO: Implement time-series slope/interaction checks
     return {}
-

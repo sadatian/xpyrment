@@ -63,4 +63,3 @@ class EVOPDesign(DesignMatrix):
         """
         # TODO: Implement EVOP phase matrix loops
         return pd.DataFrame()
-

@@ -24,4 +24,3 @@ __all__ = [
     "log_transform",
     "delta_normalization",
 ]
-

@@ -73,4 +73,3 @@ class ExperimentCard:
             str: Indented, pretty-printed JSON string of the complete experiment card ledger.
         """
         return json.dumps(self.to_dict(), indent=2)
-

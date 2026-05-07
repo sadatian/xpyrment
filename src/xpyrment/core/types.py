@@ -79,4 +79,3 @@ class MetricResult(TypedDict):
     rel_ci_lower: float
     rel_ci_upper: float
     power: float
-

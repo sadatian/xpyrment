@@ -35,18 +35,22 @@ class Experiment:
         state from `CREATED` to `PLANNED`. Running randomization moves from `PLANNED` to `DESIGNED`.
         Analyzing results requires a transition to `ANALYZED`.
 
-    Example:
-        >>> import pandas as pd
-        >>> from xpyrment import Experiment
-        >>> from xpyrment.metrics.taxonomy import MeanMetric
-        >>> df = pd.DataFrame({"user_id": [1, 2, 3], "group": ["control", "treatment", "control"], "revenue": [10.5, 12.0, 9.5]})
-        >>> exp = Experiment(df, treatment_col="group", id_col="user_id")
-        >>> exp.state
-        <ExperimentState.CREATED: 'CREATED'>
-        >>> metric = MeanMetric("Revenue Metric", value_col="revenue")
-        >>> exp.add_metrics(metric)
-        >>> exp.state
-        <ExperimentState.PLANNED: 'PLANNED'>
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> import pandas as pd
+            >>> from xpyrment import Experiment
+            >>> from xpyrment.metrics.taxonomy import MeanMetric
+            >>> df = pd.DataFrame({"user_id": [1, 2, 3], "group": ["control", "treatment", "control"], "revenue": [10.5, 12.0, 9.5]})
+            >>> exp = Experiment(df, treatment_col="group", id_col="user_id")
+            >>> exp.state
+            <ExperimentState.CREATED: 'CREATED'>
+            >>> metric = MeanMetric("Revenue Metric", value_col="revenue")
+            >>> exp.add_metrics(metric)
+            >>> exp.state
+            <ExperimentState.PLANNED: 'PLANNED'>
+            ```
     """
 
     def __init__(self, data: pd.DataFrame, treatment_col: str, id_col: Optional[str] = None):
@@ -140,4 +144,3 @@ class Experiment:
             self.transition_to(ExperimentState.PLANNED)
 
         return self
-

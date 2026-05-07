@@ -49,4 +49,3 @@ def ingest_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: An audited, isolated copy of the DataFrame ready for downstream operations.
     """
     return df.copy()
-

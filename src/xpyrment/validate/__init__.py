@@ -22,4 +22,3 @@ __all__ = [
     "check_covariate_balance",
     "check_novelty_effects",
 ]
-

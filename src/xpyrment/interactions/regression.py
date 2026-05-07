@@ -51,4 +51,3 @@ def check_treatment_covariate_interaction(df: pd.DataFrame, treatment_col: str, 
     """
     # TODO: Implement interactive regression model
     return 1.0
-

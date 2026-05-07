@@ -48,4 +48,3 @@ __all__ = [
     "SwitchbackDesign",
     "EVOPDesign",
 ]
-

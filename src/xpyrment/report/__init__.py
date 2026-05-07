@@ -20,4 +20,3 @@ __all__ = [
     "plot_forest",
     "plot_power_curve",
 ]
-

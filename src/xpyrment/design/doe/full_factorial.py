@@ -30,19 +30,23 @@ class FullFactorialDesign(DesignMatrix):
         where $N$ grows exponentially as more factors are added, making them economically or temporally
         unfeasible for large numbers of factors (where fractional designs are preferred).
 
-    Example:
-        >>> # Constructing a 2^2 full factorial design
-        >>> factors = {"temp": [100, 200], "pressure": [1.5, 3.0]}
-        >>> design = FullFactorialDesign(factors)
-        >>> df = design.generate()
-        >>> len(df)
-        4
-        >>> print(df)
-           temp  pressure
-        0   100       1.5
-        1   100       3.0
-        2   200       1.5
-        3   200       3.0
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> # Constructing a 2^2 full factorial design
+            >>> factors = {"temp": [100, 200], "pressure": [1.5, 3.0]}
+            >>> design = FullFactorialDesign(factors)
+            >>> df = design.generate()
+            >>> len(df)
+            4
+            >>> print(df)
+            temp  pressure
+            0   100       1.5
+            1   100       3.0
+            2   200       1.5
+            3   200       3.0
+            ```
     """
 
     def generate(self) -> pd.DataFrame:
@@ -62,4 +66,3 @@ class FullFactorialDesign(DesignMatrix):
 
         df = pd.DataFrame(combinations, columns=keys)
         return df
-

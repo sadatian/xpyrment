@@ -23,14 +23,18 @@ class GuardrailMetric:
         max_allowed_change (float): The maximum tolerated relative change (positive or negative)
             expressed as a fraction (e.g., `0.01` represents a 1% threshold).
 
-    Example:
-        >>> from xpyrment.metrics.taxonomy import MeanMetric
-        >>> from xpyrment.metrics.guardrails import GuardrailMetric
-        >>> latency_metric = MeanMetric("Page Latency", value_col="load_time")
-        >>> guardrail = GuardrailMetric(latency_metric, max_allowed_change=0.02) # 2% max increase
-        >>> calc_result = {"metric_name": "Page Latency", "relative_lift": 0.035} # 3.5% lift (regression)
-        >>> guardrail.check_breach(calc_result)
-        True
+    Examples:
+        ??? example "Examples"
+
+            ```python
+            >>> from xpyrment.metrics.taxonomy import MeanMetric
+            >>> from xpyrment.metrics.guardrails import GuardrailMetric
+            >>> latency_metric = MeanMetric("Page Latency", value_col="load_time")
+            >>> guardrail = GuardrailMetric(latency_metric, max_allowed_change=0.02) # 2% max increase
+            >>> calc_result = {"metric_name": "Page Latency", "relative_lift": 0.035} # 3.5% lift (regression)
+            >>> guardrail.check_breach(calc_result)
+            True
+            ```
     """
 
     def __init__(self, metric: BaseMetric, max_allowed_change: float = 0.01):
@@ -64,4 +68,3 @@ class GuardrailMetric:
         lift = calculation_result.get("relative_lift", 0.0)
         # Breach occurs if metric deteriorates beyond max_allowed_change
         return abs(lift) > self.max_allowed_change
-

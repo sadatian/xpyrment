@@ -75,4 +75,3 @@ class InteractionDetector:
         """
         # TODO: Implement dispatcher
         return {}
-

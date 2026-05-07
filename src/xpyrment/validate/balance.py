@@ -59,4 +59,3 @@ def check_covariate_balance(df: pd.DataFrame, treatment_col: str, covariate_cols
     """
     # TODO: Implement balance checks
     return {}
-
