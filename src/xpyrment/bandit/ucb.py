@@ -9,7 +9,11 @@ import numpy as np
 
 
 class UCB1Bandit:
-    """Implements the classical UCB1 (Upper Confidence Bound) multi-armed bandit algorithm."""
+    """Implements the classical UCB1 (Upper Confidence Bound) multi-armed bandit algorithm.
+
+    # TODO: Support standard-deviation-based variance scaling (UCB1-Tuned) to adapt to reward variability.
+    # TODO: Implement sliding-window UCB versions to better handle non-stationary environments.
+    """
 
     def __init__(self, arms: List[str], c: float = 2.0):
         """Initializes the bandit.

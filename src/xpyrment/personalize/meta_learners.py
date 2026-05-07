@@ -138,7 +138,11 @@ class TLearner:
 
 
 class XLearner:
-    """Cross-model meta-learner for unbalanced Conditional Average Treatment Effect (CATE) estimation."""
+    """Cross-model meta-learner for unbalanced Conditional Average Treatment Effect (CATE) estimation.
+
+    # TODO: Support arbitrary custom base-learner regression estimators instead of strictly RidgeRegressor.
+    # TODO: Implement a logistic regression or other custom propensity score model rather than a constant mean scalar.
+    """
 
     def __init__(self, alpha: float = 1.0):
         """Initializes the X-Learner.

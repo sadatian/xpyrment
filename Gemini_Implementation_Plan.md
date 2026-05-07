@@ -315,8 +315,6 @@ The project utilizes **MkDocs** with the premium, highly aesthetic **Material th
 
 ---
 
-## 6. Implementation Status (Blocks 1 - 6: COMPLETED)
-
 ## 6. Implementation Status (Blocks 1 - 10: COMPLETED)
 
 All elements under Blocks 1 to 10 are **100% completed, fully tested (56 out of 56 passing), and mathematically validated**:
@@ -345,7 +343,78 @@ All elements under Blocks 1 to 10 are **100% completed, fully tested (56 out of 
 
 ---
 
-## 7. Future Work Roadmap (Blocks 1 - 10: COMPLETE!)
+## 7. Developer Instructions & Historical Process Gating Rules
 
-There are no remaining planned blocks. The entire 10-block core architecture of the `xpyrment` industrial-grade experimentation engine is fully completed, tested, documented, and production-ready.
+To maintain high development quality, future implementations of additional blocks (including Blocks 20–30) must strictly adhere to the following core procedures established in prior blocks:
+
+### 🔄 Rule A: Interactive Progress-Gating Update
+* Update this file (`Gemini_Implementation_Plan.md`) immediately after the completion of every block/activity with:
+  1. What was accomplished (files touched, math verified, APIs exposed).
+  2. What must be done next.
+* Ensure no block progresses until the previous step is logged and fully verified.
+
+### 🧪 Rule B: Continuous Validation Verification
+* Proactively execute the test suite (using `pytest`) and compile documentation (using `mkdocs build`) after any code additions or modifications.
+* Ensure zero compilation warnings or test failures before proceeding to subsequent tasks.
+
+### 📝 Rule C: Periodic Incremental Refinement (The "TODO" Rule)
+* **Every 5 blocks completed** (e.g., at Block 5, 10, 15, 20, etc.), you must recursively review every single file that was touched within those blocks.
+* Add **between 1 and 3 highly specific, mathematically sound TODO additions, improvements, or optimization comments** to each touched file to drive evolutionary code quality and future-proof the library.
+
+---
+
+## 8. Strategic Roadmap & Specifications (Blocks 20 - 30: PLANNED)
+
+This section details the analytical, algebraic, and structural specifications for Blocks 20 through 30, scheduled for future enterprise development:
+
+### 📌 Block 20: Cross-Device Graph Randomization & Identity Resolution
+* **Goal**: Solve user session stitching across distinct device identifiers (cookies, mobile advertising IDs, server-side login events) to eliminate cross-arm user leakage.
+* **Mathematical Spec**: Build a graph-based identity resolution registry. Generate unified experimental unit hash IDs by taking the lexicographically first resolved node identifier in a connected entity component.
+
+### 📌 Block 21: Auto-Tuned Hyperparameter Optimization for Adaptive Bandits
+* **Goal**: Automate selection of bandit exploration parameters ($\varepsilon_t$-decay, UCB boundary scale, conjugate priors) to maximize cumulative rewards.
+* **Mathematical Spec**: Execute real-time Bayesian Optimization via Gaussian Process (GP) regressors, maximizing the Expected Improvement (EI) metric over parameter spaces:
+  $$\text{EI}(\mathbf{x}) = (\mu(\mathbf{x}) - f(\mathbf{x}^+))\Phi\left(\frac{\mu(\mathbf{x}) - f(\mathbf{x}^+)}{\sigma(\mathbf{x})}\right) + \sigma(\mathbf{x})\phi\left(\frac{\mu(\mathbf{x}) - f(\mathbf{x}^+)}{\sigma(\mathbf{x})}\right)$$
+
+### 📌 Block 22: Low-Latency Streaming OLS via Woodbury Inverse Updates
+* **Goal**: Fit online multivariable OLS/Ridge adjustments over high-frequency streaming events without recomputing $(X^T X)^{-1}$ matrix inversions from scratch.
+* **Mathematical Spec**: Implement recursive least squares (RLS) leveraging the Woodbury matrix identity:
+  $$(A + \mathbf{u}\mathbf{v}^T)^{-1} = A^{-1} - \frac{A^{-1}\mathbf{u}\mathbf{v}^T A^{-1}}{1 + \mathbf{v}^T A^{-1}\mathbf{u}}$$
+
+### 📌 Block 23: Covariate Balance & Multi-Dimensional Unit Matching
+* **Goal**: Optimize matching quality in observational settings or pre-experimental selections.
+* **Mathematical Spec**: Implement Coarsened Exact Matching (CEM) and Propensity Score Matching (PSM) with Mahalanobis distances:
+  $$d(\mathbf{u}, \mathbf{v}) = \sqrt{(\mathbf{u} - \mathbf{v})^T \mathbf{\Sigma}^{-1} (\mathbf{u} - \mathbf{v})}$$
+
+### 📌 Block 24: High-Dimensional Sparsity & Elastic Net CATE Estimators
+* **Goal**: Uncover individual-level treatment effects (HTE) under sparse, high-dimensional covariate matrices (where $P \gg N$).
+* **Mathematical Spec**: Replace standard Ridge regressors with Elastic Net base-learners combining L1 (Lasso) and L2 (Ridge) penalty surfaces:
+  $$\arg\min_{\mathbf{\beta}} \left\{ \|y - X\mathbf{\beta}\|_2^2 + \alpha_1 \|\mathbf{\beta}\|_1 + \alpha_2 \|\mathbf{\beta}\|_2^2 \right\}$$
+
+### 📌 Block 25: Multi-Factor Fractional ANOVA Confounding Resolvers
+* **Goal**: Decouple confounded interaction effects under sparse fractional factorial designs.
+* **Mathematical Spec**: Construct alias matrices to algebraically isolate main-effect projections from joint $2$-way and $3$-way factor confounding manifolds:
+  $$A = (X_1^T X_1)^{-1} X_1^T X_2$$
+
+### 📌 Block 26: Continuous Adaptive Temporal Crossover (Switchback) Scheduling
+* **Goal**: Optimize temporal and geographic switchback crossover trials to minimize temporal correlation bias.
+* **Mathematical Spec**: Automatically evaluate auto-regressive error structures $AR(p)$ across time units, adjusting washout periods until spatial-temporal covariance matrices stabilize.
+
+### 📌 Block 27: Double Machine Learning (DML) with K-Fold Cross-Fitting
+* **Goal**: Estimate unbiased treatment effects under high-dimensional nuisance parameters (Chernozhukov et al., 2018).
+* **Mathematical Spec**: Implement Robinson's residual-on-residual regression. Compute treatment residuals $\tilde{T} = T - g(X)$ and outcome residuals $\tilde{Y} = Y - m(X)$ using out-of-fold predictions over a $K$-fold cross-fitting partition scheme.
+
+### 📌 Block 28: Cryptographically Secure Federated Experimentation
+* **Goal**: Perform global statistical pooling and variance reductions across isolated user databases without exposing raw records.
+* **Mathematical Spec**: Implement Federated Average (FedAvg) and secure Multi-Party Computation (SMPC) to exchange local gradient states $\mathbf{g}_k$ and encrypted covariance matrices under Paillier homomorphic encryption.
+
+### 📌 Block 29: Synthetic Difference-in-Differences (SDID)
+* **Goal**: Synthesize policy impact measures combining the unit-weighted advantages of Synthetic Controls and time-weighted trends of DiD (Arkhangelsky et al., 2021).
+* **Mathematical Spec**: Estimate unit weights $\omega_i$ and time weights $\lambda_t$ to compute the regularized, doubly weighted SDID estimator:
+  $$\hat{\tau}_{sdid} = \arg\min_{\tau, \mu, \alpha, \beta} \sum_{i=1}^N \sum_{t=1}^T (Y_{it} - \mu - \alpha_i - \beta_t - W_{it} \tau)^2 \omega_i \lambda_t$$
+
+### 📌 Block 30: Large-Scale Distributed Graph Partitioning
+* **Goal**: Detect isolated community boundaries over graphs containing billions of vertices and edges.
+* **Mathematical Spec**: Implement distributed Label Propagation on PySpark or NetworkX running bulk-synchronous parallel message passing, optimized with cluster-size entropy constraints.
+
 

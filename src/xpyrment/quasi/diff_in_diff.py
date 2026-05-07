@@ -49,7 +49,11 @@ def fit_ols(X: np.ndarray, y: np.ndarray) -> Dict[str, Any]:
 
 
 class DifferenceInDifferences:
-    """Estimates the causal impact of a treatment using Difference-in-Differences (DiD)."""
+    """Estimates the causal impact of a treatment using Difference-in-Differences (DiD).
+
+    # TODO: Support incorporating external covariate matrices into OLS adjustments.
+    # TODO: Implement cluster-robust standard errors to handle correlated errors across repeat-measure cohort panels.
+    """
 
     def __init__(self):
         """Initializes the DiD estimator."""

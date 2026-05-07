@@ -10,7 +10,11 @@ from scipy import stats
 
 
 class PCurve:
-    """Analyzes significant p-value distributions to evaluate power and flag gaming/p-hacking."""
+    """Analyzes significant p-value distributions to evaluate power and flag gaming/p-hacking.
+
+    # TODO: Implement analytical estimation of the underlying statistical power curve based on non-central distribution fits.
+    # TODO: Create visualization plots comparing observed significant p-value densities against uniform null curves.
+    """
 
     def __init__(self, p_values: List[float]):
         """Initializes the PCurve analyzer.

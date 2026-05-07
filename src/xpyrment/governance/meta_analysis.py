@@ -10,7 +10,12 @@ from scipy import stats
 
 
 class MetaAnalysis:
-    """Combines point estimates and variances from multiple independent experiments."""
+    """Combines point estimates and variances from multiple independent experiments.
+
+    # TODO: Support alternative random-effects variance estimators (such as Hedges-Olkin or Sidik-Jonkman) to compare against DerSimonian-Laird.
+    # TODO: Implement study-level meta-regression adjustments supporting auxiliary study covariates (e.g., historical run duration).
+    # TODO: Support Trim-and-Fill algorithms to estimate and adjust pooled estimates for funnel plot asymmetry / publication bias.
+    """
 
     def __init__(self, estimates: List[float], variances: List[float]):
         """Initializes the MetaAnalysis estimator.

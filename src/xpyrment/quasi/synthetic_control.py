@@ -9,7 +9,12 @@ from scipy.optimize import minimize
 
 
 class SyntheticControl:
-    """Synthesizes a virtual control unit from a weighted combination of unexposed donor pools."""
+    """Synthesizes a virtual control unit from a weighted combination of unexposed donor pools.
+
+    # TODO: Support optimizing weights on auxiliary predictor covariate matrices in addition to target outcome histories.
+    # TODO: Implement placebo in-space/in-time permutation testing to construct analytical inference p-values.
+    # TODO: Support regularized/penalized Synthetic Control (e.g., L1/L2 weights penalization) to handle high-dimensional donor pools where J > T_pre.
+    """
 
     def __init__(self):
         """Initializes the SyntheticControl estimator."""

@@ -36,7 +36,11 @@ class CausalTreeNode:
 
 
 class CausalTree:
-    """Decision-tree based treatment effect partitioning (Athey & Imbens 2016)."""
+    """Decision-tree based treatment effect partitioning (Athey & Imbens 2016).
+
+    # TODO: Support true honest splitting (partitioning on half the training set, estimating outcomes on the other half).
+    # TODO: Implement randomized feature subspace selection (m_try) at each split to increase forest diversity.
+    """
 
     def __init__(self, max_depth: int = 3, min_samples_leaf: int = 5):
         """Initializes the CausalTree.

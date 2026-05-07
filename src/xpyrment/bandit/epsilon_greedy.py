@@ -9,7 +9,11 @@ import numpy as np
 
 
 class EpsilonGreedyBandit:
-    """Implements standard and decaying Epsilon-Greedy multi-armed bandit algorithms."""
+    """Implements standard and decaying Epsilon-Greedy multi-armed bandit algorithms.
+
+    # TODO: Support a configurable minimum epsilon floor (e.g., min_epsilon=0.01) to prevent exploration from decaying completely to zero.
+    # TODO: Extend with contextual multi-armed bandit variants using online regression base learners.
+    """
 
     def __init__(self, arms: List[str], epsilon: float = 0.1, decay_rate: float = 0.995):
         """Initializes the bandit.

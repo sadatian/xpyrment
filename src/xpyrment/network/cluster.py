@@ -50,7 +50,11 @@ def label_propagation(adjacency: np.ndarray, max_iters: int = 30, seed: Optional
 
 
 class ClusterRandomizer:
-    """Manages graph-based community detection and cluster-level treatment randomizations."""
+    """Manages graph-based community detection and cluster-level treatment randomizations.
+
+    # TODO: Implement modularity-based partitioning (e.g., Louvain or Spectral partitioning) for denser, complex networks.
+    # TODO: Support cluster-size balancing mechanisms to prevent extreme power decay caused by highly asymmetric community structures.
+    """
 
     def __init__(self, adjacency: np.ndarray):
         """Initializes the ClusterRandomizer.

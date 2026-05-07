@@ -9,7 +9,12 @@ import numpy as np
 
 
 class ThompsonSamplingBandit:
-    """Implements Thompson Sampling with support for Beta-Binomial and Normal-Normal models."""
+    """Implements Thompson Sampling with support for Beta-Binomial and Normal-Normal models.
+
+    # TODO: Support Normal-Inverse-Gamma conjugate priors for continuous rewards with unknown variance.
+    # TODO: Implement Dirichlet-Multinomial Thompson Sampling to support categorical/multinomial feedback.
+    # TODO: Implement batched/delayed reward Thompson Sampling updates using Gaussian Process models to handle settings where feedback is slow or clustered.
+    """
 
     def __init__(
         self,

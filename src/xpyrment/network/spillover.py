@@ -9,7 +9,12 @@ import numpy as np
 
 
 class NeighborhoodExposure:
-    """Estimates direct treatment and indirect network spillover effects."""
+    """Estimates direct treatment and indirect network spillover effects.
+
+    # TODO: Support fractional neighborhood exposure thresholds (e.g., classifying nodes as exposed only when >20% of their neighbors are treated).
+    # TODO: Implement bootstrap or Horvitz-Thompson variance solvers to provide standard errors and p-values for DTE and ISE.
+    # TODO: Support multi-hop network exposures (e.g., 2-hop exposures where a node is influenced by friends-of-friends) to capture deeper peer cascades.
+    """
 
     def __init__(self, adjacency: np.ndarray):
         """Initializes the NeighborhoodExposure estimator.
