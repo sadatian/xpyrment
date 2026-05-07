@@ -41,7 +41,12 @@ class TrafficSplitter:
             ```
     """
 
-    def __init__(self, allocations: Dict[str, float], holdout_percentage: float = 0.0):
+    def __init__(
+        self,
+        allocations: Dict[str, float],
+        holdout_percentage: float = 0.0,
+        ramp_schedule: List[float] = None,
+    ):
         """Initializes a new TrafficSplitter container.
 
         Validates that the sum of variant allocations and holdout percentages totals exactly 1.0.
@@ -49,13 +54,16 @@ class TrafficSplitter:
         Args:
             allocations (Dict[str, float]): Mapping of variant labels to active traffic split weights.
             holdout_percentage (float): Fractional traffic diverted into a holdout group. Defaults to 0.0.
+            ramp_schedule (List[float], optional): Custom progressive exposure percentages. Defaults to None.
 
         Raises:
             ValueError: If any individual allocation weight is negative.
             ValueError: If the total allocation weight including the holdout percentage does not sum to 1.0.
+            ValueError: If ramp_schedule has values outside [0.0, 1.0], is non-monotonic, or does not end in 1.0.
         """
         self.allocations = allocations
         self.holdout_percentage = holdout_percentage
+        self.ramp_schedule = ramp_schedule
 
         # Validate bounds
         if holdout_percentage < 0.0 or holdout_percentage > 1.0:
@@ -67,6 +75,21 @@ class TrafficSplitter:
         total_alloc = sum(allocations.values()) + holdout_percentage
         if abs(total_alloc - 1.0) > 1e-5:
             raise ValueError("Total allocations including holdout must equal 1.0.")
+
+        # Validate custom ramp-up schedule if provided
+        if ramp_schedule is not None:
+            if not ramp_schedule:
+                raise ValueError("ramp_schedule list cannot be empty.")
+            for val in ramp_schedule:
+                if val < 0.0 or val > 1.0:
+                    raise ValueError(f"Ramp schedule value '{val}' must be between 0.0 and 1.0.")
+            # Check monotonicity
+            for i in range(len(ramp_schedule) - 1):
+                if ramp_schedule[i] > ramp_schedule[i + 1]:
+                    raise ValueError("Ramp schedule values must be monotonically non-decreasing.")
+            # Must terminate in 1.0
+            if abs(ramp_schedule[-1] - 1.0) > 1e-5:
+                raise ValueError("Ramp schedule must terminate at 1.0 (full exposure).")
 
     def get_ramp_schedule(self) -> List[float]:
         r"""Generates progressive exposure ramp-up schedule coordinates.
@@ -83,5 +106,6 @@ class TrafficSplitter:
         Returns:
             List[float]: Ordered list of target traffic fractions representing progressive exposure stages.
         """
-        # TODO: Implement full ramp-up schedule generator
+        if self.ramp_schedule is not None:
+            return self.ramp_schedule
         return [0.01, 0.10, 0.50, 1.0]

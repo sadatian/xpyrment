@@ -57,6 +57,16 @@ class MixtureDesign(DesignMatrix):
             ```
     """
 
+    def __init__(self, factors: dict, m: int = 2):
+        """Initializes a MixtureDesign.
+
+        Args:
+            factors (dict): Mapping of ingredient factor labels to their low/high levels (usually [0.0, 1.0]).
+            m (int): Simplex Lattice division parameter. Defaults to 2.
+        """
+        super().__init__(factors)
+        self.m = m
+
     def generate(self) -> pd.DataFrame:
         """Generates the Mixture Design matrix.
 
@@ -66,5 +76,28 @@ class MixtureDesign(DesignMatrix):
         Returns:
             pd.DataFrame: A pandas DataFrame containing the Mixture design matrix.
         """
-        # TODO: Implement Simplex Lattice or Simplex Centroid mixture designs
-        return pd.DataFrame()
+        import numpy as np
+
+        k = len(self.factors)
+        keys = list(self.factors.keys())
+
+        # Recursive helper to generate non-negative integer vectors of length k summing to m
+        def get_compositions(num_parts, target_sum):
+            if num_parts == 1:
+                return [[target_sum]]
+            compositions = []
+            for v in range(target_sum + 1):
+                for sub in get_compositions(num_parts - 1, target_sum - v):
+                    compositions.append([v] + sub)
+            return compositions
+
+        compositions = get_compositions(k, self.m)
+        proportions = np.array(compositions) / float(self.m)
+
+        # Scale proportions to actual ingredient boundaries if they are not [0, 1]
+        # (Though usually mixture boundaries are [0.0, 1.0])
+        physical_df = pd.DataFrame(proportions, columns=keys)
+
+        # TODO: Add support for McLean-Anderson or coordinate exchange constraints to handle upper/lower bounds on individual ingredients (e.g., ingredient A must be between 10% and 30%).
+        # TODO: Implement Simplex Centroid designs to supplement Simplex Lattice with interior-point checks.
+        return physical_df

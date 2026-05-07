@@ -65,5 +65,54 @@ class PlackettBurmanDesign(DesignMatrix):
         Returns:
             pd.DataFrame: A pandas DataFrame containing the design matrix.
         """
-        # TODO: Implement Plackett-Burman matrix builder
-        return pd.DataFrame()
+        import numpy as np
+
+        k = len(self.factors)
+        keys = list(self.factors.keys())
+
+        # Standard Plackett-Burman cyclic generators for N-1 columns
+        # N must be a multiple of 4. We find the smallest N >= k + 1.
+        target_N = ((k + 1 + 3) // 4) * 4
+        if target_N < 8:
+            target_N = 8
+
+        generators = {
+            8: [1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0],
+            12: [1.0, 1.0, -1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0, -1.0],
+            16: [1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, -1.0],
+            20: [1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0],
+            24: [1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
+        }
+
+        if target_N not in generators:
+            raise ValueError(
+                f"No standard Plackett-Burman generator sequence available for run size N={target_N}. "
+                "Ensure number of factors k satisfies k <= 23."
+            )
+
+        S = generators[target_N]
+        n_cols = target_N - 1
+
+        # Build (N-1) x (N-1) matrix by cyclic shifting S
+        matrix = np.zeros((n_cols, n_cols))
+        for col_idx in range(n_cols):
+            # Cyclic shift by col_idx positions
+            shifted = S[col_idx:] + S[:col_idx]
+            matrix[:, col_idx] = shifted
+
+        # Append final row of all -1.0s to construct complete N x (N-1) design matrix
+        final_row = np.array([-1.0] * n_cols).reshape(1, -1)
+        coded_matrix = np.vstack([matrix, final_row])
+
+        # Truncate matrix columns to match the actual number of factors requested (k)
+        coded_matrix = coded_matrix[:, :k]
+
+        # Convert coded coordinates to physical coordinates and return as DataFrame
+        physical_df = pd.DataFrame()
+        for idx, col in enumerate(keys):
+            low, high = self.factors[col]
+            mid = (low + high) / 2.0
+            half_range = (high - low) / 2.0
+            physical_df[col] = mid + coded_matrix[:, idx] * half_range
+
+        return physical_df

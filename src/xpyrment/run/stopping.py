@@ -69,3 +69,42 @@ class StoppingRules:
         # Boundaries typically equal 1 / alpha
         boundary = 1.0 / self.alpha
         return lambda_value > boundary
+
+    def calculate_msprt_lambda(
+        self,
+        n: int,
+        mean_diff: float,
+        variance: float,
+        tau: float
+    ) -> float:
+        r"""Calculates the mixture Sequential Probability Ratio Test (mSPRT) likelihood ratio (Lambda_n).
+
+        Mathematical Formulation:
+            $$\Lambda_n = \sqrt{\frac{\sigma^2}{\sigma^2 + n\tau^2}} \exp \left( \frac{n^2 \bar{Y}_n^2 \tau^2}{2\sigma^2(\sigma^2 + n\tau^2)} \right)$$
+
+        Args:
+            n (int): Sample size at the current peeking interval.
+            mean_diff (float): The observed sample mean difference between treatment and control (Y_bar_n).
+            variance (float): The baseline variance of the metric (sigma^2).
+            tau (float): The standard deviation of the mixing distribution (prior expected effect size).
+
+        Returns:
+            float: The calculated mixture likelihood ratio (Lambda_n).
+        """
+        import numpy as np
+
+        if variance <= 0.0 or n <= 0:
+            return 1.0
+
+        tau_sq = tau ** 2
+        if tau_sq == 0.0:
+            return 1.0
+
+        term1 = np.sqrt(variance / (variance + n * tau_sq))
+        exponent = (n ** 2 * (mean_diff ** 2) * tau_sq) / (2.0 * variance * (variance + n * tau_sq))
+        lambda_val = term1 * np.exp(exponent)
+
+        return float(lambda_val)
+
+    # TODO: Add Group Sequential Design boundaries (such as O'Brien-Fleming or Pocock spend functions) for traditional multi-stage peeking.
+    # TODO: Integrate Bayesian sequential early-stopping checks leveraging Expected Loss threshold limits.

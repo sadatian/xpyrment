@@ -52,11 +52,46 @@ class AuditTrail:
             action (str): The action category (e.g., `"PHASE_TRANSITION"`, `"ALLOCATION_MODIFIED"`).
             details (str): Detailed text or JSON payload describing the parameters or user that initiated the change.
         """
+        import hashlib
+
+        timestamp = datetime.datetime.now(datetime.UTC).isoformat()
+        prev_hash = "0" * 64 if len(self.logs) == 0 else self.logs[-1]["hash"]
+
+        # Formulate canonical block string for SHA-256 hashing (t_k || a_k || d_k || h_{k-1})
+        data_str = f"{timestamp}||{action}||{details}||{prev_hash}"
+        current_hash = hashlib.sha256(data_str.encode("utf-8")).hexdigest()
+
         self.logs.append({
-            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "timestamp": timestamp,
             "action": action,
-            "details": details
+            "details": details,
+            "prev_hash": prev_hash,
+            "hash": current_hash
         })
+
+    def verify_integrity(self) -> bool:
+        """Verifies the complete cryptographic chain of the audit trail ledger.
+
+        Returns:
+            bool: True if the hash chain is fully intact and unmodified, False otherwise.
+        """
+        import hashlib
+
+        for i in range(len(self.logs)):
+            block = self.logs[i]
+            expected_prev = "0" * 64 if i == 0 else self.logs[i-1]["hash"]
+
+            if block["prev_hash"] != expected_prev:
+                return False
+
+            # Recalculate block hash
+            data_str = f"{block['timestamp']}||{block['action']}||{block['details']}||{block['prev_hash']}"
+            actual_hash = hashlib.sha256(data_str.encode("utf-8")).hexdigest()
+
+            if block["hash"] != actual_hash:
+                return False
+
+        return True
 
     def get_logs(self) -> List[Dict[str, str]]:
         """Returns the full list of chronological logs in the audit ledger.
@@ -65,3 +100,6 @@ class AuditTrail:
             List[Dict[str, str]]: A list of dictionary objects representing the serialized ledger blocks.
         """
         return self.logs
+
+    # TODO: Add RSA/ECDSA digital signatures to each block to cryptographically bind executed events to specific authorized users.
+    # TODO: Implement a backup automated distributed consensus sync log (such as SQLite-backed replication) for tamper-proof persistence.

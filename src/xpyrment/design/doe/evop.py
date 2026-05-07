@@ -52,14 +52,65 @@ class EVOPDesign(DesignMatrix):
         ```
     """
 
-    def generate(self) -> pd.DataFrame:
+    def generate(
+        self,
+        center_settings: dict = None,
+        deltas: dict = None,
+        num_cycles: int = 3,
+        phase: int = 1
+    ) -> pd.DataFrame:
         """Generates the Evolutionary Operation (EVOP) factor matrix.
 
         Applies tiny operational increments around current baseline settings, constructs
         the replicated factorial cycle matrix, and returns the result.
 
+        Args:
+            center_settings (dict): Target operating center values for each factor.
+            deltas (dict): Tiny perturbation step increments for each factor.
+            num_cycles (int): Number of cycles (replications) to run. Defaults to 3.
+            phase (int): Studying phase identifier. Defaults to 1.
+
         Returns:
             pd.DataFrame: A pandas DataFrame containing the EVOP design matrix.
         """
-        # TODO: Implement EVOP phase matrix loops
-        return pd.DataFrame()
+        import itertools
+        import numpy as np
+
+        k = len(self.factors)
+        keys = list(self.factors.keys())
+
+        # Resolve center settings and perturbation step deltas
+        if center_settings is None:
+            center_settings = {}
+            for col in keys:
+                levels = self.factors[col]
+                center_settings[col] = float(np.mean(levels))
+
+        if deltas is None:
+            deltas = {}
+            for col in keys:
+                deltas[col] = 1.0  # Default small step
+
+        # Standard 2^k factorial corners in coded [-1.0, 1.0] space
+        corners = list(itertools.product([-1.0, 1.0], repeat=k))
+        # Center point coded as 0.0
+        center = [tuple([0.0] * k)]
+        cycle_coded_runs = center + corners  # Run size = 2^k + 1
+
+        rows = []
+        for cycle in range(1, num_cycles + 1):
+            for run in cycle_coded_runs:
+                run_dict = {
+                    "Cycle": cycle,
+                    "Phase": phase
+                }
+                for idx, col in enumerate(keys):
+                    coded_val = run[idx]
+                    # Map coded coordinate back to low-amplitude physical space
+                    physical_val = center_settings[col] + coded_val * deltas[col]
+                    run_dict[col] = physical_val
+                rows.append(run_dict)
+
+        # TODO: Add Box-Hunter evolutionary optimization cycle calculation curves to automatically compute main/interaction effects and errors.
+        # TODO: Integrate automated stopping rules when treatment boundary shift reaches optimum levels (Simplex Evolutionary Operation optimization).
+        return pd.DataFrame(rows)

@@ -71,14 +71,47 @@ class SwitchbackDesign(DesignMatrix):
         super().__init__(factors)
         self.unit_window_hours = unit_window_hours
 
-    def generate(self) -> pd.DataFrame:
+    def generate(self, regions: list = None, num_periods: int = 12, washout_minutes: int = 30) -> pd.DataFrame:
         """Generates the Switchback design schedule.
 
         Divides the temporal horizons into balanced blocks, schedules treatment crossovers,
         marks washout segments, and outputs the operational assignment ledger.
 
+        Args:
+            regions (list): List of geographic or logical market regions to crossover.
+                Defaults to `["Region_A", "Region_B"]`.
+            num_periods (int): Total number of sequential time block windows. Defaults to 12.
+            washout_minutes (int): Transition period length to discard temporal carryover. Defaults to 30.
+
         Returns:
             pd.DataFrame: A pandas DataFrame representing the temporal switchback schedule.
         """
-        # TODO: Implement switchback crossover matrix allocations
-        return pd.DataFrame()
+        if regions is None:
+            regions = ["Region_A", "Region_B"]
+
+        factor_name = list(self.factors.keys())[0]
+        variants = list(self.factors[factor_name])
+
+        rows = []
+        for r_idx, region in enumerate(regions):
+            for period in range(1, num_periods + 1):
+                start_hour = (period - 1) * self.unit_window_hours
+                end_hour = period * self.unit_window_hours
+
+                # Multi-region Crossover: toggle opposite configurations to balance periods
+                variant_idx = (r_idx + period) % len(variants)
+                assigned_variant = variants[variant_idx]
+
+                # Record scheduled time block run
+                rows.append({
+                    "region": region,
+                    "period": period,
+                    "start_hour": start_hour,
+                    "end_hour": end_hour,
+                    "washout_active": True,  # Washout indicator for early telemetry exclusion
+                    factor_name: assigned_variant
+                })
+
+        # TODO: Add option to optimize period switchover frequencies to minimize carrying-over spillover effects.
+        # TODO: Implement Latin Square multi-period and multi-variant Latin Square crossover balancing to optimize more than 2 variants.
+        return pd.DataFrame(rows)

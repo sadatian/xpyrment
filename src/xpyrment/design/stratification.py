@@ -8,7 +8,18 @@ proportionally across all treatment arms, reducing pre-experiment bias and enhan
 import pandas as pd
 
 
-def stratified_randomization(df: pd.DataFrame, strata_cols: list) -> pd.DataFrame:
+import numpy as np
+import pandas as pd
+from typing import List, Optional
+
+
+def stratified_randomization(
+    df: pd.DataFrame,
+    strata_cols: list,
+    variants: Optional[List[str]] = None,
+    treatment_col: str = "variant",
+    random_state: Optional[int] = None,
+) -> pd.DataFrame:
     r"""Performs stratified randomization to ensure balance on continuous/categorical covariates.
 
     In simple randomization, small sample sizes or highly variable covariates can lead to accidental
@@ -31,26 +42,42 @@ def stratified_randomization(df: pd.DataFrame, strata_cols: list) -> pd.DataFram
            This reduces the variance of the treatment effect estimator by removing the variance contribution of the
            stratification covariates.
 
-    Pseudocode for the Algorithm:
-        ```text
-        function stratified_randomization(DataFrame df, List strata_cols, List variants):
-            1. Group df by strata_cols.
-            2. Initialize empty output DataFrame assigned_df.
-            3. For each group G:
-                 a. Generate random uniform vector U of length |G|.
-                 b. Sort group G based on vector U (shuffling).
-                 c. Assign variants sequentially or via hash_assign with group-index salt.
-                 d. Append G to assigned_df.
-            4. Return assigned_df.
-        ```
-
     Args:
         df (pd.DataFrame): The input DataFrame containing experimental units and their covariate values.
         strata_cols (list): List of column names in `df` representing categorical or binned continuous
             covariates to use as stratification factors.
+        variants (Optional[List[str]]): Ordered list of variant labels. Defaults to `["control", "treatment"]`.
+        treatment_col (str): Column name where the assigned variant label will be written. Defaults to `"variant"`.
+        random_state (Optional[int]): Integer seed to initialize local random state generator for reproducibility.
 
     Returns:
         pd.DataFrame: A new DataFrame with treatment assignments balanced across the specified strata.
     """
-    # TODO: Implement full stratified assignment
-    return df
+    if variants is None:
+        variants = ["control", "treatment"]
+
+    if not variants:
+        raise ValueError("variants list cannot be empty.")
+
+    # Instantiate isolated local generator
+    rng = np.random.default_rng(random_state)
+    assigned_df = df.copy()
+    assigned_df[treatment_col] = None
+
+    # Group by the specified strata columns
+    for _, group in assigned_df.groupby(strata_cols):
+        n_group = len(group)
+        if n_group == 0:
+            continue
+        
+        # Generate balanced sequence of variants of length n_group
+        group_assignments = [variants[i % len(variants)] for i in range(n_group)]
+        group_assignments = np.array(group_assignments)
+        
+        # Shuffle assignments using local generator to enforce seeding rules
+        rng.shuffle(group_assignments)
+        
+        # Assign shuffled variant labels back to corresponding rows
+        assigned_df.loc[group.index, treatment_col] = group_assignments
+
+    return assigned_df

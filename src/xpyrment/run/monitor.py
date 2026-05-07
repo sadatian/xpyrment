@@ -53,15 +53,34 @@ class LiveMonitor:
         self.df = df
         self.time_col = time_col
 
-    def get_cumulative_traffic(self) -> pd.DataFrame:
+    def get_cumulative_traffic(self, variant_col: str = "variant", freq: str = "D") -> pd.DataFrame:
         """Calculates cumulative traffic counts over time for each variant.
 
         Processes and groups timestamps, returning a cumulative summation matrix suitable
         for charting and structural allocation audits.
 
+        Args:
+            variant_col (str): Column representing treatment assignment groups. Defaults to "variant".
+            freq (str): Binning frequency (e.g., "h" for Hour, "D" for Day). Defaults to "D".
+
         Returns:
             pd.DataFrame: A pandas DataFrame indexed by time bins, with columns representing
                 variants and cells containing cumulative exposure counts.
         """
-        # TODO: Implement cumulative plotting helper data
-        return pd.DataFrame()
+        binned_df = self.df.copy()
+        binned_df["binned_time"] = pd.to_datetime(binned_df[self.time_col]).dt.floor(freq)
+
+        # Group by binned time and variant, counting unique units
+        unit_col = "unit_id" if "unit_id" in binned_df.columns else binned_df.columns[0]
+        grouped = binned_df.groupby(["binned_time", variant_col])[unit_col].nunique().reset_index()
+
+        # Pivot to place variants as columns
+        pivoted = grouped.pivot(index="binned_time", columns=variant_col, values=unit_col)
+
+        # Fill missing time slots with 0 and compute cumulative sum over time bins
+        cumulative = pivoted.fillna(0.0).cumsum(axis=0)
+
+        return cumulative
+
+    # TODO: Add real-time anomaly detection alerts (such as moving-average threshold alerts) to notify users of sudden traffic drops or abnormal shifts.
+    # TODO: Integrate Slack and Email webhook messaging adapters to broadcast live traffic monitoring reports.

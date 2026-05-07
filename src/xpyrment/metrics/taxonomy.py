@@ -265,7 +265,7 @@ class MeanMetric(BaseMetric):
             var_c = float(np.var(y[c_mask], ddof=1))
             var_t = float(np.var(y[t_mask], ddof=1))
 
-        stats_dict = self._calculate_p_and_ci(
+        stats_dict = self._calculate_stats(
             mean_c=mean_c,
             mean_t=mean_t,
             var_c=var_c,
@@ -531,7 +531,7 @@ class RatioMetric(BaseMetric):
                 var_num_t + (ratio_t**2) * var_den_t - 2 * ratio_t * cov_num_den_t
             )
 
-        stats_dict = self._calculate_p_and_ci(
+        stats_dict = self._calculate_stats(
             mean_c=ratio_c,
             mean_t=ratio_t,
             var_c=var_ratio_c,

@@ -84,5 +84,43 @@ class TaguchiDesign(DesignMatrix):
         Returns:
             pd.DataFrame: A pandas DataFrame containing the Taguchi design matrix.
         """
-        # TODO: Implement Taguchi orthogonal array database selection
-        return pd.DataFrame()
+        import numpy as np
+
+        if self.array_name.upper() != "L9":
+            raise ValueError(
+                f"Taguchi array '{self.array_name}' is not currently implemented. Only 'L9' is supported."
+            )
+
+        # Standard L9 template (coded levels 1, 2, 3)
+        l9_matrix = np.array([
+            [1, 1, 1, 1],
+            [1, 2, 2, 2],
+            [1, 3, 3, 3],
+            [2, 1, 2, 3],
+            [2, 2, 3, 1],
+            [2, 3, 1, 2],
+            [3, 1, 3, 2],
+            [3, 2, 1, 3],
+            [3, 3, 2, 1]
+        ])
+
+        k = len(self.factors)
+        if k > 4:
+            raise ValueError("L9 Orthogonal Array supports at most 4 factors.")
+
+        keys = list(self.factors.keys())
+        physical_df = pd.DataFrame()
+
+        for idx, col in enumerate(keys):
+            levels = self.factors[col]
+            if len(levels) != 3:
+                raise ValueError(
+                    f"Each factor in Taguchi L9 design must have exactly 3 levels. Factor '{col}' has {len(levels)} levels."
+                )
+
+            coded_col = l9_matrix[:, idx]
+            physical_df[col] = [levels[c - 1] for c in coded_col]
+
+        # TODO: Add automatic lookup support for L12, L16, and L18 mixed-level orthogonal arrays.
+        # TODO: Integrate signal-to-noise ratio (SNR) loss analysis plots for parameter robust design.
+        return physical_df

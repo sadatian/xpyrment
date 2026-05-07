@@ -11,24 +11,8 @@ def run_welch_t_test(group_a: np.ndarray, group_b: np.ndarray) -> dict:
     """Performs Welch's t-test for difference of means with unequal variances.
 
     Welch's t-test is a two-sample location test used to test the hypothesis that two populations have equal means
-    ($H_0: \\mu_A = \\mu_B$). Unlike Student's t-test, Welch's t-test does not assume equal variances
-    ($\\sigma_A^2 \\neq \\sigma_B^2$) or equal sample sizes ($N_A \\neq N_B$), making it the standard default
-    for digital and scientific A/B testing.
-
-    Mathematical Representation:
-        Let $\\bar{X}_A$, $\\bar{X}_B$ be sample means, let $s_A^2$, $s_B^2$ be sample variances, and let $N_A$, $N_B$
-        be the sample sizes of Group A (control) and Group B (treatment) respectively.
-        
-        The Welch's t-statistic is computed as:
-        $$t = \\frac{\\bar{X}_B - \\bar{X}_A}{\\sqrt{\\frac{s_A^2}{N_A} + \\frac{s_B^2}{N_B}}}$$
-        
-        The degrees of freedom $\\nu$ are approximated using the **Welch-Satterthwaite Equation**:
-        $$\\nu \\approx \\frac{\\left( \\frac{s_A^2}{N_A} + \\frac{s_B^2}{N_B} \\right)^2}{\\frac{\\left( \\frac{s_A^2}{N_A} \\right)^2}{N_A - 1} + \\frac{\\left( \\frac{s_B^2}{N_B} \\right)^2}{N_B - 1}}$$
-        
-        Under $H_0$, the t-statistic asymptotically follows a Student's t-distribution with $\\nu$ degrees of freedom.
-        The two-sided p-value is:
-        $$p = 2 \\times P(T_{\\nu} \\ge |t|)$$
-        where $T_{\\nu}$ represents the Student's t-distribution random variable.
+    ($H_0: \\mu_A = \\mu_B$). Unlike Student's t-test, Welch's t-test does not assume equal variances,
+    making it the standard default for digital and scientific A/B testing.
 
     Args:
         group_a (np.ndarray): Array of numeric outcomes for control (Group A).
@@ -41,32 +25,55 @@ def run_welch_t_test(group_a: np.ndarray, group_b: np.ndarray) -> dict:
             - `"df"` (float): The approximated Satterthwaite degrees of freedom.
             - `"difference"` (float): Absolute difference between means ($\\bar{X}_B - \\bar{X}_A$).
     """
-    # This is currently implemented inline within taxonomy.py
-    return {}
+    from scipy import stats
+
+    val_a = group_a[~np.isnan(group_a)]
+    val_b = group_b[~np.isnan(group_b)]
+
+    n_a = len(val_a)
+    n_b = len(val_b)
+
+    if n_a < 2 or n_b < 2:
+        return {
+            "t_statistic": 0.0,
+            "p_value": 1.0,
+            "df": float(n_a + n_b - 2),
+            "difference": 0.0
+        }
+
+    mean_a = np.mean(val_a)
+    mean_b = np.mean(val_b)
+    var_a = np.var(val_a, ddof=1)
+    var_b = np.var(val_b, ddof=1)
+
+    se_diff = np.sqrt(var_a / n_a + var_b / n_b)
+    diff = mean_b - mean_a
+
+    if se_diff > 0.0:
+        t_stat = diff / se_diff
+        num = (var_a / n_a + var_b / n_b) ** 2
+        den = ((var_a / n_a) ** 2) / (n_a - 1) + ((var_b / n_b) ** 2) / (n_b - 1)
+        df = num / den if den > 0 else (n_a + n_b - 2)
+        p_val = 2 * (1.0 - stats.t.cdf(np.abs(t_stat), df=df))
+    else:
+        t_stat = 0.0
+        p_val = 1.0
+        df = float(n_a + n_b - 2)
+
+    return {
+        "t_statistic": float(t_stat),
+        "p_value": float(p_val),
+        "df": float(df),
+        "difference": float(diff)
+    }
 
 
 def run_mann_whitney_u(group_a: np.ndarray, group_b: np.ndarray) -> dict:
     """Performs nonparametric Mann-Whitney U test for ordinal or non-normal continuous data.
 
-    The Mann-Whitney U test (also known as the Wilcoxon rank-sum test) evaluates the null hypothesis
-    that the probability that a randomly drawn observation from Group B is larger than a randomly drawn
-    observation from Group A is equal to 0.5 ($H_0: P(Y_B > Y_A) = 0.5$).
-    This test is non-parametric; it does not assume normality, making it extremely robust against extreme outliers
-    and highly skewed distribution shapes typical of digital engagement data (e.g., number of messages sent).
-
-    Mathematical Representation:
-        1. Combine all $N = N_A + N_B$ observations from both groups and rank them in ascending order from 1 to $N$.
-           (In case of ties, assign the average of the ranks).
-        2. Sum the assigned ranks for Group A: $R_A$.
-        3. Compute the U-statistics for each group:
-           $$U_A = N_A N_B + \\frac{N_A(N_A + 1)}{2} - R_A$$
-           $$U_B = N_A N_B - U_A$$
-           $$U = \\min(U_A, \\ U_B)$$
-        4. For large samples ($N_A, N_B > 20$), the distribution of $U$ asymptotically approaches normality:
-           $$Z = \\frac{U - m_U}{\\sigma_U}$$
-           where the mean $m_U$ and standard deviation $\\sigma_U$ are:
-           $$m_U = \\frac{N_A N_B}{2} \\quad \\text{and} \\quad \\sigma_U = \\sqrt{\\frac{N_A N_B (N_A + N_B + 1)}{12}}$$
-           (with adjustments applied to $\\sigma_U$ if there are tied ranks).
+    The Mann-Whitney U test evaluates the null hypothesis that the probability that a randomly drawn
+    observation from Group B is larger than a randomly drawn observation from Group A is equal to 0.5.
+    This test is non-parametric; it does not assume normality, making it extremely robust against extreme outliers.
 
     Args:
         group_a (np.ndarray): Array of numeric outcomes for control (Group A).
@@ -77,5 +84,23 @@ def run_mann_whitney_u(group_a: np.ndarray, group_b: np.ndarray) -> dict:
             - `"u_statistic"` (float): The calculated Mann-Whitney U-value.
             - `"p_value"` (float): The two-sided asymptotic p-value.
     """
-    # TODO: Implement full scipy Mann-Whitney U integration
-    return {}
+    from scipy import stats
+
+    val_a = group_a[~np.isnan(group_a)]
+    val_b = group_b[~np.isnan(group_b)]
+
+    if len(val_a) == 0 or len(val_b) == 0:
+        return {
+            "u_statistic": 0.0,
+            "p_value": 1.0
+        }
+
+    res = stats.mannwhitneyu(val_b, val_a, alternative="two-sided")
+
+    return {
+        "u_statistic": float(res.statistic),
+        "p_value": float(res.pvalue)
+    }
+
+    # TODO: Add Brunner-Munzel test as a robust alternative to Mann-Whitney U when variances are highly unequal.
+    # TODO: Implement Fisher's Exact test and G-test of independence for high-precision categorical conversions.

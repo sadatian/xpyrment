@@ -90,5 +90,53 @@ class FractionalFactorialDesign(DesignMatrix):
             pd.DataFrame: A pandas DataFrame containing the fractional factorial design matrix,
                 using physical factor level units.
         """
-        # TODO: Implement generator parsing and fractional matrix construction
-        return pd.DataFrame()
+        import itertools
+
+        # Parse generator equations (e.g. "E = ABCD, F = BCD" or "E = A * B * C * D")
+        generators = {}
+        for equation in self.generator_string.split(","):
+            if "=" not in equation:
+                continue
+            lhs, rhs = equation.split("=")
+            lhs = lhs.strip()
+            rhs_cleaned = rhs.replace(" ", "").replace("*", "")
+            
+            # Find which of the defined factors are components of this generator
+            components = []
+            for char in rhs_cleaned:
+                if char in self.factors:
+                    components.append(char)
+            generators[lhs] = components
+
+        # Identify base factors (factors that are not generated)
+        base_keys = [k for k in self.factors.keys() if k not in generators]
+        if not base_keys:
+            raise ValueError("All factors cannot be generated; some base factors are required.")
+
+        # Create base full factorial in coded space [-1.0, 1.0]
+        combinations = list(itertools.product([-1.0, 1.0], repeat=len(base_keys)))
+        coded_df = pd.DataFrame(combinations, columns=base_keys)
+
+        # Compute generated columns row-wise
+        for lhs, components in generators.items():
+            if not components:
+                raise ValueError(f"No valid factors found in generator expression for '{lhs}'")
+            
+            # Start with the first component
+            col_val = coded_df[components[0]].copy()
+            for comp in components[1:]:
+                col_val *= coded_df[comp]
+            coded_df[lhs] = col_val
+
+        # Align columns to the original factors ordering
+        coded_df = coded_df[list(self.factors.keys())]
+
+        # Map coded space [-1.0, 1.0] coordinates to actual physical bounds
+        physical_df = pd.DataFrame()
+        for col in self.factors.keys():
+            low, high = self.factors[col]
+            mid = (low + high) / 2.0
+            half_range = (high - low) / 2.0
+            physical_df[col] = mid + coded_df[col] * half_range
+
+        return physical_df

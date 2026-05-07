@@ -1,5 +1,22 @@
+import itertools
+import numpy as np
+import pandas as pd
 import pytest
+
 from xpyrment.plan.power import design_experiment, generate_power_curve_data
+from xpyrment.design.splits import TrafficSplitter
+from xpyrment.design.stratification import stratified_randomization
+from xpyrment.design.doe.fractional_factorial import FractionalFactorialDesign
+from xpyrment.design.doe.ccd import CentralCompositeDesign
+from xpyrment.design.doe.box_behnken import BoxBehnkenDesign
+from xpyrment.design.doe.plackett_burman import PlackettBurmanDesign
+from xpyrment.design.doe.taguchi import TaguchiDesign
+from xpyrment.design.doe.dsd import DefinitiveScreeningDesign
+from xpyrment.design.doe.d_optimal import DOptimalDesign
+from xpyrment.design.doe.lhs import LatinHypercubeDesign
+from xpyrment.design.doe.mixture import MixtureDesign
+from xpyrment.design.doe.switchback import SwitchbackDesign
+from xpyrment.design.doe.evop import EVOPDesign
 
 
 def test_design_experiment_proportion():
@@ -79,3 +96,371 @@ def test_generate_power_curve_data():
     assert "sample_size_per_variant" in curve
     assert "cuped_sample_size_per_variant" in curve
     assert len(curve["mde_relative"]) == 50
+
+
+def test_traffic_splitter_custom_ramp():
+    """Tests TrafficSplitter allocation rules and ramp-up schedule validations."""
+    allocations = {"control": 0.40, "treatment": 0.40}
+    
+    # Valid setup with holdout
+    splitter = TrafficSplitter(allocations=allocations, holdout_percentage=0.20)
+    assert splitter.holdout_percentage == 0.20
+    assert splitter.get_ramp_schedule() == [0.01, 0.10, 0.50, 1.0]
+
+    # Custom valid ramp schedule
+    custom_ramp = [0.05, 0.20, 0.50, 1.0]
+    splitter_custom = TrafficSplitter(allocations=allocations, holdout_percentage=0.20, ramp_schedule=custom_ramp)
+    assert splitter_custom.get_ramp_schedule() == custom_ramp
+
+    # Invalid schedules must raise ValueError
+    with pytest.raises(ValueError):
+        TrafficSplitter(allocations=allocations, holdout_percentage=0.20, ramp_schedule=[0.1, 0.05, 1.0])  # Non-monotonic
+    with pytest.raises(ValueError):
+        TrafficSplitter(allocations=allocations, holdout_percentage=0.20, ramp_schedule=[0.1, 0.5])  # Doesn't end in 1.0
+    with pytest.raises(ValueError):
+        TrafficSplitter(allocations=allocations, holdout_percentage=0.20, ramp_schedule=[-0.1, 1.0])  # Out of bounds
+
+
+def test_stratified_randomization_balance():
+    """Tests that stratified_randomization perfectly balances assignments within strata."""
+    # Create sample dataset with heterogeneous groups
+    data = {
+        "user_id": list(range(1, 101)),
+        "country": ["US"] * 60 + ["EU"] * 40,
+        "device": ["mobile"] * 30 + ["desktop"] * 30 + ["mobile"] * 20 + ["desktop"] * 20,
+    }
+    df = pd.DataFrame(data)
+
+    variants = ["control", "treatment_a", "treatment_b"]
+    assigned_df = stratified_randomization(
+        df=df,
+        strata_cols=["country", "device"],
+        variants=variants,
+        treatment_col="assigned_group",
+        random_state=42
+    )
+
+    # Output row count must match input
+    assert len(assigned_df) == len(df)
+    assert "assigned_group" in assigned_df.columns
+
+    # Verify balance within each stratum combination
+    for (country, device), group in assigned_df.groupby(["country", "device"]):
+        counts = group["assigned_group"].value_counts()
+        # The difference in variant counts inside each homogeneous cohort must be at most 1
+        assert max(counts) - min(counts) <= 1
+
+
+def test_fractional_factorial_generation():
+    """Tests generation of a 2^(5-1) Resolution V Fractional Factorial Design."""
+    factors = {
+        "A": [10.0, 20.0],
+        "B": [0.0, 1.0],
+        "C": [-1.0, 1.0],
+        "D": [5.0, 10.0],
+        "E": [100.0, 200.0]
+    }
+    # Standard generator for 1/2 fraction of 5 factors
+    design = FractionalFactorialDesign(factors, generator_string="E = A * B * C * D")
+    df = design.generate()
+
+    # Size must be 2^(5-1) = 16 runs
+    assert len(df) == 16
+    assert list(df.columns) == ["A", "B", "C", "D", "E"]
+
+    # In coded space, E must be the product of A, B, C, and D
+    # Let's map back to coded space [-1, 1] for verification
+    coded_df = pd.DataFrame()
+    for col in df.columns:
+        low, high = factors[col]
+        coded_df[col] = df[col].map({low: -1.0, high: 1.0})
+
+    expected_E = coded_df["A"] * coded_df["B"] * coded_df["C"] * coded_df["D"]
+    pd.testing.assert_series_equal(coded_df["E"], expected_E, check_names=False)
+
+
+def test_ccd_generation():
+    """Tests face-centered and rotatable central composite designs."""
+    factors = {
+        "temperature": [100.0, 200.0],
+        "pressure": [15.0, 30.0]
+    }
+
+    # CCF (Face-Centered) has alpha = 1.0
+    design_ccf = CentralCompositeDesign(factors, alpha="face-centered")
+    df_ccf = design_ccf.generate()
+
+    # For k=2, N = 2^2 + 2(2) + center points.
+    # Default center points should be 4 (standard for k=2 rotatability/orthogonality balance)
+    assert len(df_ccf) == 12  # 4 cube + 4 star + 4 center
+    
+    # Check that temperature values only consist of 100, 150, and 200 (since alpha=1.0)
+    assert set(df_ccf["temperature"].unique()) == {100.0, 150.0, 200.0}
+
+    # Rotatable CCD has alpha = (N_cube)^(1/4) = 4^(1/4) = 1.4142...
+    design_rot = CentralCompositeDesign(factors, alpha="rotatable")
+    df_rot = design_rot.generate()
+    assert len(df_rot) == 12
+
+    # In rotatable, star points exceed the original bounds
+    temps = df_rot["temperature"].unique()
+    assert len(temps) == 5  # low-star, low, mid, high, high-star
+    assert min(temps) < 100.0
+    assert max(temps) > 200.0
+
+
+def test_bbd_generation():
+    """Tests Box-Behnken Design generation constraints and shape."""
+    factors = {
+        "A": [10.0, 20.0],
+        "B": [100.0, 200.0],
+        "C": [0.1, 0.5]
+    }
+
+    design = BoxBehnkenDesign(factors)
+    df = design.generate()
+
+    # For k=3 factors: N = 2*3*(2) + center points. Default centers = 3
+    # N = 12 + 3 = 15 runs
+    assert len(df) == 15
+    assert list(df.columns) == ["A", "B", "C"]
+
+    # Verify that no run has all extreme high/low levels simultaneously
+    # (Box-Behnken does not have corner points, i.e., no row where absolute coded value of all columns is 1)
+    for _, row in df.iterrows():
+        coded_values = []
+        for col in df.columns:
+            low, high = factors[col]
+            mid = (low + high) / 2
+            if pytest.approx(row[col]) == low:
+                coded_values.append(-1.0)
+            elif pytest.approx(row[col]) == high:
+                coded_values.append(1.0)
+            elif pytest.approx(row[col]) == mid:
+                coded_values.append(0.0)
+        
+        # At least one factor must be at its center level (0.0) for every single run
+        assert 0.0 in coded_values
+
+
+def test_plackett_burman_generation():
+    """Tests Plackett-Burman Design matrix generation and orthogonality."""
+    factors = {
+        f"factor_{i}": [0.0, 10.0] for i in range(1, 11)  # 10 factors
+    }
+
+    # Since 10 factors are requested, smallest N multiple of 4 is N=12
+    design = PlackettBurmanDesign(factors)
+    df = design.generate()
+
+    assert len(df) == 12
+    assert len(df.columns) == 10
+
+    # Ensure all values are strictly low (0.0) or high (10.0)
+    for col in df.columns:
+        assert set(df[col].unique()).issubset({0.0, 10.0})
+
+    # Let's verify column orthogonality in coded space [-1, 1]
+    coded_df = pd.DataFrame()
+    for col in df.columns:
+        low, high = factors[col]
+        coded_df[col] = df[col].map({low: -1.0, high: 1.0})
+
+    # Columns must be orthogonal, i.e., dot product of any two distinct columns is zero (or close)
+    for col_a, col_b in itertools.combinations(df.columns, 2):
+        dot_product = np.dot(coded_df[col_a], coded_df[col_b])
+        assert abs(dot_product) < 1e-5
+
+
+def test_taguchi_generation():
+    """Tests Taguchi Design L9 orthogonal array correctness and pair balance."""
+    factors = {
+        "A": [1.0, 2.0, 3.0],
+        "B": [10.0, 20.0, 30.0],
+        "C": [100.0, 200.0, 300.0],
+        "D": [0.1, 0.2, 0.3],
+    }
+
+    design = TaguchiDesign(factors, array_name="L9")
+    df = design.generate()
+
+    # L9 array must have exactly 9 runs and 4 columns
+    assert len(df) == 9
+    assert len(df.columns) == 4
+
+    # Mathematical property: Orthogonality (Pair-wise balance)
+    # For any two columns, all 9 combinations of levels (1-3) must appear exactly once
+    for col_a, col_b in itertools.combinations(df.columns, 2):
+        pairs = list(zip(df[col_a], df[col_b]))
+        assert len(pairs) == 9
+        assert len(set(pairs)) == 9  # Unique count must be 9
+
+
+def test_dsd_generation():
+    """Tests Definitive Screening Design (DSD) linear orthogonality and fold-over symmetry."""
+    # Test even number of factors (k=4 -> N = 2k + 1 = 9 runs)
+    factors_even = {f"F{i}": [-1.0, 1.0] for i in range(1, 5)}
+    design_even = DefinitiveScreeningDesign(factors_even)
+    df_even = design_even.generate()
+    assert len(df_even) == 9
+
+    # Test odd number of factors (k=5 -> N = 2k + 3 = 13 runs)
+    factors_odd = {f"F{i}": [-1.0, 1.0] for i in range(1, 6)}
+    design_odd = DefinitiveScreeningDesign(factors_odd)
+    df_odd = design_odd.generate()
+    assert len(df_odd) == 13
+
+    # Map odd factors to coded space for algebraic verification
+    coded_df = pd.DataFrame()
+    for col in df_odd.columns:
+        low, high = factors_odd[col]
+        mid = (low + high) / 2
+        half_range = (high - low) / 2
+        coded_df[col] = (df_odd[col] - mid) / half_range
+
+    # 1. Verification of Main Effects Orthogonality
+    # Sum of dot product of distinct columns in coded space must be exactly 0.0
+    for col_a, col_b in itertools.combinations(coded_df.columns, 2):
+        dot_product = np.dot(coded_df[col_a], coded_df[col_b])
+        assert abs(dot_product) < 1e-10
+
+    # 2. Verification of Fold-Over Symmetry
+    # For every row except the center point (all zeros), there must be a corresponding
+    # row that is its exact sign-inverted opposite
+    non_center_rows = coded_df[(coded_df != 0).any(axis=1)]
+    center_rows = coded_df[(coded_df == 0).all(axis=1)]
+    assert len(center_rows) == 1  # Exactly one center point
+
+    for idx, row in non_center_rows.iterrows():
+        opposite = -row
+        found = False
+        for o_idx, o_row in non_center_rows.iterrows():
+            if np.allclose(opposite, o_row):
+                found = True
+                break
+        assert found, f"Fold-over opposite not found for row: {row.tolist()}"
+
+
+def test_d_optimal_generation():
+    """Tests D-Optimal Coordinate Exchange optimization and singularity checks."""
+    factors = {
+        "temperature": [100.0, 150.0, 200.0],
+        "speed": [10.0, 20.0, 30.0],
+        "load": [5.0, 10.0, 15.0]
+    }
+    num_runs = 12
+    design = DOptimalDesign(factors, num_runs=num_runs)
+    df = design.generate()
+
+    assert len(df) == num_runs
+    assert list(df.columns) == ["temperature", "speed", "load"]
+
+    # Verify that X^T X is non-singular
+    # Build linear design matrix X (including an intercept column)
+    X = np.hstack([np.ones((num_runs, 1)), df.values])
+    information_matrix = np.dot(X.T, X)
+    det = np.linalg.det(information_matrix)
+    
+    # Determinant must be strictly positive (non-singular design)
+    assert det > 1e-5
+
+
+def test_lhs_generation():
+    """Tests Latin Hypercube Sampling projection property (1 sample per interval)."""
+    factors = {
+        "X1": [10.0, 50.0],
+        "X2": [100.0, 200.0]
+    }
+    num_samples = 20
+    design = LatinHypercubeDesign(factors, num_samples=num_samples)
+    df = design.generate()
+
+    assert len(df) == num_samples
+
+    # Mathematically verify the LHS projection property:
+    # If we divide the range of each factor into N equal intervals,
+    # each interval must contain exactly one point.
+    for col in df.columns:
+        low, high = factors[col]
+        intervals = np.linspace(low, high, num_samples + 1)
+        counts = []
+        for i in range(num_samples):
+            # Check how many points fall into interval [intervals[i], intervals[i+1]]
+            pt_count = df[col].between(intervals[i] - 1e-9, intervals[i+1] + 1e-9).sum()
+            counts.append(pt_count)
+        
+        # Every interval must contain exactly 1 point
+        assert set(counts) == {1}
+
+
+def test_mixture_generation():
+    """Tests Mixture Design simplex lattice and sum-to-one constraint."""
+    factors = {
+        "water": [0.0, 1.0],
+        "oil": [0.0, 1.0],
+        "emulsifier": [0.0, 1.0]
+    }
+    
+    design = MixtureDesign(factors)
+    df = design.generate()
+
+    # The sum of ingredients in every run must be exactly 1.0
+    for _, row in df.iterrows():
+        total = sum(row)
+        assert pytest.approx(total) == 1.0
+
+    # Every component must be non-negative
+    assert (df >= 0.0).all().all()
+    assert (df <= 1.0).all().all()
+
+
+def test_switchback_generation():
+    """Tests Switchback Design crossover balancing and washout flags."""
+    factors = {
+        "dispatch_algorithm": ["greedy", "predictive"]
+    }
+    design = SwitchbackDesign(factors, unit_window_hours=4)
+    regions = ["Region_A", "Region_B"]
+    df = design.generate(regions=regions, num_periods=8, washout_minutes=30)
+
+    # Output columns: region, period, start_hour, end_hour, washout_active, dispatch_algorithm
+    assert "region" in df.columns
+    assert "period" in df.columns
+    assert "washout_active" in df.columns
+    assert "dispatch_algorithm" in df.columns
+
+    # Verify that the total number of rows matches regions * periods
+    assert len(df) == len(regions) * 8
+
+    # Verify crossover balance: across regions, dispatch algorithms are switched
+    for period in range(1, 9):
+        period_df = df[df["period"] == period]
+        assert len(period_df) == 2
+        # Algorithms should be opposite (crossover) to prevent systematic temporal bias
+        variants = period_df["dispatch_algorithm"].tolist()
+        assert set(variants) == {"greedy", "predictive"}
+
+
+def test_evop_generation():
+    """Tests Evolutionary Operation (EVOP) tiny perturbations around baseline."""
+    # current settings are A=150.0, B=50.0. Tiny steps are delta_A=5.0, delta_B=2.0
+    factors = {
+        "temperature": [150.0],  # Center level
+        "pressure": [50.0]       # Center level
+    }
+
+    # Custom deltas passed for tiny perturbations
+    design = EVOPDesign(factors)
+    # Generate 3 cycles for Phase 1
+    df = design.generate(center_settings={"temperature": 150.0, "pressure": 50.0}, deltas={"temperature": 5.0, "pressure": 2.0}, num_cycles=3)
+
+    # 2 factors -> 2^2 + 1 = 5 runs per cycle. 3 cycles -> 15 runs
+    assert len(df) == 15
+    assert "Cycle" in df.columns
+    assert "Phase" in df.columns
+
+    # Check bounds of temperature (must strictly be within [145.0, 155.0])
+    assert set(df["temperature"].unique()) == {145.0, 150.0, 155.0}
+    assert set(df["pressure"].unique()) == {48.0, 50.0, 52.0}
+
+

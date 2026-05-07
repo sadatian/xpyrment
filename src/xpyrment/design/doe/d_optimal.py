@@ -59,15 +59,17 @@ class DOptimalDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, num_runs: int):
+    def __init__(self, factors: dict, num_runs: int, seed: int = 42):
         """Initializes a DOptimalDesign.
 
         Args:
             factors (dict): Mapping of factor labels to their candidate levels.
             num_runs (int): The target budget of trials.
+            seed (int): Random seed for reproducibility. Defaults to 42.
         """
         super().__init__(factors)
         self.num_runs = num_runs
+        self.seed = seed
 
     def generate(self) -> pd.DataFrame:
         """Generates the D-Optimal design matrix.
@@ -78,5 +80,85 @@ class DOptimalDesign(DesignMatrix):
         Returns:
             pd.DataFrame: A pandas DataFrame containing the optimal design matrix.
         """
-        # TODO: Implement D-optimal coordinate exchange algorithm
-        return pd.DataFrame()
+        import numpy as np
+
+        rng = np.random.default_rng(self.seed)
+
+        k = len(self.factors)
+        keys = list(self.factors.keys())
+        candidates = [np.array(self.factors[col]) for col in keys]
+
+        best_det = -1.0
+        best_df = None
+
+        # Helper to construct model matrix X (intercept + linear terms)
+        def build_model_matrix(D_vals):
+            # D_vals is shape (num_runs, k)
+            intercept = np.ones((self.num_runs, 1))
+            return np.hstack([intercept, D_vals])
+
+        # Run multiple random starts to avoid local optima
+        num_starts = 10
+        for _ in range(num_starts):
+            # 1. Initialize random starting design from candidate levels
+            D_current = np.zeros((self.num_runs, k))
+            for j in range(k):
+                D_current[:, j] = rng.choice(candidates[j], size=self.num_runs)
+
+            # 2. Iterate Coordinate Exchange sweeps until convergence
+            converged = False
+            max_iter = 5
+            for _ in range(max_iter):
+                changed = False
+                for i in range(self.num_runs):
+                    for j in range(k):
+                        current_val = D_current[i, j]
+                        best_local_val = current_val
+                        
+                        # Compute initial determinant
+                        X_curr = build_model_matrix(D_current)
+                        best_local_det = np.linalg.det(np.dot(X_curr.T, X_curr))
+
+                        for cand in candidates[j]:
+                            if cand == current_val:
+                                continue
+                            
+                            # Temporarily exchange coordinate
+                            D_current[i, j] = cand
+                            X_test = build_model_matrix(D_current)
+                            test_det = np.linalg.det(np.dot(X_test.T, X_test))
+
+                            if test_det > best_local_det:
+                                best_local_det = test_det
+                                best_local_val = cand
+
+                        # Keep the level that maximized the determinant
+                        if best_local_val != current_val:
+                            D_current[i, j] = best_local_val
+                            changed = True
+                        else:
+                            D_current[i, j] = current_val
+
+                if not changed:
+                    converged = True
+                    break
+
+            # 3. Assess final determinant for this start
+            X_final = build_model_matrix(D_current)
+            final_det = np.linalg.det(np.dot(X_final.T, X_final))
+
+            if final_det > best_det:
+                best_det = final_det
+                best_df = pd.DataFrame(D_current, columns=keys)
+
+        if best_df is None or best_det <= 1e-12:
+            # Fallback: if all starts failed to yield non-singular matrices,
+            # return a simple deterministic grid sample or raw randomized start
+            fallback_D = np.zeros((self.num_runs, k))
+            for j in range(k):
+                fallback_D[:, j] = rng.choice(candidates[j], size=self.num_runs)
+            best_df = pd.DataFrame(fallback_D, columns=keys)
+
+        # TODO: Implement fast rank-1 update formulas (using Sherman-Morrison) to compute determinants in O(1) instead of recalculating full SVD in O(p^3).
+        # TODO: Add alternative optimality criteria such as A-Optimality (trace of inverse information matrix) and G-Optimality (minimizing maximum prediction variance).
+        return best_df

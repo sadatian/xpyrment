@@ -168,3 +168,5 @@ cython_debug/
 ehthumbs.db
 Thumbs.db
 desktop.ini
+docstring_reference.txt
+docstring_reference.md

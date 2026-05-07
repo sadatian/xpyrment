@@ -12,7 +12,7 @@ def check_covariate_balance(df: pd.DataFrame, treatment_col: str, covariate_cols
     r"""Computes Normalized Differences and t-tests to evaluate balance of pre-period covariates.
 
     Verifies that pre-period characteristics are distributed symmetrically across treatment arms.
-    While simple t-tests can be used, they are highly sensitive in large online datasets: with millions of units,
+    While simple t-tests can be used, they are highly sensitive in online datasets: with large footprints,
     extremely tiny, practically negligible differences will yield highly significant p-values ($p < 0.05$).
     Therefore, we compute **Standardized Mean Differences (SMD)** as the primary effect size metric.
 
@@ -21,32 +21,8 @@ def check_covariate_balance(df: pd.DataFrame, treatment_col: str, covariate_cols
            Let $\bar{X}_T$ and $\bar{X}_C$ be the sample means of a covariate $X$ in the treatment and control groups,
            and let $s_T^2$ and $s_C^2$ be their sample variances.
            $$\text{SMD} = \frac{\bar{X}_T - \bar{X}_C}{\sqrt{\frac{s_T^2 + s_C^2}{2}}}$$
-           Standard Heuristics:
-           - $\text{SMD} \le 0.05$: Excellent, near-perfect balance.
-           - $\text{SMD} \le 0.10$: Standard industry threshold for acceptable balance.
-           - $\text{SMD} > 0.10$: Indication of covariate imbalance, suggesting potential selection bias or routing issues.
         2. **Pearson Chi-Square Test for Independence** for categorical covariates:
-           Evaluates whether the proportion of units in each category (e.g. country, browser) is independent of
-           the treatment assignment.
-           $$\chi^2 = \sum_{i=1}^{r} \sum_{j=1}^{c} \frac{(O_{i,j} - E_{i,j})^2}{E_{i,j}}$$
-           where $O_{i,j}$ is the observed count, and $E_{i,j}$ is the expected count under the independence hypothesis.
-
-    Pseudocode for the Algorithm:
-        ```text
-        function check_covariate_balance(DataFrame df, String treatment_col, List covariate_cols):
-            Initialize results_dict
-            For each covariate in covariate_cols:
-                If covariate is numeric:
-                    Calculate mean_c, mean_t, var_c, var_t.
-                    Compute SMD = (mean_t - mean_c) / sqrt((var_t + var_c) / 2).
-                    Calculate Welch's t-test p-value.
-                    Store {"type": "numeric", "smd": SMD, "p_value": p_val}
-                Else if covariate is categorical:
-                    Build cross-tabulation table of covariate vs treatment_col.
-                    Calculate Chi-square test of independence.
-                    Store {"type": "categorical", "p_value": p_val}
-            Return results_dict
-        ```
+           Evaluates whether the proportion of units in each category is independent of treatment.
 
     Args:
         df (pd.DataFrame): The experimental dataset containing units, treatment assignments, and covariates.
@@ -57,5 +33,68 @@ def check_covariate_balance(df: pd.DataFrame, treatment_col: str, covariate_cols
         dict: A dictionary mapping each covariate name to a diagnostic sub-dictionary containing SMD, p-values,
             and balance classification tags.
     """
-    # TODO: Implement balance checks
-    return {}
+    import numpy as np
+    from scipy import stats
+
+    groups = df[treatment_col].unique()
+    if len(groups) < 2:
+        raise ValueError(f"Balance check requires at least 2 distinct groups in '{treatment_col}'. Found {len(groups)}.")
+
+    # Sort groups to be deterministic: first group is control (group 0), second is treatment (group 1)
+    groups = sorted(groups)
+    grp_0 = df[df[treatment_col] == groups[0]]
+    grp_1 = df[df[treatment_col] == groups[1]]
+
+    results = {}
+
+    for cov in covariate_cols:
+        if cov not in df.columns:
+            raise KeyError(f"Covariate column '{cov}' not found in DataFrame.")
+
+        # Determine type: check if column is numeric
+        if pd.api.types.is_numeric_dtype(df[cov]):
+            val_0 = grp_0[cov].dropna()
+            val_1 = grp_1[cov].dropna()
+
+            mean_0 = val_0.mean()
+            mean_1 = val_1.mean()
+            var_0 = val_0.var(ddof=1)
+            var_1 = val_1.var(ddof=1)
+
+            # Compute Standardized Mean Difference (SMD)
+            pooled_sd = np.sqrt((var_0 + var_1) / 2.0)
+            if pooled_sd == 0.0:
+                smd = 0.0
+            else:
+                smd = (mean_1 - mean_0) / pooled_sd
+
+            # Welch's t-test (unequal variances assumed)
+            if len(val_0) > 0 and len(val_1) > 0:
+                _, p_val = stats.ttest_ind(val_1, val_0, equal_var=False)
+            else:
+                p_val = 1.0
+
+            results[cov] = {
+                "type": "numeric",
+                "smd": float(smd),
+                "p_value": float(p_val)
+            }
+        else:
+            # Categorical covariate: build crosstab contingency table
+            contingency_table = pd.crosstab(df[cov], df[treatment_col])
+
+            if contingency_table.shape[0] > 0 and contingency_table.shape[1] > 0:
+                # Pearson's chi-square test of independence
+                chi2_res = stats.chi2_contingency(contingency_table)
+                p_val = chi2_res.pvalue
+            else:
+                p_val = 1.0
+
+            results[cov] = {
+                "type": "categorical",
+                "p_value": float(p_val)
+            }
+
+    # TODO: Add Kolmogorov-Smirnov distance validation checks on continuous covariates to verify full distribution shape alignment beyond mean and variance.
+    # TODO: Integrate Mahalanobis distance multivariate covariance balance tests to verify joint multi-feature balance.
+    return results

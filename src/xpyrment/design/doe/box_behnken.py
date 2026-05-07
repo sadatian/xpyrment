@@ -50,10 +50,18 @@ class BoxBehnkenDesign(DesignMatrix):
                  Create 4 rows representing the standard 2^2 factorial combinations of (+1, -1) for columns i and j.
                  All other columns in these 4 rows remain 0.
             5. Append num_center_points rows consisting entirely of zeros.
-            6. Map coded values [-1, 0, +1] to the physical levels in factors.
-            7. Return DataFrame.
         ```
     """
+
+    def __init__(self, factors: dict, num_center_points: int = 3):
+        """Initializes a BoxBehnkenDesign.
+
+        Args:
+            factors (dict): Mapping of factor labels to their low/high levels.
+            num_center_points (int): Number of center point replicates to append. Defaults to 3.
+        """
+        super().__init__(factors)
+        self.num_center_points = num_center_points
 
     def generate(self) -> pd.DataFrame:
         """Generates the Box-Behnken Design matrix.
@@ -64,5 +72,41 @@ class BoxBehnkenDesign(DesignMatrix):
         Returns:
             pd.DataFrame: A pandas DataFrame containing the BBD matrix.
         """
-        # TODO: Implement Box-Behnken matrix builder
-        return pd.DataFrame()
+        import itertools
+        import numpy as np
+
+        k = len(self.factors)
+        keys = list(self.factors.keys())
+
+        if k < 3:
+            raise ValueError("Box-Behnken Design requires at least 3 factors.")
+
+        # 1. Generate incomplete block factorial pairs in coded space [-1.0, 0.0, 1.0]
+        coded_rows = []
+        pairs = list(itertools.combinations(range(k), 2))
+        for i, j in pairs:
+            # 2^2 combinations for active factors, keeping other factors at 0.0
+            for val_i, val_j in itertools.product([-1.0, 1.0], repeat=2):
+                row = [0.0] * k
+                row[i] = val_i
+                row[j] = val_j
+                coded_rows.append(row)
+
+        factorial_df = pd.DataFrame(coded_rows, columns=keys)
+
+        # 2. Append center points (all coded 0.0s)
+        center_rows = [[0.0] * k for _ in range(self.num_center_points)]
+        center_df = pd.DataFrame(center_rows, columns=keys)
+
+        # 3. Stack blocks
+        coded_df = pd.concat([factorial_df, center_df], ignore_index=True)
+
+        # 4. Map coded space to actual physical factor levels
+        physical_df = pd.DataFrame()
+        for col in keys:
+            low, high = self.factors[col]
+            mid = (low + high) / 2.0
+            half_range = (high - low) / 2.0
+            physical_df[col] = mid + coded_df[col] * half_range
+
+        return physical_df

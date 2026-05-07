@@ -76,5 +76,76 @@ class DefinitiveScreeningDesign(DesignMatrix):
         Returns:
             pd.DataFrame: A pandas DataFrame containing the DSD matrix.
         """
-        # TODO: Implement DSD algorithm (using conference matrices)
-        return pd.DataFrame()
+        import numpy as np
+
+        k = len(self.factors)
+        keys = list(self.factors.keys())
+
+        if k < 2:
+            raise ValueError("Definitive Screening Design requires at least 2 factors.")
+
+        # Determine the size of the conference matrix (m = k if even, m = k + 1 if odd)
+        m = k if k % 2 == 0 else k + 1
+
+        # We must support m of at least size 4
+        if m < 4:
+            m = 4
+
+        # Pre-calculated conference matrices of order m (diagonal 0, off-diagonal +/-1, orthogonal)
+        conference_matrices = {
+            4: np.array([
+                [0.0, 1.0, 1.0, 1.0],
+                [1.0, 0.0, -1.0, 1.0],
+                [1.0, 1.0, 0.0, -1.0],
+                [1.0, -1.0, 1.0, 0.0]
+            ]),
+            6: np.array([
+                [0.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [1.0, 0.0, 1.0, -1.0, -1.0, 1.0],
+                [1.0, 1.0, 0.0, 1.0, -1.0, -1.0],
+                [1.0, -1.0, 1.0, 0.0, 1.0, -1.0],
+                [1.0, -1.0, -1.0, 1.0, 0.0, 1.0],
+                [1.0, 1.0, -1.0, -1.0, 1.0, 0.0]
+            ]),
+            8: np.array([
+                [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [-1.0, 0.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0],
+                [-1.0, -1.0, 0.0, 1.0, 1.0, -1.0, 1.0, -1.0],
+                [-1.0, -1.0, -1.0, 0.0, 1.0, 1.0, -1.0, 1.0],
+                [-1.0, 1.0, -1.0, -1.0, 0.0, 1.0, 1.0, -1.0],
+                [-1.0, -1.0, 1.0, -1.0, -1.0, 0.0, 1.0, 1.0],
+                [-1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 0.0, 1.0],
+                [-1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 0.0]
+            ])
+        }
+
+        if m not in conference_matrices:
+            raise ValueError(
+                f"No standard conference matrix available for order {m}. "
+                "Ensure the number of factors k satisfies k <= 8."
+            )
+
+        C = conference_matrices[m]
+
+        # Fold-over operation: Stack C and -C
+        folded = np.vstack([C, -C])
+
+        # Append overall center point (all zeros)
+        center_row = np.zeros((1, m))
+        coded_matrix = np.vstack([folded, center_row])
+
+        # If k was odd (and we scaled to even m), truncate the last column to get k factors
+        coded_matrix = coded_matrix[:, :k]
+
+        # Map coded levels [-1.0, 0.0, 1.0] to physical coordinates
+        physical_df = pd.DataFrame()
+        for idx, col in enumerate(keys):
+            levels = self.factors[col]
+            low, high = levels[0], levels[-1]  # Standard low/high boundaries
+            mid = (low + high) / 2.0
+            half_range = (high - low) / 2.0
+            physical_df[col] = mid + coded_matrix[:, idx] * half_range
+
+        # TODO: Implement algorithmic synthesis of conference matrices of arbitrary even orders using quadratic residues.
+        # TODO: Add validation checks to confirm no active two-factor interaction terms are fully aliased with main effects.
+        return physical_df

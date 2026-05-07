@@ -70,5 +70,113 @@ class BayesianInference:
         Returns:
             dict: Posterior distribution parameters, credible intervals, and decision metrics.
         """
-        # TODO: Implement conjugate Bayesian engines (Beta-Binomial, Normal-IG, Gamma-Poisson)
-        return {}
+        import numpy as np
+        from scipy import stats
+
+        if self.model_type == "beta_binomial":
+            # Prior parameters
+            a0 = prior_params.get("alpha", 1.0)
+            b0 = prior_params.get("beta", 1.0)
+
+            # Observed data
+            k_c = observed_data.get("control_successes", observed_data.get("k_c", 0))
+            n_c = observed_data.get("control_trials", observed_data.get("n_c", 1))
+            k_t = observed_data.get("treatment_successes", observed_data.get("k_t", 0))
+            n_t = observed_data.get("treatment_trials", observed_data.get("n_t", 1))
+
+            # Posterior parameters
+            alpha_c_post = a0 + k_c
+            beta_c_post = b0 + n_c - k_c
+
+            alpha_t_post = a0 + k_t
+            beta_t_post = b0 + n_t - k_t
+
+            # Generate samples for Monte Carlo simulation of PBB and Expected Loss
+            samples_c = stats.beta.rvs(alpha_c_post, beta_c_post, size=20000, random_state=42)
+            samples_t = stats.beta.rvs(alpha_t_post, beta_t_post, size=20000, random_state=42)
+
+            # Credible intervals (95%)
+            ci_c_lower, ci_c_upper = stats.beta.ppf([0.025, 0.975], alpha_c_post, beta_c_post)
+            ci_t_lower, ci_t_upper = stats.beta.ppf([0.025, 0.975], alpha_t_post, beta_t_post)
+
+            # Probability of being best (treatment > control)
+            pbb = float(np.mean(samples_t > samples_c))
+            # Expected loss of treatment
+            expected_loss = float(np.mean(np.maximum(samples_c - samples_t, 0.0)))
+
+            return {
+                "control_posterior": {
+                    "param1": float(alpha_c_post),
+                    "param2": float(beta_c_post),
+                    "ci_lower": float(ci_c_lower),
+                    "ci_upper": float(ci_c_upper)
+                },
+                "treatment_posterior": {
+                    "param1": float(alpha_t_post),
+                    "param2": float(beta_t_post),
+                    "ci_lower": float(ci_t_lower),
+                    "ci_upper": float(ci_t_upper)
+                },
+                "pbb": pbb,
+                "expected_loss": expected_loss
+            }
+
+        elif self.model_type == "normal_normal":
+            # Prior parameters
+            mu_0 = prior_params.get("mean", prior_params.get("mu_0", 0.0))
+            var_0 = prior_params.get("variance", prior_params.get("sigma_0_sq", 1.0))
+
+            # Observed data
+            mean_c = observed_data.get("control_mean", observed_data.get("mean_c", 0.0))
+            var_c = observed_data.get("control_variance", observed_data.get("var_c", 1.0))
+            n_c = observed_data.get("control_n", observed_data.get("n_c", 1))
+
+            mean_t = observed_data.get("treatment_mean", observed_data.get("mean_t", 0.0))
+            var_t = observed_data.get("treatment_variance", observed_data.get("var_t", 1.0))
+            n_t = observed_data.get("treatment_n", observed_data.get("n_t", 1))
+
+            # Posterior variance: 1 / var_post = 1 / var_0 + n / var_sample
+            prec_0 = 1.0 / var_0
+            
+            # Control posterior
+            prec_c = prec_0 + n_c / var_c
+            var_c_post = 1.0 / prec_c
+            mu_c_post = var_c_post * (mu_0 * prec_0 + n_c * mean_c / var_c)
+
+            # Treatment posterior
+            prec_t = prec_0 + n_t / var_t
+            var_t_post = 1.0 / prec_t
+            mu_t_post = var_t_post * (mu_0 * prec_0 + n_t * mean_t / var_t)
+
+            # Generate samples
+            samples_c = stats.norm.rvs(mu_c_post, np.sqrt(var_c_post), size=20000, random_state=42)
+            samples_t = stats.norm.rvs(mu_t_post, np.sqrt(var_t_post), size=20000, random_state=42)
+
+            # Credible intervals (95%)
+            ci_c_lower, ci_c_upper = stats.norm.ppf([0.025, 0.975], mu_c_post, np.sqrt(var_c_post))
+            ci_t_lower, ci_t_upper = stats.norm.ppf([0.025, 0.975], mu_t_post, np.sqrt(var_t_post))
+
+            pbb = float(np.mean(samples_t > samples_c))
+            expected_loss = float(np.mean(np.maximum(samples_c - samples_t, 0.0)))
+
+            return {
+                "control_posterior": {
+                    "param1": float(mu_c_post),
+                    "param2": float(var_c_post),
+                    "ci_lower": float(ci_c_lower),
+                    "ci_upper": float(ci_c_upper)
+                },
+                "treatment_posterior": {
+                    "param1": float(mu_t_post),
+                    "param2": float(var_t_post),
+                    "ci_lower": float(ci_t_lower),
+                    "ci_upper": float(ci_t_upper)
+                },
+                "pbb": pbb,
+                "expected_loss": expected_loss
+            }
+        else:
+            raise ValueError(f"Unknown Bayesian model type: {self.model_type}")
+
+        # TODO: Implement conjugate Gamma-Poisson model pairing for discrete count metrics (such as page views or clicks).
+        # TODO: Add numerical integration solvers to compute PBB and Expected Loss exactly without relying on Monte Carlo simulations.

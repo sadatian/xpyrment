@@ -68,15 +68,17 @@ class LatinHypercubeDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, num_samples: int):
+    def __init__(self, factors: dict, num_samples: int, seed: int = 42):
         """Initializes a LatinHypercubeDesign.
 
         Args:
             factors (dict): Mapping of factor labels to their lower and upper physical boundaries.
             num_samples (int): The target number of samples.
+            seed (int): Random seed for reproducibility. Defaults to 42.
         """
         super().__init__(factors)
         self.num_samples = num_samples
+        self.seed = seed
 
     def generate(self) -> pd.DataFrame:
         """Generates the Latin Hypercube design matrix.
@@ -87,5 +89,35 @@ class LatinHypercubeDesign(DesignMatrix):
         Returns:
             pd.DataFrame: A pandas DataFrame containing the LHS matrix.
         """
-        # TODO: Implement LHS random/maximim stratification
-        return pd.DataFrame()
+        import numpy as np
+
+        rng = np.random.default_rng(self.seed)
+
+        k = len(self.factors)
+        keys = list(self.factors.keys())
+        N = self.num_samples
+
+        coded_matrix = np.zeros((N, k))
+
+        for j in range(k):
+            # Create interval indices from 1 to N
+            intervals = np.arange(1, N + 1)
+            # Permute interval indices independently for each factor
+            shuffled_intervals = rng.permutation(intervals)
+            
+            # For each interval, draw a uniform point
+            for i in range(N):
+                U = rng.uniform(0.0, 1.0)
+                # Compute coded coordinate in [0.0, 1.0]
+                coded_matrix[i, j] = (shuffled_intervals[i] - 1.0 + U) / N
+
+        # Map coded levels from [0.0, 1.0] back to physical bounds
+        physical_df = pd.DataFrame()
+        for idx, col in enumerate(keys):
+            bounds = self.factors[col]
+            low, high = bounds[0], bounds[-1]
+            physical_df[col] = low + coded_matrix[:, idx] * (high - low)
+
+        # TODO: Implement Maximin Latin Hypercube optimization (shuffling columns to maximize minimum pairwise Euclidean distance).
+        # TODO: Add correlation-minimization algorithms (such as Owen's randomized LHS) to reduce collinearity between factors.
+        return physical_df
