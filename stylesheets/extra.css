@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,700&family=Roboto+Slab:wght@300;400;600;700&display=swap');
+
+/* ==============================================================================
+   Brand Typography (Roboto Slab & Nunito)
+   ============================================================================== */
+:root {
+  /* Site-wide body font */
+  --md-text-font: "Nunito", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif !important;
+}
+
+/* Headings & Brand Titles (Roboto Slab) */
+h1, h2, h3, h4, h5, h6,
+.md-header__title,
+.md-nav__title,
+.md-nav__link--active,
+.md-footer-meta__title,
+.md-banner {
+  font-family: "Roboto Slab", Georgia, serif !important;
+  font-weight: 600 !important;
+}
+
+/* Ensure strong heading highlights on hover */
+h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover {
+  font-weight: 700 !important;
+}
+
+/* ==============================================================================
+   Light Mode Color Palette
+   ============================================================================== */
+:root, [data-md-color-scheme="default"] {
+  /* Brand Plum/Burgundy tones */
+  --md-primary-fg-color:        #7d2a44; /* #7d2a44 burgundy primary */
+  --md-primary-fg-color--light: #913b56; /* lighter burgundy for hover states */
+  --md-primary-fg-color--dark:  #4a2339; /* #4a2339 dark plum */
+  
+  /* Accent elements */
+  --md-accent-fg-color:         #7d2a44;
+  --md-accent-fg-color--transparent: rgba(125, 42, 68, 0.1);
+  
+  /* Body Text adjustments to match primary website */
+  --md-typeset-color:           #3f4650; /* #3f4650 dark slate text */
+  --md-default-fg-color:        #3f4650;
+  --md-default-fg-color--light:  #545e6c; /* muted slate text */
+  
+  /* Link Color */
+  --md-typeset-a-color:         #7d2a44;
+}
+
+/* ==============================================================================
+   Dark Mode Color Palette (Slate Theme overrides)
+   ============================================================================== */
+[data-md-color-scheme="slate"] {
+  /* Accessible lighter Plum/Burgundy tones for dark backgrounds */
+  --md-primary-fg-color:        #913b56; 
+  --md-primary-fg-color--light: #a6536b;
+  --md-primary-fg-color--dark:  #7d2a44;
+  
+  /* Accent elements in dark mode */
+  --md-accent-fg-color:         #bc7085; /* rose-gold burgundy */
+  --md-accent-fg-color--transparent: rgba(188, 112, 133, 0.15);
+  
+  /* Keep standard dark mode background/foreground for visibility, but accent link colors with primary colors */
+  --md-typeset-a-color:         #bc7085;
+}
+
+/* ==============================================================================
+   Custom Design Enhancements & Micro-animations
+   ============================================================================== */
+/* Premium smooth transitions */
+a, button, .md-nav__link, .md-search-result__link {
+  transition: color 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Styled active tabs */
+.md-tabs__link--active {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(125, 42, 68, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(125, 42, 68, 0.6);
+}
