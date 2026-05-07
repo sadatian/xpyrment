@@ -2608,6 +2608,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#xpyrment.interactions.InteractionDetector.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#xpyrment.interactions.InteractionDetector.detect_all" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3336,6 +3347,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#xpyrment.interactions.InteractionDetector.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#xpyrment.interactions.InteractionDetector.detect_all" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3444,6 +3466,18 @@
 
     <div class="doc doc-contents first">
 
+        <p>Multi-factor experimental design and covariate-treatment interaction analysis.</p>
+<p>This package provides tools to discover, model, and visualize interactions within experimental studies.
+Understanding interactions is critical to determine whether multiple treatments conflict or work synergistically,
+and whether a treatment effect is heterogeneous across user characteristics.</p>
+<p>Submodules:
+- <code>detector</code>: Orchestrates and dispatches multi-model interaction checks across covariates and factors.
+- <code>anova</code>: Performs Factorial Analysis of Variance (ANOVA) and partitions sum of squares.
+- <code>regression</code>: Fits interactive regression models and conducts Likelihood Ratio Tests (LRT).
+- <code>hstat</code>: Quantifies model-agnostic interaction strengths using Friedman's H-statistic.
+- <code>shap</code>: Calculates second-order game-theoretic Shapley interaction values (TreeSHAP).
+- <code>plots</code>: Renders symmetric heatmaps and diagnostic visualization charts.</p>
+
 
 
 
@@ -3479,6 +3513,82 @@
 
 
         <p>Dispatches multi-factor, covariate-treatment, and non-linear interactions.</p>
+<p>In complex online and physical experiments, interventions rarely operate in a vacuum. The treatment effect of
+one change may depend heavily on the status of other features (multi-factor interaction) or the characteristics
+of the experimental unit (covariate-treatment interaction, or Heterogeneous Treatment Effect).
+The <code>InteractionDetector</code> screens for these interactions automatically.</p>
+
+
+<details class="mathematical-interaction-categories" open>
+  <summary>Mathematical Interaction Categories</summary>
+  <ol>
+<li><strong>Multi-Factor Synergy or Interference</strong> (Factor-Factor Interaction):
+   Evaluates whether combining Treatment 1 (<span class="arithmatex">\(T_1\)</span>) and Treatment 2 (<span class="arithmatex">\(T_2\)</span>) yields a response that differs
+   from the sum of their individual effects:
+   $<span class="arithmatex">\(Y = \beta_0 + \beta_1 T_1 + \beta_2 T_2 + \beta_3 (T_1 \times T_2) + \varepsilon\)</span>$</li>
+<li>If <span class="arithmatex">\(\beta_3 &gt; 0\)</span>, the factors are synergistic.</li>
+<li>
+<p>If <span class="arithmatex">\(\beta_3 &lt; 0\)</span>, the factors interfere with each other (redundancy or collision).</p>
+</li>
+<li>
+<p><strong>Covariate-Treatment Interaction</strong> (Heterogeneous Treatment Effects - HTE):
+   Evaluates whether the treatment effect varies systematically across pre-experiment characteristics <span class="arithmatex">\(C\)</span>
+   (e.g., country, browser, mobile vs. desktop, or historical spending):
+   $<span class="arithmatex">\(Y = \beta_0 + \beta_1 T + \beta_2 C + \beta_3 (T \times C) + \varepsilon\)</span>$
+   A significant <span class="arithmatex">\(\beta_3\)</span> (<span class="arithmatex">\(p &lt; 0.05\)</span>) indicates that the treatment effect varies across subpopulations.</p>
+</li>
+<li>
+<p><strong>Response Surface Curvature</strong> (Non-linear Interaction):
+   In continuous Design of Experiments (DoE), evaluates quadratic curvatures and continuous interaction slopes:
+   $<span class="arithmatex">\(Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1^2 + \beta_4 X_2^2 + \beta_5 (X_1 \times X_2) + \varepsilon\)</span>$
+   where <span class="arithmatex">\(\beta_5\)</span> captures the continuous twisting of the response landscape, and <span class="arithmatex">\(\beta_3, \beta_4\)</span> capture curvature.</p>
+</li>
+</ol>
+</details>
+
+<details class="algorithmic-screening-workflow" open>
+  <summary>Algorithmic Screening Workflow</summary>
+  <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>function detect_all(experiment):
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Initialize interaction_results = {}
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    For each pair of factors (A, B) in design:
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        Run OLS: Y ~ A * B
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        Extract interaction p-value.
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        If p-value &lt; 0.05:
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>            Add to interaction_results[&quot;factor_factor&quot;]
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    For each covariate C in experiment.covariates:
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        Run OLS: Y ~ Treatment * C
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        Extract interaction p-value.
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        If p-value &lt; 0.05:
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>            Add to interaction_results[&quot;heterogeneous_treatment_effects&quot;]
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    Return interaction_results
+</span></code></pre></div>
+</details>
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.interactions.InteractionDetector.experiment">experiment</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Experiment (xpyrment.core.experiment.Experiment)" href="../core/experiment/#xpyrment.core.experiment.Experiment">Experiment</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The completed or active experiment container.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 
@@ -3489,25 +3599,145 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src\xpyrment\interactions\detector.py</code></summary>
-                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1"> 1</a></span>
-<span class="normal"><a href="#__codelineno-0-2"> 2</a></span>
-<span class="normal"><a href="#__codelineno-0-3"> 3</a></span>
-<span class="normal"><a href="#__codelineno-0-4"> 4</a></span>
-<span class="normal"><a href="#__codelineno-0-5"> 5</a></span>
-<span class="normal"><a href="#__codelineno-0-6"> 6</a></span>
-<span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
 <span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-0-10">10</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">InteractionDetector</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dispatches multi-factor, covariate-treatment, and non-linear interactions.&quot;&quot;&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">):</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span> <span class="o">=</span> <span class="n">experiment</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">detect_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs ANOVA and regression checks to identify interaction terms.&quot;&quot;&quot;</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a>        <span class="c1"># TODO: Implement dispatcher</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a>        <span class="k">return</span> <span class="p">{}</span>
+<span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span>
+<span class="normal"><a href="#__codelineno-0-75">75</a></span>
+<span class="normal"><a href="#__codelineno-0-76">76</a></span>
+<span class="normal"><a href="#__codelineno-0-77">77</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">InteractionDetector</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dispatches multi-factor, covariate-treatment, and non-linear interactions.</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="sd">    In complex online and physical experiments, interventions rarely operate in a vacuum. The treatment effect of</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="sd">    one change may depend heavily on the status of other features (multi-factor interaction) or the characteristics</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    of the experimental unit (covariate-treatment interaction, or Heterogeneous Treatment Effect).</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    The `InteractionDetector` screens for these interactions automatically.</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    Mathematical Interaction Categories:</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">        1. **Multi-Factor Synergy or Interference** (Factor-Factor Interaction):</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">           Evaluates whether combining Treatment 1 ($T_1$) and Treatment 2 ($T_2$) yields a response that differs</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">           from the sum of their individual effects:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">           $$Y = \\beta_0 + \\beta_1 T_1 + \\beta_2 T_2 + \\beta_3 (T_1 \\times T_2) + \\varepsilon$$</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">           - If $\\beta_3 &gt; 0$, the factors are synergistic.</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">           - If $\\beta_3 &lt; 0$, the factors interfere with each other (redundancy or collision).</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        2. **Covariate-Treatment Interaction** (Heterogeneous Treatment Effects - HTE):</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">           Evaluates whether the treatment effect varies systematically across pre-experiment characteristics $C$</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">           (e.g., country, browser, mobile vs. desktop, or historical spending):</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">           $$Y = \\beta_0 + \\beta_1 T + \\beta_2 C + \\beta_3 (T \\times C) + \\varepsilon$$</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">           A significant $\\beta_3$ ($p &lt; 0.05$) indicates that the treatment effect varies across subpopulations.</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        3. **Response Surface Curvature** (Non-linear Interaction):</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">           In continuous Design of Experiments (DoE), evaluates quadratic curvatures and continuous interaction slopes:</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">           $$Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\beta_3 X_1^2 + \\beta_4 X_2^2 + \\beta_5 (X_1 \\times X_2) + \\varepsilon$$</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">           where $\\beta_5$ captures the continuous twisting of the response landscape, and $\\beta_3, \\beta_4$ capture curvature.</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Algorithmic Screening Workflow:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        ```text</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        function detect_all(experiment):</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">            Initialize interaction_results = {}</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">            For each pair of factors (A, B) in design:</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">                Run OLS: Y ~ A * B</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">                Extract interaction p-value.</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">                If p-value &lt; 0.05:</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">                    Add to interaction_results[&quot;factor_factor&quot;]</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">            For each covariate C in experiment.covariates:</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">                Run OLS: Y ~ Treatment * C</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">                Extract interaction p-value.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">                If p-value &lt; 0.05:</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">                    Add to interaction_results[&quot;heterogeneous_treatment_effects&quot;]</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">            Return interaction_results</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        ```</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    Attributes:</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        experiment (Experiment): The completed or active experiment container.</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">):</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes an InteractionDetector.</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        Args:</span>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">            experiment (Experiment): The experiment container containing datasets, metrics, and factor definitions.</span>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span> <span class="o">=</span> <span class="n">experiment</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">detect_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs ANOVA and regression checks to identify interaction terms across factors and covariates.</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">        Fits multi-variable linear regression models with product terms and flags statistically</span>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">        significant interactions.</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">        Returns:</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">            dict: A dictionary grouping detected interactions, their estimated coefficients, standard errors,</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">                and p-values.</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>        <span class="c1"># TODO: Implement dispatcher</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>        <span class="k">return</span> <span class="p">{}</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -3527,6 +3757,72 @@
 <div class="doc doc-object doc-function">
 
 
+<h4 id="xpyrment.interactions.InteractionDetector.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initializes an InteractionDetector.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>experiment</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Experiment (xpyrment.core.experiment.Experiment)" href="../core/experiment/#xpyrment.core.experiment.Experiment">Experiment</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The experiment container containing datasets, metrics, and factor definitions.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\xpyrment\interactions\detector.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">):</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializes an InteractionDetector.</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        experiment (Experiment): The experiment container containing datasets, metrics, and factor definitions.</span>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span> <span class="o">=</span> <span class="n">experiment</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="xpyrment.interactions.InteractionDetector.detect_all" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">detect_all</span><span class="p">()</span></code>
 
@@ -3535,18 +3831,60 @@
 
     <div class="doc doc-contents ">
 
-        <p>Runs ANOVA and regression checks to identify interaction terms.</p>
+        <p>Runs ANOVA and regression checks to identify interaction terms across factors and covariates.</p>
+<p>Fits multi-variable linear regression models with product terms and flags statistically
+significant interactions.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>dict</code></td>            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A dictionary grouping detected interactions, their estimated coefficients, standard errors,
+and p-values.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\interactions\detector.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
-<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-0-10">10</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs ANOVA and regression checks to identify interaction terms.&quot;&quot;&quot;</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a>    <span class="c1"># TODO: Implement dispatcher</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a>    <span class="k">return</span> <span class="p">{}</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span>
+<span class="normal"><a href="#__codelineno-0-75">75</a></span>
+<span class="normal"><a href="#__codelineno-0-76">76</a></span>
+<span class="normal"><a href="#__codelineno-0-77">77</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs ANOVA and regression checks to identify interaction terms across factors and covariates.</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">    Fits multi-variable linear regression models with product terms and flags statistically</span>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">    significant interactions.</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">        dict: A dictionary grouping detected interactions, their estimated coefficients, standard errors,</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">            and p-values.</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>    <span class="c1"># TODO: Implement dispatcher</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="k">return</span> <span class="p">{}</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3573,18 +3911,189 @@
 
     <div class="doc doc-contents ">
 
-        <p>Computes SHAP interaction values to decompose multi-factor combinations (expensive/gated).</p>
+        <p>Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).</p>
+<p>SHAP (SHapley Additive exPlanations) interaction values (Lundberg et al., 2018) are based on the coalitional game-theoretic
+Shapley Interaction Index (Grabisch and Roubens, 1999). While standard Shapley values partition a model's prediction
+additively among individual features, SHAP interaction values separate these contributions into pure main effects and
+pairwise interaction effects, providing an exact model-agnostic representation of how features cooperate or compete.</p>
+
+
+<details class="mathematical-formulation-and-coalition-deficits" open>
+  <summary>Mathematical Formulation and Coalition Deficits</summary>
+  <p>Let <span class="arithmatex">\(M\)</span> be the complete set of all features. The SHAP interaction value <span class="arithmatex">\(\Phi_{i,j}\)</span> between feature <span class="arithmatex">\(i\)</span> and feature <span class="arithmatex">\(j\)</span>
+(where <span class="arithmatex">\(i \neq j\)</span>) measures the pure interaction effect after accounting for all other subsets of features:
+$<span class="arithmatex">\(\Phi_{i,j} = \sum_{S \subseteq M \setminus \{i, j\}} \frac{|S|! (|M| - |S| - 2)!}{2 (|M| - 1)!} \Delta_{i,j}(S)\)</span>$
+where the second-order marginal contribution difference <span class="arithmatex">\(\Delta_{i,j}(S)\)</span> is defined as:
+$<span class="arithmatex">\(\Delta_{i,j}(S) = f(S \cup \{i, j\}) - f(S \cup \{i\}) - f(S \cup \{j\}) + f(S)\)</span>$</p>
+<p>The diagonal elements <span class="arithmatex">\(\Phi_{i,i}\)</span> capture the main effect of feature <span class="arithmatex">\(i\)</span> after removing all of its pairwise interactions
+with other features:
+$<span class="arithmatex">\(\Phi_{i,i} = \phi_i - \sum_{j \neq i} \Phi_{i,j}\)</span>$
+where <span class="arithmatex">\(\phi_i\)</span> is the standard Shapley value for feature <span class="arithmatex">\(i\)</span>.</p>
+<p>The complete set of main effects and interaction values decomposes the model prediction <span class="arithmatex">\(f(x)\)</span> exactly:
+$<span class="arithmatex">\(f(x) = \Phi_0 + \sum_{i=1}^{|M|} \Phi_{i,i} + \sum_{i \neq j} \Phi_{i,j}\)</span>$
+where <span class="arithmatex">\(\Phi_0 = E[f(x)]\)</span> is the base value (expected prediction of the model across the background training distribution).</p>
+</details>
+
+<details class="computational-complexity" open>
+  <summary>Computational Complexity</summary>
+  <p>Evaluating the summation requires computing model predictions across <span class="arithmatex">\(2^{|M|}\)</span> feature coalitions, which is NP-hard
+in the general case. To make this practical, modern libraries utilize TreeSHAP (Lundberg et al., 2020), which calculates
+exact tree-based Shapley interaction values in <span class="arithmatex">\(O(T L D^2)\)</span> time where <span class="arithmatex">\(T\)</span> is the number of trees, <span class="arithmatex">\(L\)</span> is max leaves,
+and <span class="arithmatex">\(D\)</span> is max depth.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A trained model (typically a tree ensemble like XGBoost or LightGBM).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_data</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The background evaluation matrix of covariate features.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>list</code></td>            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A nested list or 3D numpy array of shape <code>(num_samples, num_features, num_features)</code> containing
+individual Shapley interaction matrices.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\interactions\shap.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
-<span class="normal"><a href="#__codelineno-0-2">2</a></span>
-<span class="normal"><a href="#__codelineno-0-3">3</a></span>
-<span class="normal"><a href="#__codelineno-0-4">4</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_shap_interactions</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes SHAP interaction values to decompose multi-factor combinations (expensive/gated).&quot;&quot;&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>    <span class="c1"># TODO: Implement optional shap dependency check and interaction calculation</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="k">return</span> <span class="p">[]</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_shap_interactions</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">X_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    SHAP (SHapley Additive exPlanations) interaction values (Lundberg et al., 2018) are based on the coalitional game-theoretic</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    Shapley Interaction Index (Grabisch and Roubens, 1999). While standard Shapley values partition a model&#39;s prediction</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    additively among individual features, SHAP interaction values separate these contributions into pure main effects and</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    pairwise interaction effects, providing an exact model-agnostic representation of how features cooperate or compete.</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    Mathematical Formulation and Coalition Deficits:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        Let $M$ be the complete set of all features. The SHAP interaction value $\\Phi_{i,j}$ between feature $i$ and feature $j$</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        (where $i \\neq j$) measures the pure interaction effect after accounting for all other subsets of features:</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        $$\\Phi_{i,j} = \\sum_{S \\subseteq M \\setminus \\{i, j\\}} \\frac{|S|! (|M| - |S| - 2)!}{2 (|M| - 1)!} \\Delta_{i,j}(S)$$</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        where the second-order marginal contribution difference $\\Delta_{i,j}(S)$ is defined as:</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        $$\\Delta_{i,j}(S) = f(S \\cup \\{i, j\\}) - f(S \\cup \\{i\\}) - f(S \\cup \\{j\\}) + f(S)$$</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        The diagonal elements $\\Phi_{i,i}$ capture the main effect of feature $i$ after removing all of its pairwise interactions</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        with other features:</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        $$\\Phi_{i,i} = \\phi_i - \\sum_{j \\neq i} \\Phi_{i,j}$$</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">        where $\\phi_i$ is the standard Shapley value for feature $i$.</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        The complete set of main effects and interaction values decomposes the model prediction $f(x)$ exactly:</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        $$f(x) = \\Phi_0 + \\sum_{i=1}^{|M|} \\Phi_{i,i} + \\sum_{i \\neq j} \\Phi_{i,j}$$</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        where $\\Phi_0 = E[f(x)]$ is the base value (expected prediction of the model across the background training distribution).</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Computational Complexity:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        Evaluating the summation requires computing model predictions across $2^{|M|}$ feature coalitions, which is NP-hard</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        in the general case. To make this practical, modern libraries utilize TreeSHAP (Lundberg et al., 2020), which calculates</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        exact tree-based Shapley interaction values in $O(T L D^2)$ time where $T$ is the number of trees, $L$ is max leaves,</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">        and $D$ is max depth.</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        model: A trained model (typically a tree ensemble like XGBoost or LightGBM).</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        X_data: The background evaluation matrix of covariate features.</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        list: A nested list or 3D numpy array of shape `(num_samples, num_features, num_features)` containing</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            individual Shapley interaction matrices.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>    <span class="c1"># TODO: Implement optional shap dependency check and interaction calculation</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="k">return</span> <span class="p">[]</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3602,18 +4111,230 @@
 
     <div class="doc doc-contents ">
 
-        <p>Computes Likelihood Ratio Tests (LRT) to check if covariate balances interact with treatment splits.</p>
+        <p>Computes a Likelihood Ratio Test (LRT) to check if a covariate significantly interacts with the treatment split.</p>
+<p>Evaluates whether the treatment effect varies across different values of a pre-period covariate.
+To determine if the interaction term is statistically necessary (rather than just overfitting the sample),
+we fit nested regression models and perform a classical Likelihood Ratio Test.</p>
+
+
+<details class="mathematical-formulation-of-nested-models" open>
+  <summary>Mathematical Formulation of Nested Models</summary>
+  <p>We define two models representing competing hypotheses:
+1. <strong>Restricted Null Model (<span class="arithmatex">\(M_{\text{null}}\)</span>)</strong> (additive, assuming no interaction):
+   $<span class="arithmatex">\(Y_i = \beta_0 + \beta_1 T_i + \beta_2 C_i + \varepsilon_i\)</span>$
+2. <strong>Unrestricted Alternative Model (<span class="arithmatex">\(M_{\text{alt}}\)</span>)</strong> (interactive, assuming interaction):
+   $<span class="arithmatex">\(Y_i = \beta_0 + \beta_1 T_i + \beta_2 C_i + \beta_3 (T_i \times C_i) + \varepsilon_i\)</span>$
+where:
+- <span class="arithmatex">\(Y_i\)</span>: The target outcome metric (<span class="arithmatex">\(target\_col\)</span>) for unit <span class="arithmatex">\(i\)</span>.
+- <span class="arithmatex">\(T_i\)</span>: The treatment group indicator (<span class="arithmatex">\(treatment\_col\)</span>, e.g., <span class="arithmatex">\(0\)</span> or <span class="arithmatex">\(1\)</span>).
+- <span class="arithmatex">\(C_i\)</span>: The pre-period covariate (<span class="arithmatex">\(covariate\_col\)</span>, e.g., device type or baseline revenue).
+- <span class="arithmatex">\(T_i \times C_i\)</span>: The interaction/product term.</p>
+</details>        <p>The Likelihood Ratio Test (LRT):
+    Let <span class="arithmatex">\(\ln L(M_{\text{null}})\)</span> and <span class="arithmatex">\(\ln L(M_{\text{alt}})\)</span> be the maximized log-likelihood values of the nested models.
+    The test statistic <span class="arithmatex">\(D\)</span> is computed as:
+    $<span class="arithmatex">\(D = 2 \left( \ln L(M_{\text{alt}}) - \ln L(M_{\text{null}}) \right)\)</span>$
+    Under the null hypothesis <span class="arithmatex">\(H_0: \beta_3 = 0\)</span> (no interaction), the test statistic <span class="arithmatex">\(D\)</span> asymptotically follows a
+    Chi-square distribution with degrees of freedom equal to the difference in the number of parameters:
+    $<span class="arithmatex">\(D \sim \chi^2_{df_{\text{alt}} - df_{\text{null}}} = \chi^2_1\)</span>$
+    (since we added exactly one interaction parameter, <span class="arithmatex">\(\beta_3\)</span>).</p>
+<div class="language-text highlight"><pre><span></span><code>The resulting p-value is calculated as:
+$$p = 1 - F_{\chi^2_1}(D)$$
+where $F$ is the cumulative distribution function of the Chi-square distribution with 1 degree of freedom.
+If $p &lt; 0.05$, the alternative model is selected, confirming that the treatment effect varies across levels of the covariate.
+</code></pre></div>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The experimental dataset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>treatment_col</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column containing treatment assignments.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>covariate_col</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column containing the target pre-period covariate under evaluation.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target_col</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column containing the outcome response variable (<span class="arithmatex">\(Y\)</span>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>float</code></td>            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The calculated p-value of the Likelihood Ratio Test. A value <span class="arithmatex">\(&lt; 0.05\)</span> indicates a significant interaction.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\interactions\regression.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-4">4</a></span>
-<span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">check_treatment_covariate_interaction</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">treatment_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">covariate_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes Likelihood Ratio Tests (LRT) to check if covariate balances interact with treatment splits.&quot;&quot;&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>    <span class="c1"># TODO: Implement interactive regression model</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">return</span> <span class="mf">1.0</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">check_treatment_covariate_interaction</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">treatment_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">covariate_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes a Likelihood Ratio Test (LRT) to check if a covariate significantly interacts with the treatment split.</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    Evaluates whether the treatment effect varies across different values of a pre-period covariate.</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    To determine if the interaction term is statistically necessary (rather than just overfitting the sample),</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    we fit nested regression models and perform a classical Likelihood Ratio Test.</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    Mathematical Formulation of Nested Models:</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">        We define two models representing competing hypotheses:</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        1. **Restricted Null Model ($M_{\\text{null}}$)** (additive, assuming no interaction):</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">           $$Y_i = \\beta_0 + \\beta_1 T_i + \\beta_2 C_i + \\varepsilon_i$$</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        2. **Unrestricted Alternative Model ($M_{\\text{alt}}$)** (interactive, assuming interaction):</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">           $$Y_i = \\beta_0 + \\beta_1 T_i + \\beta_2 C_i + \\beta_3 (T_i \\times C_i) + \\varepsilon_i$$</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        where:</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        - $Y_i$: The target outcome metric ($target\\_col$) for unit $i$.</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        - $T_i$: The treatment group indicator ($treatment\\_col$, e.g., $0$ or $1$).</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        - $C_i$: The pre-period covariate ($covariate\\_col$, e.g., device type or baseline revenue).</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        - $T_i \\times C_i$: The interaction/product term.</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    The Likelihood Ratio Test (LRT):</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        Let $\\ln L(M_{\\text{null}})$ and $\\ln L(M_{\\text{alt}})$ be the maximized log-likelihood values of the nested models.</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        The test statistic $D$ is computed as:</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        $$D = 2 \\left( \\ln L(M_{\\text{alt}}) - \\ln L(M_{\\text{null}}) \\right)$$</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        Under the null hypothesis $H_0: \\beta_3 = 0$ (no interaction), the test statistic $D$ asymptotically follows a</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        Chi-square distribution with degrees of freedom equal to the difference in the number of parameters:</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        $$D \\sim \\chi^2_{df_{\\text{alt}} - df_{\\text{null}}} = \\chi^2_1$$</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        (since we added exactly one interaction parameter, $\\beta_3$).</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        The resulting p-value is calculated as:</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">        $$p = 1 - F_{\\chi^2_1}(D)$$</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        where $F$ is the cumulative distribution function of the Chi-square distribution with 1 degree of freedom.</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        If $p &lt; 0.05$, the alternative model is selected, confirming that the treatment effect varies across levels of the covariate.</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        df (pd.DataFrame): The experimental dataset.</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        treatment_col (str): Column containing treatment assignments.</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        covariate_col (str): Column containing the target pre-period covariate under evaluation.</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        target_col (str): Column containing the outcome response variable ($Y$).</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        float: The calculated p-value of the Likelihood Ratio Test. A value $&lt; 0.05$ indicates a significant interaction.</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="c1"># TODO: Implement interactive regression model</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="k">return</span> <span class="mf">1.0</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3631,18 +4352,224 @@
 
     <div class="doc doc-contents ">
 
-        <p>Computes model-agnostic Friedman H-statistic representing degree of interaction.</p>
+        <p>Computes model-agnostic Friedman's H-statistic representing the degree of interaction between two features.</p>
+<p>Friedman's H-statistic (Friedman and Popescu, 2008) measures the strength of interaction between features
+by evaluating how much of the model's prediction variation is due to joint, non-additive behavior.
+Unlike linear regression product terms, the H-statistic is model-agnostic and can capture highly complex,
+non-linear interactions in machine learning models (e.g., gradient boosted trees, neural networks).</p>
+
+
+<details class="mathematical-formulation-and-partial-dependence" open>
+  <summary>Mathematical Formulation and Partial Dependence</summary>
+  <p>Let <span class="arithmatex">\(x_i\)</span> and <span class="arithmatex">\(x_j\)</span> be two features. Let <span class="arithmatex">\(PD_i(x_i)\)</span> and <span class="arithmatex">\(PD_j(x_j)\)</span> be the 1-way Partial Dependence (PD) functions,
+which represent the average prediction of the model when fixing the respective feature value:
+$<span class="arithmatex">\(PD_i(x_i) = \frac{1}{N} \sum_{k=1}^N f(x_i, \ x_{k, \setminus i})\)</span>$
+Let <span class="arithmatex">\(PD_{ij}(x_i, \ x_j)\)</span> be the 2-way joint Partial Dependence function:
+$<span class="arithmatex">\(PD_{ij}(x_i, \ x_j) = \frac{1}{N} \sum_{k=1}^N f(x_i, \ x_j, \ x_{k, \setminus \{i, j\}})\)</span>$</p>
+<p>If there is no interaction between <span class="arithmatex">\(x_i\)</span> and <span class="arithmatex">\(x_j\)</span> (meaning their combined effect on the prediction is perfectly additive),
+then the joint PD can be decomposed exactly as the sum of their individual PD functions:
+$<span class="arithmatex">\(PD_{ij}(x_i, \ x_j) = PD_i(x_i) + PD_j(x_j)\)</span>$</p>
+<p>Friedman's <span class="arithmatex">\(H^2_{ij}\)</span> statistic measures the normalized squared deviation from this additive null hypothesis
+over the empirical distribution of the dataset:
+$<span class="arithmatex">\(H^2_{ij} = \frac{\sum_{k=1}^N \left[ PD_{ij}(x_{k,i}, \ x_{k,j}) - PD_i(x_{k,i}) - PD_j(x_{k,j}) \right]^2}{\sum_{k=1}^N \left[ PD_{ij}(x_{k,i}, \ x_{k,j}) \right]^2}\)</span>$</p>
+</details>
+
+<details class="interpretation-of-the-h-statistic" open>
+  <summary>Interpretation of the H-Statistic</summary>
+  <ul>
+<li><span class="arithmatex">\(H^2_{ij} = 0\)</span>: No interaction whatsoever. The features affect the response in a perfectly additive manner.</li>
+<li><span class="arithmatex">\(H^2_{ij} = 1.0\)</span>: The combined prediction depends entirely on their interaction; the individual main effects explain
+  <span class="arithmatex">\(0\%\)</span> of the joint variation.</li>
+<li>In practice, a value of <span class="arithmatex">\(H_{ij} &gt; 0.10\)</span> (representing the square root of <span class="arithmatex">\(H^2_{ij}\)</span>) suggests a substantial,
+  non-negligible interaction effect.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A trained, black-box machine learning model (must implement <code>.predict()</code> or <code>.predict_proba()</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_data</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The covariate dataset used to evaluate the partial dependencies.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>feature_i</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the first target feature.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>feature_j</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the second target feature.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>float</code></td>            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The computed Friedman's H-statistic (<span class="arithmatex">\(H_{ij} \in [0, 1]\)</span>).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\interactions\hstat.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
-<span class="normal"><a href="#__codelineno-0-2">2</a></span>
-<span class="normal"><a href="#__codelineno-0-3">3</a></span>
-<span class="normal"><a href="#__codelineno-0-4">4</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">compute_friedman_h_statistic</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X_data</span><span class="p">,</span> <span class="n">feature_i</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">feature_j</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes model-agnostic Friedman H-statistic representing degree of interaction.&quot;&quot;&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>    <span class="c1"># TODO: Implement H-statistic calculations</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="k">return</span> <span class="mf">0.0</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">compute_friedman_h_statistic</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">X_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">feature_i</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">feature_j</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes model-agnostic Friedman&#39;s H-statistic representing the degree of interaction between two features.</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    Friedman&#39;s H-statistic (Friedman and Popescu, 2008) measures the strength of interaction between features</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    by evaluating how much of the model&#39;s prediction variation is due to joint, non-additive behavior.</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    Unlike linear regression product terms, the H-statistic is model-agnostic and can capture highly complex,</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    non-linear interactions in machine learning models (e.g., gradient boosted trees, neural networks).</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    Mathematical Formulation and Partial Dependence:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        Let $x_i$ and $x_j$ be two features. Let $PD_i(x_i)$ and $PD_j(x_j)$ be the 1-way Partial Dependence (PD) functions,</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        which represent the average prediction of the model when fixing the respective feature value:</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        $$PD_i(x_i) = \\frac{1}{N} \\sum_{k=1}^N f(x_i, \\ x_{k, \\setminus i})$$</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        Let $PD_{ij}(x_i, \\ x_j)$ be the 2-way joint Partial Dependence function:</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        $$PD_{ij}(x_i, \\ x_j) = \\frac{1}{N} \\sum_{k=1}^N f(x_i, \\ x_j, \\ x_{k, \\setminus \\{i, j\\}})$$</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        If there is no interaction between $x_i$ and $x_j$ (meaning their combined effect on the prediction is perfectly additive),</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        then the joint PD can be decomposed exactly as the sum of their individual PD functions:</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        $$PD_{ij}(x_i, \\ x_j) = PD_i(x_i) + PD_j(x_j)$$</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        Friedman&#39;s $H^2_{ij}$ statistic measures the normalized squared deviation from this additive null hypothesis</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        over the empirical distribution of the dataset:</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        $$H^2_{ij} = \\frac{\\sum_{k=1}^N \\left[ PD_{ij}(x_{k,i}, \\ x_{k,j}) - PD_i(x_{k,i}) - PD_j(x_{k,j}) \\right]^2}{\\sum_{k=1}^N \\left[ PD_{ij}(x_{k,i}, \\ x_{k,j}) \\right]^2}$$</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    Interpretation of the H-Statistic:</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        - $H^2_{ij} = 0$: No interaction whatsoever. The features affect the response in a perfectly additive manner.</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        - $H^2_{ij} = 1.0$: The combined prediction depends entirely on their interaction; the individual main effects explain</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">          $0\\%$ of the joint variation.</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        - In practice, a value of $H_{ij} &gt; 0.10$ (representing the square root of $H^2_{ij}$) suggests a substantial,</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">          non-negligible interaction effect.</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        model: A trained, black-box machine learning model (must implement `.predict()` or `.predict_proba()`).</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        X_data: The covariate dataset used to evaluate the partial dependencies.</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        feature_i (str): Name of the first target feature.</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        feature_j (str): Name of the second target feature.</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        float: The computed Friedman&#39;s H-statistic ($H_{ij} \\in [0, 1]$).</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="c1"># TODO: Implement H-statistic calculations</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="k">return</span> <span class="mf">0.0</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3660,20 +4587,146 @@
 
     <div class="doc doc-contents ">
 
-        <p>Generates interaction term heatmaps using matplotlib.</p>
+        <p>Generates an interaction term heatmap using matplotlib.</p>
+<p>Visualizes a symmetric matrix of feature/factor interactions. Heatmaps are a highly effective diagnostic
+chart for screening complex multi-factor studies or high-dimensional covariate sets, allowing the user
+to instantly recognize clusters of strong synergy or severe interference.</p>
+
+
+<details class="matrix-structure" open>
+  <summary>Matrix Structure</summary>
+  <p>Let <span class="arithmatex">\(F = \{f_1, f_2, \dots, f_m\}\)</span> be the set of analyzed factors or covariates. The plotting engine constructs
+a symmetric <span class="arithmatex">\(m \times m\)</span> matrix <span class="arithmatex">\(H\)</span>:
+- Cell <span class="arithmatex">\(H_{i,j}\)</span> contains the strength of the interaction between <span class="arithmatex">\(f_i\)</span> and <span class="arithmatex">\(f_j\)</span>. This value can represent
+  either:
+  1. The absolute regression interaction coefficient (<span class="arithmatex">\(|\beta_{\text{interaction}}|\)</span>).
+  2. The model-agnostic Friedman's H-statistic (<span class="arithmatex">\(H_{ij}\)</span>).
+  3. The statistical significance transformed index (<span class="arithmatex">\(-\log_{10}(p_{\text{value}})\)</span>).
+- Cells along the diagonal (<span class="arithmatex">\(H_{i,i}\)</span>) are typically zeroed or set to represent the main effect of factor <span class="arithmatex">\(f_i\)</span>.
+- The matrix is rendered using a divergent colormap (such as <code>RdBu</code> or <code>seismic</code> if mapping positive/negative coefficients)
+  or a sequential colormap (such as <code>Viridis</code> or <code>YlOrRd</code> if mapping absolute H-statistics or significance).</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>df_interactions</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A rectangular or pivoted DataFrame representing the interaction strength matrix,
+with factor names as both index and column headings.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>tuple</code></td>            <td>
+                  <code><span title="tuple">tuple</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A tuple <code>(fig, ax)</code> containing:
+- <code>fig</code> (matplotlib.figure.Figure): The active matplotlib Figure canvas.
+- <code>ax</code> (matplotlib.axes.Axes): The axes container housing the rendered heatmap.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\interactions\plots.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span>
-<span class="normal"><a href="#__codelineno-0-8">8</a></span>
-<span class="normal"><a href="#__codelineno-0-9">9</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">plot_interaction_heatmap</span><span class="p">(</span><span class="n">df_interactions</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates interaction term heatmaps using matplotlib.&quot;&quot;&quot;</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="c1"># TODO: Implement plotting code</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a>    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a>    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">plot_interaction_heatmap</span><span class="p">(</span><span class="n">df_interactions</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates an interaction term heatmap using matplotlib.</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    Visualizes a symmetric matrix of feature/factor interactions. Heatmaps are a highly effective diagnostic</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    chart for screening complex multi-factor studies or high-dimensional covariate sets, allowing the user</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    to instantly recognize clusters of strong synergy or severe interference.</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">    Matrix Structure:</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        Let $F = \{f_1, f_2, \dots, f_m\}$ be the set of analyzed factors or covariates. The plotting engine constructs</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        a symmetric $m \times m$ matrix $H$:</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        - Cell $H_{i,j}$ contains the strength of the interaction between $f_i$ and $f_j$. This value can represent</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">          either:</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">          1. The absolute regression interaction coefficient ($|\beta_{\text{interaction}}|$).</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">          2. The model-agnostic Friedman&#39;s H-statistic ($H_{ij}$).</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">          3. The statistical significance transformed index ($-\log_{10}(p_{\text{value}})$).</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        - Cells along the diagonal ($H_{i,i}$) are typically zeroed or set to represent the main effect of factor $f_i$.</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        - The matrix is rendered using a divergent colormap (such as `RdBu` or `seismic` if mapping positive/negative coefficients)</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">          or a sequential colormap (such as `Viridis` or `YlOrRd` if mapping absolute H-statistics or significance).</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        df_interactions (pd.DataFrame): A rectangular or pivoted DataFrame representing the interaction strength matrix,</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">            with factor names as both index and column headings.</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        tuple: A tuple `(fig, ax)` containing:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">            - `fig` (matplotlib.figure.Figure): The active matplotlib Figure canvas.</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">            - `ax` (matplotlib.axes.Axes): The axes container housing the rendered heatmap.</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="c1"># TODO: Implement plotting code</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3692,17 +4745,213 @@
     <div class="doc doc-contents ">
 
         <p>Computes factorial ANOVA tables with interaction terms for DoE factors.</p>
+<p>Factorial ANOVA decomposes the total variability of an experimental outcome into portions attributable
+to main factor effects, multi-factor interaction effects, and random error. This is crucial for verifying
+which process factors have a statistically significant impact on the response variable, and whether factors
+behave synergetically or antagonistically when combined.</p>
+
+
+<details class="mathematical-formulation" open>
+  <summary>Mathematical Formulation</summary>
+  <p>For a two-factor experimental design (Factor <span class="arithmatex">\(A\)</span> with <span class="arithmatex">\(I\)</span> levels, Factor <span class="arithmatex">\(B\)</span> with <span class="arithmatex">\(J\)</span> levels, and <span class="arithmatex">\(K\)</span> replicates per cell),
+the response <span class="arithmatex">\(Y_{ijk}\)</span> is modeled as:
+$<span class="arithmatex">\(Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} + \varepsilon_{ijk}\)</span>$
+where:
+- <span class="arithmatex">\(\mu\)</span>: The grand mean of the response.
+- <span class="arithmatex">\(\alpha_i\)</span>: The main effect of Factor <span class="arithmatex">\(A\)</span> at level <span class="arithmatex">\(i\)</span> (subject to <span class="arithmatex">\(\sum_{i=1}^I \alpha_i = 0\)</span>).
+- <span class="arithmatex">\(\beta_j\)</span>: The main effect of Factor <span class="arithmatex">\(B\)</span> at level <span class="arithmatex">\(j\)</span> (subject to <span class="arithmatex">\(\sum_{j=1}^J \beta_j = 0\)</span>).
+- <span class="arithmatex">\((\alpha\beta)_{ij}\)</span> smokes: The interaction effect between Factor <span class="arithmatex">\(A\)</span> at level <span class="arithmatex">\(i\)</span> and Factor <span class="arithmatex">\(B\)</span> at level <span class="arithmatex">\(j\)</span>
+  (subject to <span class="arithmatex">\(\sum_{i=1}^I (\alpha\beta)_{ij} = \sum_{j=1}^J (\alpha\beta)_{ij} = 0\)</span>).
+- <span class="arithmatex">\(\varepsilon_{ijk}\)</span>: Independent and identically distributed normal error terms, <span class="arithmatex">\(\varepsilon_{ijk} \sim \mathcal{N}(0, \sigma^2)\)</span>.</p>
+</details>        <p>Decomposition of Sum of Squares (SS):
+    The total sum of squares (<span class="arithmatex">\(SS_{\text{Total}}\)</span>) measures total sample variation:
+    $<span class="arithmatex">\(SS_{\text{Total}} = SS_A + SS_B + SS_{AB} + SS_{\text{Error}}\)</span>$
+    where:
+    - <span class="arithmatex">\(SS_A = J K \sum_{i=1}^I (\bar{Y}_{i\cdot\cdot} - \bar{Y}_{\cdot\cdot\cdot})^2\)</span> (Main effect <span class="arithmatex">\(A\)</span>)
+    - <span class="arithmatex">\(SS_B = I K \sum_{j=1}^J (\bar{Y}_{\cdot j\cdot} - \bar{Y}_{\cdot\cdot\cdot})^2\)</span> (Main effect <span class="arithmatex">\(B\)</span>)
+    - <span class="arithmatex">\(SS_{AB} = K \sum_{i=1}^I \sum_{j=1}^J (\bar{Y}_{ij\cdot} - \bar{Y}_{i\cdot\cdot} - \bar{Y}_{\cdot j\cdot} + \bar{Y}_{\cdot\cdot\cdot})^2\)</span> (Interaction effect <span class="arithmatex">\(AB\)</span>)
+    - <span class="arithmatex">\(SS_{\text{Error}} = \sum_{i=1}^I \sum_{j=1}^J \sum_{k=1}^K (Y_{ijk} - \bar{Y}_{ij\cdot})^2\)</span> (Residual variation)</p>
+
+
+<details class="f-test-ratios" open>
+  <summary>F-Test Ratios</summary>
+  <p>Significance of each effect is evaluated by comparing the Mean Square (<span class="arithmatex">\(MS = SS / df\)</span>) against the residual Mean Square (<span class="arithmatex">\(MS_{\text{Error}}\)</span>):
+- For Factor <span class="arithmatex">\(A\)</span>:
+  $<span class="arithmatex">\(F_A = \frac{MS_A}{MS_{\text{Error}}} = \frac{SS_A / (I-1)}{SS_{\text{Error}} / [IJ(K-1)]} \sim F_{I-1, \ IJ(K-1)}\)</span>$
+- For Interaction <span class="arithmatex">\(AB\)</span>:
+  $<span class="arithmatex">\(F_{AB} = \frac{MS_{AB}}{MS_{\text{Error}}} = \frac{SS_{AB} / [(I-1)(J-1)]}{SS_{\text{Error}} / [IJ(K-1)]} \sim F_{(I-1)(J-1), \ IJ(K-1)}\)</span>$
+A significant <span class="arithmatex">\(F_{AB}\)</span> (<span class="arithmatex">\(p &lt; 0.05\)</span>) proves that the effect of Factor <span class="arithmatex">\(A\)</span> depends on the level of Factor <span class="arithmatex">\(B\)</span>. This indicates that
+interpreting main effects alone is statistically misleading; the interaction must be evaluated.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The experimental dataset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>formula</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>R-style regression formula (e.g., <code>"revenue ~ factor_a * factor_b"</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>pd.DataFrame: A standard ANOVA table detailing Sum of Squares, degrees of freedom (<span class="arithmatex">\(df\)</span>), F-statistics,
+and p-values for each term.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\interactions\anova.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-4">4</a></span>
-<span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_factorial_anova</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">formula</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes factorial ANOVA tables with interaction terms for DoE factors.&quot;&quot;&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>    <span class="c1"># TODO: Implement statsmodels OLS and anova_lm integration</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_factorial_anova</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">formula</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes factorial ANOVA tables with interaction terms for DoE factors.</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    Factorial ANOVA decomposes the total variability of an experimental outcome into portions attributable</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    to main factor effects, multi-factor interaction effects, and random error. This is crucial for verifying</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    which process factors have a statistically significant impact on the response variable, and whether factors</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    behave synergetically or antagonistically when combined.</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">    Mathematical Formulation:</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        For a two-factor experimental design (Factor $A$ with $I$ levels, Factor $B$ with $J$ levels, and $K$ replicates per cell),</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        the response $Y_{ijk}$ is modeled as:</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        $$Y_{ijk} = \\mu + \\alpha_i + \\beta_j + (\\alpha\\beta)_{ij} + \\varepsilon_{ijk}$$</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        where:</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        - $\\mu$: The grand mean of the response.</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        - $\\alpha_i$: The main effect of Factor $A$ at level $i$ (subject to $\\sum_{i=1}^I \\alpha_i = 0$).</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        - $\\beta_j$: The main effect of Factor $B$ at level $j$ (subject to $\\sum_{j=1}^J \\beta_j = 0$).</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        - $(\\alpha\\beta)_{ij}$ smokes: The interaction effect between Factor $A$ at level $i$ and Factor $B$ at level $j$</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">          (subject to $\\sum_{i=1}^I (\\alpha\\beta)_{ij} = \\sum_{j=1}^J (\\alpha\\beta)_{ij} = 0$).</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        - $\\varepsilon_{ijk}$: Independent and identically distributed normal error terms, $\\varepsilon_{ijk} \\sim \\mathcal{N}(0, \\sigma^2)$.</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    Decomposition of Sum of Squares (SS):</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        The total sum of squares ($SS_{\\text{Total}}$) measures total sample variation:</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        $$SS_{\\text{Total}} = SS_A + SS_B + SS_{AB} + SS_{\\text{Error}}$$</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        where:</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        - $SS_A = J K \\sum_{i=1}^I (\\bar{Y}_{i\\cdot\\cdot} - \\bar{Y}_{\\cdot\\cdot\\cdot})^2$ (Main effect $A$)</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        - $SS_B = I K \\sum_{j=1}^J (\\bar{Y}_{\\cdot j\\cdot} - \\bar{Y}_{\\cdot\\cdot\\cdot})^2$ (Main effect $B$)</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        - $SS_{AB} = K \\sum_{i=1}^I \\sum_{j=1}^J (\\bar{Y}_{ij\\cdot} - \\bar{Y}_{i\\cdot\\cdot} - \\bar{Y}_{\\cdot j\\cdot} + \\bar{Y}_{\\cdot\\cdot\\cdot})^2$ (Interaction effect $AB$)</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        - $SS_{\\text{Error}} = \\sum_{i=1}^I \\sum_{j=1}^J \\sum_{k=1}^K (Y_{ijk} - \\bar{Y}_{ij\\cdot})^2$ (Residual variation)</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    F-Test Ratios:</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        Significance of each effect is evaluated by comparing the Mean Square ($MS = SS / df$) against the residual Mean Square ($MS_{\\text{Error}}$):</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        - For Factor $A$:</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">          $$F_A = \\frac{MS_A}{MS_{\\text{Error}}} = \\frac{SS_A / (I-1)}{SS_{\\text{Error}} / [IJ(K-1)]} \\sim F_{I-1, \\ IJ(K-1)}$$</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        - For Interaction $AB$:</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">          $$F_{AB} = \\frac{MS_{AB}}{MS_{\\text{Error}}} = \\frac{SS_{AB} / [(I-1)(J-1)]}{SS_{\\text{Error}} / [IJ(K-1)]} \\sim F_{(I-1)(J-1), \\ IJ(K-1)}$$</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        A significant $F_{AB}$ ($p &lt; 0.05$) proves that the effect of Factor $A$ depends on the level of Factor $B$. This indicates that</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        interpreting main effects alone is statistically misleading; the interaction must be evaluated.</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        df (pd.DataFrame): The experimental dataset.</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        formula (str): R-style regression formula (e.g., `&quot;revenue ~ factor_a * factor_b&quot;`).</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        pd.DataFrame: A standard ANOVA table detailing Sum of Squares, degrees of freedom ($df$), F-statistics,</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">            and p-values for each term.</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="c1"># TODO: Implement statsmodels OLS and anova_lm integration</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>

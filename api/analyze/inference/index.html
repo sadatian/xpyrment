@@ -2367,6 +2367,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#xpyrment.analyze.inference.BayesianInference.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#xpyrment.analyze.inference.BayesianInference.estimate_posterior" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3353,6 +3364,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#xpyrment.analyze.inference.BayesianInference.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#xpyrment.analyze.inference.BayesianInference.estimate_posterior" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3478,6 +3500,16 @@
 
     <div class="doc doc-contents first">
 
+        <p>Statistical inference engines, frameworks, and decision-making systems.</p>
+<p>This package provides standard and state-of-the-art inferential frameworks for computing treatment
+effects, confidence bounds, and decision probabilities.</p>
+<p>Submodules:
+- <code>frequentist</code>: Standard hypothesis tests including Welch's t-test and Mann-Whitney U rank sums.
+- <code>bayesian</code>: Conjugate posterior models (Beta-Binomial, Normal-Normal) and expected loss decisions.
+- <code>sequential</code>: Always-Valid Confidence Intervals (AVCIs) derived from mSPRT boundaries.
+- <code>bootstrap</code>: Non-parametric percentile and BCa resampling estimators.
+- <code>router</code>: Automated matching between metric structures, designs, and calculation engines.</p>
+
 
 
 
@@ -3513,6 +3545,72 @@
 
 
         <p>Computes Bayesian posterior parameters, probability of being best, expected loss, and ROPE.</p>
+<p>Bayesian inference offers a direct, probabilistic interpretation of treatment effects, avoiding the complex
+and frequently misunderstood reasoning of frequentist p-values. It provides answers to intuitive questions like:
+"What is the probability that Treatment B is superior to Control A?" or "What is the expected loss if I ship Treatment B?"</p>
+
+
+<details class="mathematical-formulation-of-conjugate-models" open>
+  <summary>Mathematical Formulation of Conjugate Models</summary>
+  <p>Conjugate models allow the analytical calculation of posterior distributions without requiring expensive
+Markov Chain Monte Carlo (MCMC) sampling:</p>
+<ol>
+<li><strong>Beta-Binomial Model</strong> (for binary conversion rates, <span class="arithmatex">\(p \in [0, 1]\)</span>):</li>
+<li>Prior: <span class="arithmatex">\(p \sim \text{Beta}(\alpha_0, \beta_0)\)</span> (e.g., <span class="arithmatex">\(\text{Beta}(1, 1)\)</span> for a flat, uniform prior).</li>
+<li>Likelihood: Binomial (<span class="arithmatex">\(k\)</span> conversions out of <span class="arithmatex">\(n\)</span> trials).</li>
+<li>Posterior:
+     $<span class="arithmatex">\(p|k, n \sim \text{Beta}(\alpha_0 + k, \ \beta_0 + n - k)\)</span>$</li>
+<li><strong>Normal-Normal Model</strong> (for continuous averages, <span class="arithmatex">\(\mu \in \mathbb{R}\)</span>, with known variance <span class="arithmatex">\(\sigma^2\)</span>):</li>
+<li>Prior: <span class="arithmatex">\(\mu \sim \mathcal{N}(\mu_0, \sigma_0^2)\)</span>.</li>
+<li>Likelihood: Normal (<span class="arithmatex">\(N\)</span> observations with sample mean <span class="arithmatex">\(\bar{Y}\)</span> and variance <span class="arithmatex">\(\sigma^2\)</span>).</li>
+<li>Posterior:
+     $<span class="arithmatex">\(\mu| \bar{Y} \sim \mathcal{N}(\mu_N, \sigma_N^2)\)</span>$
+     where the posterior precision (<span class="arithmatex">\(1/\sigma_N^2\)</span>) and posterior mean (<span class="arithmatex">\(\mu_N\)</span>) are calculated as:
+     $<span class="arithmatex">\(\frac{1}{\sigma_N^2} = \frac{1}{\sigma_0^2} + \frac{N}{\sigma^2} \quad \text{and} \quad \mu_N = \sigma_N^2 \left( \frac{\mu_0}{\sigma_0^2} + \frac{N\bar{Y}}{\sigma^2} \right)\)</span>$</li>
+</ol>
+</details>
+
+<details class="decision-making-criteria-and-analytics" open>
+  <summary>Decision-Making Criteria and Analytics</summary>
+  <ul>
+<li><strong>Probability of Being Best (PBB)</strong>: The probability that the treatment parameter <span class="arithmatex">\(\theta_T\)</span> is strictly greater
+  than the control parameter <span class="arithmatex">\(\theta_C\)</span>:
+  $<span class="arithmatex">\(\text{PBB} = P(\theta_T &gt; \theta_C) = \int_{-\infty}^{\infty} \int_{\theta_C}^{\infty} f_T(\theta_T) f_C(\theta_C) \, d\theta_T \, d\theta_C\)</span>$
+  (Typically estimated via Monte Carlo sampling: drawing 100k random samples from each posterior and calculating the fraction where sample <span class="arithmatex">\(t &gt; c\)</span>).</li>
+<li><strong>Expected Loss (<span class="arithmatex">\(L\)</span>)</strong>: The expected metric drop if the treatment is shipped but is actually inferior:
+  $<span class="arithmatex">\(L(T) = \mathbb{E}[\max(\theta_C - \theta_T, 0)]\)</span>$
+  If the expected loss is below a certain threshold <span class="arithmatex">\(\epsilon\)</span> (the "acceptable risk level"), the treatment can be
+  safely deployed.</li>
+<li><strong>Region of Practical Equivalence (ROPE)</strong>: Establishes a range <span class="arithmatex">\([-\delta, \delta]\)</span> representing differences so small
+  they are practically equivalent to zero. If the posterior distribution of the difference (<span class="arithmatex">\(\theta_T - \theta_C\)</span>) lies
+  entirely inside the ROPE, we conclude that the two variants are equivalent.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.analyze.inference.BayesianInference.model_type">model_type</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Conjugate model pairing label. Options: <code>"beta_binomial"</code>, <code>"normal_normal"</code>.
+Defaults to <code>"beta_binomial"</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 
@@ -3523,25 +3621,137 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src\xpyrment\analyze\inference\bayesian.py</code></summary>
-                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1"> 1</a></span>
-<span class="normal"><a href="#__codelineno-0-2"> 2</a></span>
-<span class="normal"><a href="#__codelineno-0-3"> 3</a></span>
-<span class="normal"><a href="#__codelineno-0-4"> 4</a></span>
-<span class="normal"><a href="#__codelineno-0-5"> 5</a></span>
-<span class="normal"><a href="#__codelineno-0-6"> 6</a></span>
-<span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
-<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-0-10">10</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BayesianInference</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes Bayesian posterior parameters, probability of being best, expected loss, and ROPE.&quot;&quot;&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;beta_binomial&quot;</span><span class="p">):</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="n">model_type</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_posterior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prior_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimates conjugate posterior distributions.&quot;&quot;&quot;</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a>        <span class="c1"># TODO: Implement conjugate Bayesian engines (Beta-Binomial, Normal-IG, Gamma-Poisson)</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a>        <span class="k">return</span> <span class="p">{}</span>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">BayesianInference</span><span class="p">:</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes Bayesian posterior parameters, probability of being best, expected loss, and ROPE.</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="sd">    Bayesian inference offers a direct, probabilistic interpretation of treatment effects, avoiding the complex</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    and frequently misunderstood reasoning of frequentist p-values. It provides answers to intuitive questions like:</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    &quot;What is the probability that Treatment B is superior to Control A?&quot; or &quot;What is the expected loss if I ship Treatment B?&quot;</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    Mathematical Formulation of Conjugate Models:</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">        Conjugate models allow the analytical calculation of posterior distributions without requiring expensive</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">        Markov Chain Monte Carlo (MCMC) sampling:</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        1. **Beta-Binomial Model** (for binary conversion rates, $p \in [0, 1]$):</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">           - Prior: $p \sim \text{Beta}(\alpha_0, \beta_0)$ (e.g., $\text{Beta}(1, 1)$ for a flat, uniform prior).</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">           - Likelihood: Binomial ($k$ conversions out of $n$ trials).</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">           - Posterior:</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">             $$p|k, n \sim \text{Beta}(\alpha_0 + k, \ \beta_0 + n - k)$$</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        2. **Normal-Normal Model** (for continuous averages, $\mu \in \mathbb{R}$, with known variance $\sigma^2$):</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">           - Prior: $\mu \sim \mathcal{N}(\mu_0, \sigma_0^2)$.</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">           - Likelihood: Normal ($N$ observations with sample mean $\bar{Y}$ and variance $\sigma^2$).</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">           - Posterior:</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">             $$\mu| \bar{Y} \sim \mathcal{N}(\mu_N, \sigma_N^2)$$</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">             where the posterior precision ($1/\sigma_N^2$) and posterior mean ($\mu_N$) are calculated as:</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">             $$\frac{1}{\sigma_N^2} = \frac{1}{\sigma_0^2} + \frac{N}{\sigma^2} \quad \text{and} \quad \mu_N = \sigma_N^2 \left( \frac{\mu_0}{\sigma_0^2} + \frac{N\bar{Y}}{\sigma^2} \right)$$</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    Decision-Making Criteria and Analytics:</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        - **Probability of Being Best (PBB)**: The probability that the treatment parameter $\theta_T$ is strictly greater</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">          than the control parameter $\theta_C$:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">          $$\text{PBB} = P(\theta_T &gt; \theta_C) = \int_{-\infty}^{\infty} \int_{\theta_C}^{\infty} f_T(\theta_T) f_C(\theta_C) \, d\theta_T \, d\theta_C$$</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">          (Typically estimated via Monte Carlo sampling: drawing 100k random samples from each posterior and calculating the fraction where sample $t &gt; c$).</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        - **Expected Loss ($L$)**: The expected metric drop if the treatment is shipped but is actually inferior:</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">          $$L(T) = \mathbb{E}[\max(\theta_C - \theta_T, 0)]$$</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">          If the expected loss is below a certain threshold $\epsilon$ (the &quot;acceptable risk level&quot;), the treatment can be</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">          safely deployed.</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        - **Region of Practical Equivalence (ROPE)**: Establishes a range $[-\delta, \delta]$ representing differences so small</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">          they are practically equivalent to zero. If the posterior distribution of the difference ($\theta_T - \theta_C$) lies</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">          entirely inside the ROPE, we conclude that the two variants are equivalent.</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">    Attributes:</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        model_type (str): Conjugate model pairing label. Options: `&quot;beta_binomial&quot;`, `&quot;normal_normal&quot;`.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            Defaults to `&quot;beta_binomial&quot;`.</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;beta_binomial&quot;</span><span class="p">):</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes a BayesianInference.</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        Args:</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">            model_type (str): Conjugate model to use (`&quot;beta_binomial&quot;` or `&quot;normal_normal&quot;`).</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">                Defaults to `&quot;beta_binomial&quot;`.</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="n">model_type</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_posterior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prior_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimates conjugate posterior distributions based on prior settings and raw observations.</span>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        Performs the analytical conjugate update formulas, then computes PBB, Expected Loss, and</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">        credible intervals.</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">        Args:</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">            prior_params (dict): Prior parameters (e.g., `{&quot;alpha&quot;: 1, &quot;beta&quot;: 1}` or `{&quot;mean&quot;: 0, &quot;variance&quot;: 1}`).</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">            observed_data (dict): Observed outcomes (conversions and counts, or means and variances).</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">        Returns:</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">            dict: Posterior distribution parameters, credible intervals, and decision metrics.</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a>        <span class="c1"># TODO: Implement conjugate Bayesian engines (Beta-Binomial, Normal-IG, Gamma-Poisson)</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="k">return</span> <span class="p">{}</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -3561,6 +3771,75 @@
 <div class="doc doc-object doc-function">
 
 
+<h4 id="xpyrment.analyze.inference.BayesianInference.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;beta_binomial&#39;</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initializes a BayesianInference.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model_type</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Conjugate model to use (<code>"beta_binomial"</code> or <code>"normal_normal"</code>).
+Defaults to <code>"beta_binomial"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;beta_binomial&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\xpyrment\analyze\inference\bayesian.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;beta_binomial&quot;</span><span class="p">):</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializes a BayesianInference.</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        model_type (str): Conjugate model to use (`&quot;beta_binomial&quot;` or `&quot;normal_normal&quot;`).</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">            Defaults to `&quot;beta_binomial&quot;`.</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="n">model_type</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="xpyrment.analyze.inference.BayesianInference.estimate_posterior" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">estimate_posterior</span><span class="p">(</span><span class="n">prior_params</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">)</span></code>
 
@@ -3569,18 +3848,112 @@
 
     <div class="doc doc-contents ">
 
-        <p>Estimates conjugate posterior distributions.</p>
+        <p>Estimates conjugate posterior distributions based on prior settings and raw observations.</p>
+<p>Performs the analytical conjugate update formulas, then computes PBB, Expected Loss, and
+credible intervals.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>prior_params</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Prior parameters (e.g., <code>{"alpha": 1, "beta": 1}</code> or <code>{"mean": 0, "variance": 1}</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>observed_data</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Observed outcomes (conversions and counts, or means and variances).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>dict</code></td>            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Posterior distribution parameters, credible intervals, and decision metrics.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\analyze\inference\bayesian.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
-<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-0-10">10</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">estimate_posterior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prior_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimates conjugate posterior distributions.&quot;&quot;&quot;</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a>    <span class="c1"># TODO: Implement conjugate Bayesian engines (Beta-Binomial, Normal-IG, Gamma-Poisson)</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a>    <span class="k">return</span> <span class="p">{}</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="k">def</span><span class="w"> </span><span class="nf">estimate_posterior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prior_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimates conjugate posterior distributions based on prior settings and raw observations.</span>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    Performs the analytical conjugate update formulas, then computes PBB, Expected Loss, and</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    credible intervals.</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">        prior_params (dict): Prior parameters (e.g., `{&quot;alpha&quot;: 1, &quot;beta&quot;: 1}` or `{&quot;mean&quot;: 0, &quot;variance&quot;: 1}`).</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">        observed_data (dict): Observed outcomes (conversions and counts, or means and variances).</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">        dict: Posterior distribution parameters, credible intervals, and decision metrics.</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="c1"># TODO: Implement conjugate Bayesian engines (Beta-Binomial, Normal-IG, Gamma-Poisson)</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="k">return</span> <span class="p">{}</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3610,8 +3983,32 @@
 
 
 
-        <p>Computes sequential monitoring bounds and always-valid confidence intervals.</p>
+        <p>Computes sequential monitoring bounds and always-valid confidence intervals (AVCIs).</p>
+<p>In traditional experimentation, looking at confidence intervals before the test finishes (peeking) is statistically
+hazardous. Always-Valid Confidence Intervals (AVCIs) solve this by providing a sequence of intervals that cover the
+true parameter <span class="arithmatex">\(\theta\)</span> at <em>all</em> steps <span class="arithmatex">\(n \ge 1\)</span> simultaneously with a probability of at least <span class="arithmatex">\(1 - \alpha\)</span>.</p>
 
+
+<details class="mathematical-definition-and-boundary-formulas" open>
+  <summary>Mathematical Definition and Boundary Formulas</summary>
+  <p>Let <span class="arithmatex">\(C_n\)</span> be the confidence interval calculated at sample size <span class="arithmatex">\(n\)</span>. For any nominal error rate <span class="arithmatex">\(\alpha \in (0, 1)\)</span>:
+$<span class="arithmatex">\(\mathbb{P} \left( \forall n \ge 1, \ \theta \in C_n \right) \ge 1 - \alpha\)</span>$
+This is an incredibly powerful property: it allows the experimenter to continuously plot the confidence interval
+over time, and if the interval does not contain zero at any point, the experiment can be stopped immediately
+with a guaranteed Type I error rate controlled at <span class="arithmatex">\(\alpha\)</span>.</p>
+<p>AVCI Derivation from mSPRT:
+By inverting the mixture Sequential Probability Ratio Test (mSPRT) statistic for a normally distributed metric with
+unit baseline variance <span class="arithmatex">\(\sigma^2\)</span> and mixing tuning parameter <span class="arithmatex">\(\tau^2\)</span> (representing prior effect variance), the
+always-valid confidence interval at step <span class="arithmatex">\(n\)</span> is:
+$<span class="arithmatex">\(C_n = \left[ \bar{Y}_n - W_n, \ \bar{Y}_n + W_n \right]\)</span>$
+where <span class="arithmatex">\(\bar{Y}_n\)</span> is the observed sample mean difference, and the sequential margin of error <span class="arithmatex">\(W_n\)</span> is:
+$<span class="arithmatex">\(W_n = \sqrt{\frac{2\sigma^2(\sigma^2 + n\tau^2)}{n^2\tau^2} \ln\left( \frac{1}{\alpha} \sqrt{\frac{\sigma^2 + n\tau^2}{\sigma^2}} \right)}\)</span>$</p>
+<p>Properties of <span class="arithmatex">\(W_n\)</span>:
+- For very small <span class="arithmatex">\(n\)</span>, <span class="arithmatex">\(W_n\)</span> is wider than the traditional fixed-sample Wald margin of error (<span class="arithmatex">\(z_{1-\alpha/2} \sigma / \sqrt{n}\)</span>),
+  which mathematically penalizes and compensates for the continuous peeking.
+- As <span class="arithmatex">\(n \to \infty\)</span>, the sequential margin <span class="arithmatex">\(W_n\)</span> asymptotically matches the rate of the traditional interval,
+  ensuring zero long-term loss in statistical efficiency.</p>
+</details>
 
 
 
@@ -3621,19 +4018,95 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src\xpyrment\analyze\inference\sequential.py</code></summary>
-                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
-<span class="normal"><a href="#__codelineno-0-2">2</a></span>
-<span class="normal"><a href="#__codelineno-0-3">3</a></span>
-<span class="normal"><a href="#__codelineno-0-4">4</a></span>
-<span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">SequentialInference</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes sequential monitoring bounds and always-valid confidence intervals.&quot;&quot;&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_always_valid_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes continuous monitoring boundaries to prevent alpha inflation from peeking.&quot;&quot;&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>        <span class="c1"># TODO: Implement sequential boundary functions (mSPRT or Pocock)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>        <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">SequentialInference</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes sequential monitoring bounds and always-valid confidence intervals (AVCIs).</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="sd">    In traditional experimentation, looking at confidence intervals before the test finishes (peeking) is statistically</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="sd">    hazardous. Always-Valid Confidence Intervals (AVCIs) solve this by providing a sequence of intervals that cover the</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    true parameter $\\theta$ at *all* steps $n \\ge 1$ simultaneously with a probability of at least $1 - \\alpha$.</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    Mathematical Definition and Boundary Formulas:</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">        Let $C_n$ be the confidence interval calculated at sample size $n$. For any nominal error rate $\\alpha \\in (0, 1)$:</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">        $$\\mathbb{P} \\left( \\forall n \\ge 1, \\ \\theta \\in C_n \\right) \\ge 1 - \\alpha$$</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">        This is an incredibly powerful property: it allows the experimenter to continuously plot the confidence interval</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        over time, and if the interval does not contain zero at any point, the experiment can be stopped immediately</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        with a guaranteed Type I error rate controlled at $\\alpha$.</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        AVCI Derivation from mSPRT:</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        By inverting the mixture Sequential Probability Ratio Test (mSPRT) statistic for a normally distributed metric with</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        unit baseline variance $\\sigma^2$ and mixing tuning parameter $\\tau^2$ (representing prior effect variance), the</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        always-valid confidence interval at step $n$ is:</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        $$C_n = \\left[ \\bar{Y}_n - W_n, \\ \\bar{Y}_n + W_n \\right]$$</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        where $\\bar{Y}_n$ is the observed sample mean difference, and the sequential margin of error $W_n$ is:</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        $$W_n = \\sqrt{\\frac{2\\sigma^2(\\sigma^2 + n\\tau^2)}{n^2\\tau^2} \\ln\\left( \\frac{1}{\\alpha} \\sqrt{\\frac{\\sigma^2 + n\\tau^2}{\\sigma^2}} \\right)}$$</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        Properties of $W_n$:</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        - For very small $n$, $W_n$ is wider than the traditional fixed-sample Wald margin of error ($z_{1-\\alpha/2} \\sigma / \\sqrt{n}$),</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">          which mathematically penalizes and compensates for the continuous peeking.</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        - As $n \\to \\infty$, the sequential margin $W_n$ asymptotically matches the rate of the traditional interval,</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">          ensuring zero long-term loss in statistical efficiency.</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_always_valid_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes continuous monitoring boundaries to prevent alpha inflation from peeking.</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        Calculates the exact sequential margin of error ($W_n$) at a given sample size, yielding</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        always-valid confidence bounds around the observed effect size.</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        Args:</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">            sample_size (int): The current accumulated number of units/trials ($n$).</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">            alpha (float): The target false-positive rate ($\\alpha$).</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        Returns:</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            tuple: A tuple of floats `(lower_bound, upper_bound)` representing the always-valid interval bounds</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">                relative to the mean difference.</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>        <span class="c1"># TODO: Implement sequential boundary functions (mSPRT or Pocock)</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>        <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -3662,17 +4135,114 @@
     <div class="doc doc-contents ">
 
         <p>Computes continuous monitoring boundaries to prevent alpha inflation from peeking.</p>
+<p>Calculates the exact sequential margin of error (<span class="arithmatex">\(W_n\)</span>) at a given sample size, yielding
+always-valid confidence bounds around the observed effect size.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>sample_size</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The current accumulated number of units/trials (<span class="arithmatex">\(n\)</span>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>alpha</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The target false-positive rate (<span class="arithmatex">\(\alpha\)</span>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>tuple</code></td>            <td>
+                  <code><span title="tuple">tuple</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A tuple of floats <code>(lower_bound, upper_bound)</code> representing the always-valid interval bounds
+relative to the mean difference.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\analyze\inference\sequential.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-4">4</a></span>
-<span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_always_valid_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes continuous monitoring boundaries to prevent alpha inflation from peeking.&quot;&quot;&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>    <span class="c1"># TODO: Implement sequential boundary functions (mSPRT or Pocock)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_always_valid_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes continuous monitoring boundaries to prevent alpha inflation from peeking.</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    Calculates the exact sequential margin of error ($W_n$) at a given sample size, yielding</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    always-valid confidence bounds around the observed effect size.</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        sample_size (int): The current accumulated number of units/trials ($n$).</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        alpha (float): The target false-positive rate ($\\alpha$).</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        tuple: A tuple of floats `(lower_bound, upper_bound)` representing the always-valid interval bounds</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            relative to the mean difference.</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="c1"># TODO: Implement sequential boundary functions (mSPRT or Pocock)</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3700,6 +4270,92 @@
     <div class="doc doc-contents ">
 
         <p>Routes to the correct statistical engine based on metric and design types.</p>
+<p>Selects the mathematically correct statistical test and variance estimator depending on the structural type
+of the metric (continuous mean, ratio of random variables, binary rate) and the user's desired inferential paradigm
+(Frequentist, Bayesian, Sequential, or Bootstrap).</p>
+
+
+<details class="inference-routing-matrix" open>
+  <summary>Inference Routing Matrix</summary>
+  <p>+------------------+-----------------------------+-----------------------------+-------------------------------+
+| Metric Type      | Frequentist                 | Bayesian                    | Sequential (mSPRT)            |
++------------------+-----------------------------+-----------------------------+-------------------------------+
+| <strong>MeanMetric</strong>   | Welch's t-test (CLT)        | Normal-Normal Conjugate /   | Continuous Normal Likelihood  |
+|                  |                             | Gibbs Sampler               | Ratio Martingale              |
++------------------+-----------------------------+-----------------------------+-------------------------------+
+| <strong>RatioMetric</strong>  | Delta Method t-test         | Normal-Normal Delta /       | Ratio-Delta Likelihood        |
+|                  | (Taylor approximation)      | MCMC Sampler                | Ratio Martingale              |
++------------------+-----------------------------+-----------------------------+-------------------------------+
+| <strong>BinaryMetric</strong> | Pearson Z-test (Wald CI)    | Beta-Binomial Conjugate     | Bernoulli Likelihood          |
+|                  | / Fisher's Exact Test       | (Exact posterior)           | Ratio Martingale              |
++------------------+-----------------------------+-----------------------------+-------------------------------+</p>
+</details>
+
+<details class="pseudocode-for-routing-logic" open>
+  <summary>Pseudocode for Routing Logic</summary>
+  <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>function route_inference_engine(metric, paradigm):
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    1. Extract metric_class = metric.__class__.__name__ (MeanMetric, RatioMetric, etc.)
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    2. Match paradigm:
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>         - &quot;frequentist&quot;:
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>             If MeanMetric -&gt; return &quot;frequentist_welch_t_test&quot;
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>             If RatioMetric -&gt; return &quot;frequentist_ratio_delta_test&quot;
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>         - &quot;bayesian&quot;:
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>             If BinaryMetric -&gt; return &quot;bayesian_beta_binomial&quot;
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>             If MeanMetric -&gt; return &quot;bayesian_normal_normal&quot;
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>         - &quot;sequential&quot;:
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>             return &quot;sequential_msprt&quot;
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>         - &quot;bootstrap&quot;:
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>             return &quot;bootstrap_resampling&quot;
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    3. Raise error if the combination is mathematically invalid.
+</span></code></pre></div>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>metric</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="BaseMetric (xpyrment.metrics.taxonomy.BaseMetric)" href="../../metrics/taxonomy/#xpyrment.metrics.taxonomy.BaseMetric">BaseMetric</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The target metric object (MeanMetric, RatioMetric, etc.) under analysis.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>design_type</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The desired statistical framework. Options: <code>"frequentist"</code>, <code>"bayesian"</code>,
+<code>"sequential"</code>, <code>"bootstrap"</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -3717,7 +4373,7 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Engine label (e.g., 'frequentist_t_test', 'bayesian_beta_binomial', etc.)</p>
+                <p>Engine label string identifying the specific low-level calculation function.</p>
               </div>
             </td>
           </tr>
@@ -3727,21 +4383,103 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\analyze\inference\router.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-5"> 5</a></span>
-<span class="normal"><a href="#__codelineno-0-6"> 6</a></span>
-<span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
-<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-0-10">10</a></span>
-<span class="normal"><a href="#__codelineno-0-11">11</a></span>
-<span class="normal"><a href="#__codelineno-0-12">12</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">route_inference_engine</span><span class="p">(</span><span class="n">metric</span><span class="p">:</span> <span class="n">BaseMetric</span><span class="p">,</span> <span class="n">design_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Routes to the correct statistical engine based on metric and design types.</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a><span class="sd">        str: Engine label (e.g., &#39;frequentist_t_test&#39;, &#39;bayesian_beta_binomial&#39;, etc.)</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a>    <span class="c1"># TODO: Implement full intelligent router</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a>    <span class="k">return</span> <span class="s2">&quot;frequentist_t_test&quot;</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">route_inference_engine</span><span class="p">(</span><span class="n">metric</span><span class="p">:</span> <span class="n">BaseMetric</span><span class="p">,</span> <span class="n">design_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Routes to the correct statistical engine based on metric and design types.</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    Selects the mathematically correct statistical test and variance estimator depending on the structural type</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    of the metric (continuous mean, ratio of random variables, binary rate) and the user&#39;s desired inferential paradigm</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    (Frequentist, Bayesian, Sequential, or Bootstrap).</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    Inference Routing Matrix:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        +------------------+-----------------------------+-----------------------------+-------------------------------+</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        | Metric Type      | Frequentist                 | Bayesian                    | Sequential (mSPRT)            |</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        +------------------+-----------------------------+-----------------------------+-------------------------------+</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        | **MeanMetric**   | Welch&#39;s t-test (CLT)        | Normal-Normal Conjugate /   | Continuous Normal Likelihood  |</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        |                  |                             | Gibbs Sampler               | Ratio Martingale              |</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        +------------------+-----------------------------+-----------------------------+-------------------------------+</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        | **RatioMetric**  | Delta Method t-test         | Normal-Normal Delta /       | Ratio-Delta Likelihood        |</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        |                  | (Taylor approximation)      | MCMC Sampler                | Ratio Martingale              |</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        +------------------+-----------------------------+-----------------------------+-------------------------------+</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">        | **BinaryMetric** | Pearson Z-test (Wald CI)    | Beta-Binomial Conjugate     | Bernoulli Likelihood          |</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        |                  | / Fisher&#39;s Exact Test       | (Exact posterior)           | Ratio Martingale              |</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        +------------------+-----------------------------+-----------------------------+-------------------------------+</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    Pseudocode for Routing Logic:</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        ```text</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        function route_inference_engine(metric, paradigm):</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">            1. Extract metric_class = metric.__class__.__name__ (MeanMetric, RatioMetric, etc.)</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">            2. Match paradigm:</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">                 - &quot;frequentist&quot;:</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">                     If MeanMetric -&gt; return &quot;frequentist_welch_t_test&quot;</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">                     If RatioMetric -&gt; return &quot;frequentist_ratio_delta_test&quot;</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">                 - &quot;bayesian&quot;:</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">                     If BinaryMetric -&gt; return &quot;bayesian_beta_binomial&quot;</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">                     If MeanMetric -&gt; return &quot;bayesian_normal_normal&quot;</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">                 - &quot;sequential&quot;:</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">                     return &quot;sequential_msprt&quot;</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">                 - &quot;bootstrap&quot;:</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">                     return &quot;bootstrap_resampling&quot;</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            3. Raise error if the combination is mathematically invalid.</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        ```</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        metric (BaseMetric): The target metric object (MeanMetric, RatioMetric, etc.) under analysis.</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        design_type (str): The desired statistical framework. Options: `&quot;frequentist&quot;`, `&quot;bayesian&quot;`,</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">            `&quot;sequential&quot;`, `&quot;bootstrap&quot;`.</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        str: Engine label string identifying the specific low-level calculation function.</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span class="c1"># TODO: Implement full intelligent router</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="k">return</span> <span class="s2">&quot;frequentist_t_test&quot;</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3759,18 +4497,234 @@
 
     <div class="doc doc-contents ">
 
-        <p>Computes nonparametric bootstrap confidence intervals for arbitrary complex metrics.</p>
+        <p>Computes non-parametric bootstrap confidence intervals for arbitrary complex metrics.</p>
+<p>Bootstrap resampling (Efron, 1979) is a non-parametric method used to estimate the standard error and confidence
+intervals of an estimator (such as means, medians, ratios, or quantiles). It is particularly valuable when the
+underlying metric distribution is highly non-normal (e.g., bi-modal, zero-inflated, or power-law) or when the
+estimator's mathematical variance cannot be easily derived analytically.</p>
+
+
+<details class="mathematical-and-algorithmic-formulation" open>
+  <summary>Mathematical and Algorithmic Formulation</summary>
+  <p>Let <span class="arithmatex">\(\mathbf{x} = (x_1, x_2, \dots, x_n)\)</span> be the observed sample of size <span class="arithmatex">\(n\)</span>, and let <span class="arithmatex">\(\hat{\theta} = s(\mathbf{x})\)</span>
+be the point estimate of interest.</p>
+<p>The bootstrap sampling distribution is constructed as follows:
+1. Draw a bootstrap sample <span class="arithmatex">\(\mathbf{x}^{*b}\)</span> of size <span class="arithmatex">\(n\)</span> by sampling uniformly <strong>with replacement</strong> from the
+   original sample <span class="arithmatex">\(\mathbf{x}\)</span>.
+2. Calculate the bootstrap replication of the estimator: <span class="arithmatex">\(\hat{\theta}^{*b} = s(\mathbf{x}^{*b})\)</span>.
+3. Repeat steps 1-2 a large number of times <span class="arithmatex">\(B\)</span> (where <span class="arithmatex">\(B = \text{num\_resamples}\)</span>, typically <span class="arithmatex">\(B \ge 2000\)</span>),
+   generating a set of replicates: <span class="arithmatex">\(\{\hat{\theta}^{*1}, \hat{\theta}^{*2}, \dots, \hat{\theta}^{*B}\}\)</span>.</p>
+</details>
+
+<details class="confidence-interval-methods" open>
+  <summary>Confidence Interval Methods</summary>
+  <ol>
+<li>
+<p><strong>Percentile Bootstrap</strong> (Simple and intuitive):
+   Sorts the bootstrap replicates in ascending order: <span class="arithmatex">\(\hat{\theta}^{*(1)} \le \hat{\theta}^{*(2)} \le \dots \le \hat{\theta}^{*(B)}\)</span>.
+   For a confidence level of <span class="arithmatex">\(1 - \alpha\)</span> (e.g., <span class="arithmatex">\(0.95\)</span> with <span class="arithmatex">\(\alpha = 0.05\)</span>), the interval endpoints are the
+   <span class="arithmatex">\(\alpha/2\)</span> and <span class="arithmatex">\(1 - \alpha/2\)</span> percentiles of the empirical bootstrap distribution:
+   $<span class="arithmatex">\(\left[ \hat{\theta}^{*(\lfloor B \cdot \alpha/2 \rfloor)}, \ \hat{\theta}^{*(\lfloor B \cdot (1 - \alpha/2) \rfloor)} \right]\)</span>$</p>
+</li>
+<li>
+<p><strong>Bias-Corrected and Accelerated (BCa) Bootstrap</strong> (Robust and accurate):
+   Adjusts the percentile endpoints to correct for both median bias (displacement of the bootstrap distribution
+   from the point estimate) and skewness (non-constant variance, represented by acceleration <span class="arithmatex">\(a\)</span>).</p>
+</li>
+<li>The bias-correction factor <span class="arithmatex">\(z_0\)</span> is:
+     $<span class="arithmatex">\(z_0 = \Phi^{-1} \left( \frac{\#\{\hat{\theta}^{*b} &lt; \hat{\theta}\}}{B} \right)\)</span>$
+     where <span class="arithmatex">\(\Phi^{-1}\)</span> is the inverse cumulative distribution function of the standard normal distribution.</li>
+<li>The acceleration parameter <span class="arithmatex">\(a\)</span> is computed using jackknife (leave-one-out) estimators:
+     $<span class="arithmatex">\(a = \frac{\sum_{i=1}^{n} (\bar{\theta}_{(\cdot)} - \theta_{(i)})^3}{6 \left[ \sum_{i=1}^{n} (\bar{\theta}_{(\cdot)} - \theta_{(i)})^2 \right]^{3/2}}\)</span>$
+     where <span class="arithmatex">\(\theta_{(i)}\)</span> is the estimate of <span class="arithmatex">\(\theta\)</span> calculated by omitting the <span class="arithmatex">\(i\)</span>-th observation, and
+     <span class="arithmatex">\(\bar{\theta}_{(\cdot)}\)</span> is the average of these jackknife estimates.</li>
+<li>Transformed confidence percentiles are then mapped back to the sorted replicates to construct the interval.</li>
+</ol>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>data_group</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The raw 1D array of observed values.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>num_resamples</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The number of bootstrap iterations (<span class="arithmatex">\(B\)</span>). Defaults to 2000.</p>
+              </div>
+            </td>
+            <td>
+                  <code>2000</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>confidence_level</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The desired confidence interval width (<span class="arithmatex">\(1 - \alpha\)</span>). Defaults to 0.95.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.95</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>tuple</code></td>            <td>
+                  <code><span title="tuple">tuple</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A tuple of floats <code>(lower_bound, upper_bound)</code> representing the calculated interval.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\analyze\inference\bootstrap.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-4">4</a></span>
-<span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_bootstrap_ci</span><span class="p">(</span><span class="n">data_group</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">confidence_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes nonparametric bootstrap confidence intervals for arbitrary complex metrics.&quot;&quot;&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>    <span class="c1"># TODO: Implement bootstrap resampler (using percentile or BCa methods)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">return</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data_group</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data_group</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">)))</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_bootstrap_ci</span><span class="p">(</span><span class="n">data_group</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">confidence_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes non-parametric bootstrap confidence intervals for arbitrary complex metrics.</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    Bootstrap resampling (Efron, 1979) is a non-parametric method used to estimate the standard error and confidence</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    intervals of an estimator (such as means, medians, ratios, or quantiles). It is particularly valuable when the</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    underlying metric distribution is highly non-normal (e.g., bi-modal, zero-inflated, or power-law) or when the</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    estimator&#39;s mathematical variance cannot be easily derived analytically.</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    Mathematical and Algorithmic Formulation:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        Let $\\mathbf{x} = (x_1, x_2, \\dots, x_n)$ be the observed sample of size $n$, and let $\\hat{\\theta} = s(\\mathbf{x})$</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        be the point estimate of interest.</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        The bootstrap sampling distribution is constructed as follows:</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        1. Draw a bootstrap sample $\\mathbf{x}^{*b}$ of size $n$ by sampling uniformly **with replacement** from the</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">           original sample $\\mathbf{x}$.</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        2. Calculate the bootstrap replication of the estimator: $\\hat{\\theta}^{*b} = s(\\mathbf{x}^{*b})$.</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        3. Repeat steps 1-2 a large number of times $B$ (where $B = \\text{num\\_resamples}$, typically $B \\ge 2000$),</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">           generating a set of replicates: $\\{\\hat{\\theta}^{*1}, \\hat{\\theta}^{*2}, \\dots, \\hat{\\theta}^{*B}\\}$.</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    Confidence Interval Methods:</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        1. **Percentile Bootstrap** (Simple and intuitive):</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">           Sorts the bootstrap replicates in ascending order: $\\hat{\\theta}^{*(1)} \\le \\hat{\\theta}^{*(2)} \\le \\dots \\le \\hat{\\theta}^{*(B)}$.</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">           For a confidence level of $1 - \\alpha$ (e.g., $0.95$ with $\\alpha = 0.05$), the interval endpoints are the</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">           $\\alpha/2$ and $1 - \\alpha/2$ percentiles of the empirical bootstrap distribution:</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">           $$\\left[ \\hat{\\theta}^{*(\\lfloor B \\cdot \\alpha/2 \\rfloor)}, \\ \\hat{\\theta}^{*(\\lfloor B \\cdot (1 - \\alpha/2) \\rfloor)} \\right]$$</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        2. **Bias-Corrected and Accelerated (BCa) Bootstrap** (Robust and accurate):</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">           Adjusts the percentile endpoints to correct for both median bias (displacement of the bootstrap distribution</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">           from the point estimate) and skewness (non-constant variance, represented by acceleration $a$).</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">           - The bias-correction factor $z_0$ is:</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">             $$z_0 = \\Phi^{-1} \\left( \\frac{\\#\\{\\hat{\\theta}^{*b} &lt; \\hat{\\theta}\\}}{B} \\right)$$</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">             where $\\Phi^{-1}$ is the inverse cumulative distribution function of the standard normal distribution.</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">           - The acceleration parameter $a$ is computed using jackknife (leave-one-out) estimators:</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">             $$a = \\frac{\\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^3}{6 \\left[ \\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^2 \\right]^{3/2}}$$</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">             where $\\theta_{(i)}$ is the estimate of $\\theta$ calculated by omitting the $i$-th observation, and</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">             $\\bar{\\theta}_{(\\cdot)}$ is the average of these jackknife estimates.</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">           - Transformed confidence percentiles are then mapped back to the sorted replicates to construct the interval.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        data_group (np.ndarray): The raw 1D array of observed values.</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        num_resamples (int): The number of bootstrap iterations ($B$). Defaults to 2000.</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        confidence_level (float): The desired confidence interval width ($1 - \\alpha$). Defaults to 0.95.</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        tuple: A tuple of floats `(lower_bound, upper_bound)` representing the calculated interval.</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="c1"># TODO: Implement bootstrap resampler (using percentile or BCa methods)</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">return</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data_group</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data_group</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">)))</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3789,17 +4743,172 @@
     <div class="doc doc-contents ">
 
         <p>Performs nonparametric Mann-Whitney U test for ordinal or non-normal continuous data.</p>
+<p>The Mann-Whitney U test (also known as the Wilcoxon rank-sum test) evaluates the null hypothesis
+that the probability that a randomly drawn observation from Group B is larger than a randomly drawn
+observation from Group A is equal to 0.5 (<span class="arithmatex">\(H_0: P(Y_B &gt; Y_A) = 0.5\)</span>).
+This test is non-parametric; it does not assume normality, making it extremely robust against extreme outliers
+and highly skewed distribution shapes typical of digital engagement data (e.g., number of messages sent).</p>
+
+
+<details class="mathematical-representation" open>
+  <summary>Mathematical Representation</summary>
+  <ol>
+<li>Combine all <span class="arithmatex">\(N = N_A + N_B\)</span> observations from both groups and rank them in ascending order from 1 to <span class="arithmatex">\(N\)</span>.
+   (In case of ties, assign the average of the ranks).</li>
+<li>Sum the assigned ranks for Group A: <span class="arithmatex">\(R_A\)</span>.</li>
+<li>Compute the U-statistics for each group:
+   $<span class="arithmatex">\(U_A = N_A N_B + \frac{N_A(N_A + 1)}{2} - R_A\)</span>$
+   $<span class="arithmatex">\(U_B = N_A N_B - U_A\)</span>$
+   $<span class="arithmatex">\(U = \min(U_A, \ U_B)\)</span>$</li>
+<li>For large samples (<span class="arithmatex">\(N_A, N_B &gt; 20\)</span>), the distribution of <span class="arithmatex">\(U\)</span> asymptotically approaches normality:
+   $<span class="arithmatex">\(Z = \frac{U - m_U}{\sigma_U}\)</span>$
+   where the mean <span class="arithmatex">\(m_U\)</span> and standard deviation <span class="arithmatex">\(\sigma_U\)</span> are:
+   $<span class="arithmatex">\(m_U = \frac{N_A N_B}{2} \quad \text{and} \quad \sigma_U = \sqrt{\frac{N_A N_B (N_A + N_B + 1)}{12}}\)</span>$
+   (with adjustments applied to <span class="arithmatex">\(\sigma_U\)</span> if there are tied ranks).</li>
+</ol>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>group_a</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of numeric outcomes for control (Group A).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>group_b</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of numeric outcomes for treatment (Group B).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>dict</code></td>            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A dictionary containing:
+- <code>"u_statistic"</code> (float): The calculated Mann-Whitney U-value.
+- <code>"p_value"</code> (float): The two-sided asymptotic p-value.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\analyze\inference\frequentist.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-10">10</a></span>
-<span class="normal"><a href="#__codelineno-0-11">11</a></span>
-<span class="normal"><a href="#__codelineno-0-12">12</a></span>
-<span class="normal"><a href="#__codelineno-0-13">13</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_mann_whitney_u</span><span class="p">(</span><span class="n">group_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">group_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs nonparametric Mann-Whitney U test for ordinal or non-normal continuous data.&quot;&quot;&quot;</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a>    <span class="c1"># TODO: Implement full scipy Mann-Whitney U integration</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a>    <span class="k">return</span> <span class="p">{}</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span>
+<span class="normal"><a href="#__codelineno-0-75">75</a></span>
+<span class="normal"><a href="#__codelineno-0-76">76</a></span>
+<span class="normal"><a href="#__codelineno-0-77">77</a></span>
+<span class="normal"><a href="#__codelineno-0-78">78</a></span>
+<span class="normal"><a href="#__codelineno-0-79">79</a></span>
+<span class="normal"><a href="#__codelineno-0-80">80</a></span>
+<span class="normal"><a href="#__codelineno-0-81">81</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_mann_whitney_u</span><span class="p">(</span><span class="n">group_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">group_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs nonparametric Mann-Whitney U test for ordinal or non-normal continuous data.</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    The Mann-Whitney U test (also known as the Wilcoxon rank-sum test) evaluates the null hypothesis</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    that the probability that a randomly drawn observation from Group B is larger than a randomly drawn</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    observation from Group A is equal to 0.5 ($H_0: P(Y_B &gt; Y_A) = 0.5$).</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    This test is non-parametric; it does not assume normality, making it extremely robust against extreme outliers</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    and highly skewed distribution shapes typical of digital engagement data (e.g., number of messages sent).</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">    Mathematical Representation:</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        1. Combine all $N = N_A + N_B$ observations from both groups and rank them in ascending order from 1 to $N$.</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">           (In case of ties, assign the average of the ranks).</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">        2. Sum the assigned ranks for Group A: $R_A$.</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        3. Compute the U-statistics for each group:</span>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">           $$U_A = N_A N_B + \\frac{N_A(N_A + 1)}{2} - R_A$$</span>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">           $$U_B = N_A N_B - U_A$$</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">           $$U = \\min(U_A, \\ U_B)$$</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">        4. For large samples ($N_A, N_B &gt; 20$), the distribution of $U$ asymptotically approaches normality:</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">           $$Z = \\frac{U - m_U}{\\sigma_U}$$</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">           where the mean $m_U$ and standard deviation $\\sigma_U$ are:</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">           $$m_U = \\frac{N_A N_B}{2} \\quad \\text{and} \\quad \\sigma_U = \\sqrt{\\frac{N_A N_B (N_A + N_B + 1)}{12}}$$</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">           (with adjustments applied to $\\sigma_U$ if there are tied ranks).</span>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">        group_a (np.ndarray): Array of numeric outcomes for control (Group A).</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">        group_b (np.ndarray): Array of numeric outcomes for treatment (Group B).</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">        dict: A dictionary containing:</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">            - `&quot;u_statistic&quot;` (float): The calculated Mann-Whitney U-value.</span>
+</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">            - `&quot;p_value&quot;` (float): The two-sided asymptotic p-value.</span>
+</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a>    <span class="c1"># TODO: Implement full scipy Mann-Whitney U integration</span>
+</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="k">return</span> <span class="p">{}</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3818,17 +4927,173 @@
     <div class="doc doc-contents ">
 
         <p>Performs Welch's t-test for difference of means with unequal variances.</p>
+<p>Welch's t-test is a two-sample location test used to test the hypothesis that two populations have equal means
+(<span class="arithmatex">\(H_0: \mu_A = \mu_B\)</span>). Unlike Student's t-test, Welch's t-test does not assume equal variances
+(<span class="arithmatex">\(\sigma_A^2 \neq \sigma_B^2\)</span>) or equal sample sizes (<span class="arithmatex">\(N_A \neq N_B\)</span>), making it the standard default
+for digital and scientific A/B testing.</p>
+
+
+<details class="mathematical-representation" open>
+  <summary>Mathematical Representation</summary>
+  <p>Let <span class="arithmatex">\(\bar{X}_A\)</span>, <span class="arithmatex">\(\bar{X}_B\)</span> be sample means, let <span class="arithmatex">\(s_A^2\)</span>, <span class="arithmatex">\(s_B^2\)</span> be sample variances, and let <span class="arithmatex">\(N_A\)</span>, <span class="arithmatex">\(N_B\)</span>
+be the sample sizes of Group A (control) and Group B (treatment) respectively.</p>
+<p>The Welch's t-statistic is computed as:
+$<span class="arithmatex">\(t = \frac{\bar{X}_B - \bar{X}_A}{\sqrt{\frac{s_A^2}{N_A} + \frac{s_B^2}{N_B}}}\)</span>$</p>
+<p>The degrees of freedom <span class="arithmatex">\(\nu\)</span> are approximated using the <strong>Welch-Satterthwaite Equation</strong>:
+$<span class="arithmatex">\(\nu \approx \frac{\left( \frac{s_A^2}{N_A} + \frac{s_B^2}{N_B} \right)^2}{\frac{\left( \frac{s_A^2}{N_A} \right)^2}{N_A - 1} + \frac{\left( \frac{s_B^2}{N_B} \right)^2}{N_B - 1}}\)</span>$</p>
+<p>Under <span class="arithmatex">\(H_0\)</span>, the t-statistic asymptotically follows a Student's t-distribution with <span class="arithmatex">\(\nu\)</span> degrees of freedom.
+The two-sided p-value is:
+$<span class="arithmatex">\(p = 2 \times P(T_{\nu} \ge |t|)\)</span>$
+where <span class="arithmatex">\(T_{\nu}\)</span> represents the Student's t-distribution random variable.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>group_a</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of numeric outcomes for control (Group A).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>group_b</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of numeric outcomes for treatment (Group B).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>dict</code></td>            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A dictionary containing:
+- <code>"t_statistic"</code> (float): The calculated Welch's t-value.
+- <code>"p_value"</code> (float): The two-sided p-value.
+- <code>"df"</code> (float): The approximated Satterthwaite degrees of freedom.
+- <code>"difference"</code> (float): Absolute difference between means (<span class="arithmatex">\(\bar{X}_B - \bar{X}_A\)</span>).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\analyze\inference\frequentist.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-4">4</a></span>
-<span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_welch_t_test</span><span class="p">(</span><span class="n">group_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">group_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs Welch&#39;s t-test for difference of means with unequal variances.&quot;&quot;&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>    <span class="c1"># This is currently implemented inline within taxonomy.py</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">return</span> <span class="p">{}</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_welch_t_test</span><span class="p">(</span><span class="n">group_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">group_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs Welch&#39;s t-test for difference of means with unequal variances.</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    Welch&#39;s t-test is a two-sample location test used to test the hypothesis that two populations have equal means</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    ($H_0: \\mu_A = \\mu_B$). Unlike Student&#39;s t-test, Welch&#39;s t-test does not assume equal variances</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    ($\\sigma_A^2 \\neq \\sigma_B^2$) or equal sample sizes ($N_A \\neq N_B$), making it the standard default</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    for digital and scientific A/B testing.</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">    Mathematical Representation:</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        Let $\\bar{X}_A$, $\\bar{X}_B$ be sample means, let $s_A^2$, $s_B^2$ be sample variances, and let $N_A$, $N_B$</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        be the sample sizes of Group A (control) and Group B (treatment) respectively.</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        The Welch&#39;s t-statistic is computed as:</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        $$t = \\frac{\\bar{X}_B - \\bar{X}_A}{\\sqrt{\\frac{s_A^2}{N_A} + \\frac{s_B^2}{N_B}}}$$</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        The degrees of freedom $\\nu$ are approximated using the **Welch-Satterthwaite Equation**:</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        $$\\nu \\approx \\frac{\\left( \\frac{s_A^2}{N_A} + \\frac{s_B^2}{N_B} \\right)^2}{\\frac{\\left( \\frac{s_A^2}{N_A} \\right)^2}{N_A - 1} + \\frac{\\left( \\frac{s_B^2}{N_B} \\right)^2}{N_B - 1}}$$</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        Under $H_0$, the t-statistic asymptotically follows a Student&#39;s t-distribution with $\\nu$ degrees of freedom.</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">        The two-sided p-value is:</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        $$p = 2 \\times P(T_{\\nu} \\ge |t|)$$</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        where $T_{\\nu}$ represents the Student&#39;s t-distribution random variable.</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        group_a (np.ndarray): Array of numeric outcomes for control (Group A).</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        group_b (np.ndarray): Array of numeric outcomes for treatment (Group B).</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        dict: A dictionary containing:</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">            - `&quot;t_statistic&quot;` (float): The calculated Welch&#39;s t-value.</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">            - `&quot;p_value&quot;` (float): The two-sided p-value.</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">            - `&quot;df&quot;` (float): The approximated Satterthwaite degrees of freedom.</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">            - `&quot;difference&quot;` (float): Absolute difference between means ($\\bar{X}_B - \\bar{X}_A$).</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="c1"># This is currently implemented inline within taxonomy.py</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>    <span class="k">return</span> <span class="p">{}</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>

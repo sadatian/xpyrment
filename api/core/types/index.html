@@ -669,6 +669,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xpyrment.core.types.MetricType" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MetricType
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xpyrment.core.types.MetricResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MetricResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -3231,6 +3259,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xpyrment.core.types.MetricType" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MetricType
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xpyrment.core.types.MetricResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MetricResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -3265,6 +3321,11 @@
 
     <div class="doc doc-contents first">
 
+        <p>Core type definitions, TypeDicts, and Literals for the xpyrment library.</p>
+<p>This module houses all static typing definitions, data schemas, and literal constraints shared
+across the xpyrment library. It provides strict interfaces for statistical outputs to ensure
+perfect alignment between metrics, validation engines, statistical routers, and report generation.</p>
+
 
 
 
@@ -3282,7 +3343,432 @@
 
 
 
+<div class="doc doc-object doc-attribute">
 
+
+
+<h3 id="xpyrment.core.types.MetricType" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">MetricType</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;proportion&#39;</span><span class="p">,</span> <span class="s1">&#39;ratio&#39;</span><span class="p">,</span> <span class="s1">&#39;revenue&#39;</span><span class="p">]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Literal representing the supported category of metrics.</p>
+
+
+<details class="supported-types" open>
+  <summary>Supported Types</summary>
+  <ul>
+<li><code>"mean"</code>: A continuous or discrete numeric metric where statistics are calculated on a per-unit basis
+  (e.g., average sessions per user, average page views).</li>
+<li><code>"proportion"</code>: A binary rate metric representing yes/no outcomes on a per-unit basis, equivalent to a Bernoulli
+  trial (e.g., conversion rate, click-through-rate where the unit of analysis is the user).</li>
+<li><code>"ratio"</code>: An aggregated metric computed as the sum of a numerator divided by the sum of a denominator
+  across all units (e.g., global Click-Through-Rate = total clicks / total impressions). Requires Delta Method
+  for proper variance approximation.</li>
+<li><code>"revenue"</code>: A highly skewed continuous monetary metric (e.g., revenue per user, average order value). Often
+  subject to log-transformations or specialized variance reduction.</li>
+</ul>
+</details>
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="xpyrment.core.types.MetricResult" class="doc doc-heading">
+            <code>MetricResult</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.TypedDict">TypedDict</span></code></p>
+
+
+
+        <p>The canonical data schema representing the output of a statistical metric analysis.</p>
+<p>This TypedDict establishes a contract for all inference engines (frequentist, Bayesian,
+and sequential) and reporting utilities, ensuring that every calculated metric contains
+both descriptive statistics and rigorous statistical validation metrics.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.metric_name">metric_name</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The unique identifier assigned to the analyzed metric.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.metric_type">metric_type</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The standardized type string (e.g., "Mean", "Proportion", "Ratio", "Revenue").</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.control_mean">control_mean</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The sample mean (<span class="arithmatex">\(\bar{Y}_C\)</span>) or proportion (<span class="arithmatex">\(p_C\)</span>) calculated for the control group.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.treatment_mean">treatment_mean</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The sample mean (<span class="arithmatex">\(\bar{Y}_T\)</span>) or proportion (<span class="arithmatex">\(p_T\)</span>) calculated for the treatment group.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.control_var">control_var</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The sample variance (<span class="arithmatex">\(s^2_C\)</span>) calculated for the control group.
+For ratios, this represents the Delta-method approximated variance.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.treatment_var">treatment_var</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The sample variance (<span class="arithmatex">\(s^2_T\)</span>) calculated for the treatment group.
+For ratios, this represents the Delta-method approximated variance.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.control_n">control_n</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The total count of unique units in the control group (<span class="arithmatex">\(N_C\)</span>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.treatment_n">treatment_n</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The total count of unique units in the treatment group (<span class="arithmatex">\(N_T\)</span>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.absolute_difference">absolute_difference</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The point estimate of the absolute treatment effect:
+$<span class="arithmatex">\(\Delta = \bar{Y}_T - \bar{Y}_C\)</span>$</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.relative_lift">relative_lift</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The percentage increase or decrease of the treatment mean relative to the control mean:
+$<span class="arithmatex">\(\text{Lift} = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}\)</span>$</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.cuped_applied">cuped_applied</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>True if Controlled-comparison Using Pre-Existing Data (CUPED) was applied
+to adjust the variance of this metric. False otherwise.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.variance_reduction">variance_reduction</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The percentage reduction in variance achieved by CUPED, bounded in <span class="arithmatex">\([0, 1)\)</span>:
+$<span class="arithmatex">\(\text{Reduction} = 1 - \frac{\text{Var}(Y_{\text{CUPED}})}{\text{Var}(Y_{\text{original}})}\)</span>$</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.p_value">p_value</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The statistical p-value associated with the hypothesis test. For frequentist, this represents the
+probability of observing a test statistic at least as extreme as the one computed, under the null hypothesis (<span class="arithmatex">\(H_0\)</span>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.ci_lower">ci_lower</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The lower bound of the absolute confidence/credible interval at the <span class="arithmatex">\((1 - \alpha)\)</span> confidence level.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.ci_upper">ci_upper</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The upper bound of the absolute confidence/credible interval at the <span class="arithmatex">\((1 - \alpha)\)</span> confidence level.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.rel_ci_lower">rel_ci_lower</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The lower bound of the relative confidence/credible interval, scaled relative to the control mean:
+$<span class="arithmatex">\(\text{Rel CI Lower} = \frac{\text{CI Lower}}{\bar{Y}_C}\)</span>$</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.rel_ci_upper">rel_ci_upper</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The upper bound of the relative confidence/credible interval, scaled relative to the control mean:
+$<span class="arithmatex">\(\text{Rel CI Upper} = \frac{\text{CI Upper}}{\bar{Y}_C}\)</span>$</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="xpyrment.core.types.MetricResult.power">power</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The statistical power (<span class="arithmatex">\(1 - \beta\)</span>) achieved by the sample size, denoting the probability of
+correctly rejecting the null hypothesis when the true treatment effect equals the observed difference.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src\xpyrment\core\types.py</code></summary>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span>
+<span class="normal"><a href="#__codelineno-0-75">75</a></span>
+<span class="normal"><a href="#__codelineno-0-76">76</a></span>
+<span class="normal"><a href="#__codelineno-0-77">77</a></span>
+<span class="normal"><a href="#__codelineno-0-78">78</a></span>
+<span class="normal"><a href="#__codelineno-0-79">79</a></span>
+<span class="normal"><a href="#__codelineno-0-80">80</a></span>
+<span class="normal"><a href="#__codelineno-0-81">81</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="k">class</span><span class="w"> </span><span class="nc">MetricResult</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;The canonical data schema representing the output of a statistical metric analysis.</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    This TypedDict establishes a contract for all inference engines (frequentist, Bayesian,</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    and sequential) and reporting utilities, ensuring that every calculated metric contains</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    both descriptive statistics and rigorous statistical validation metrics.</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    Attributes:</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        metric_name (str): The unique identifier assigned to the analyzed metric.</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        metric_type (str): The standardized type string (e.g., &quot;Mean&quot;, &quot;Proportion&quot;, &quot;Ratio&quot;, &quot;Revenue&quot;).</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        control_mean (float): The sample mean ($\bar{Y}_C$) or proportion ($p_C$) calculated for the control group.</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        treatment_mean (float): The sample mean ($\bar{Y}_T$) or proportion ($p_T$) calculated for the treatment group.</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        control_var (float): The sample variance ($s^2_C$) calculated for the control group.</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">            For ratios, this represents the Delta-method approximated variance.</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        treatment_var (float): The sample variance ($s^2_T$) calculated for the treatment group.</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">            For ratios, this represents the Delta-method approximated variance.</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        control_n (int): The total count of unique units in the control group ($N_C$).</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        treatment_n (int): The total count of unique units in the treatment group ($N_T$).</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        absolute_difference (float): The point estimate of the absolute treatment effect:</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">            $$\Delta = \bar{Y}_T - \bar{Y}_C$$</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        relative_lift (float): The percentage increase or decrease of the treatment mean relative to the control mean:</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            $$\text{Lift} = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}$$</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        cuped_applied (bool): True if Controlled-comparison Using Pre-Existing Data (CUPED) was applied</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            to adjust the variance of this metric. False otherwise.</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        variance_reduction (float): The percentage reduction in variance achieved by CUPED, bounded in $[0, 1)$:</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">            $$\text{Reduction} = 1 - \frac{\text{Var}(Y_{\text{CUPED}})}{\text{Var}(Y_{\text{original}})}$$</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        p_value (float): The statistical p-value associated with the hypothesis test. For frequentist, this represents the</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">            probability of observing a test statistic at least as extreme as the one computed, under the null hypothesis ($H_0$).</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        ci_lower (float): The lower bound of the absolute confidence/credible interval at the $(1 - \alpha)$ confidence level.</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        ci_upper (float): The upper bound of the absolute confidence/credible interval at the $(1 - \alpha)$ confidence level.</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">        rel_ci_lower (float): The lower bound of the relative confidence/credible interval, scaled relative to the control mean:</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">            $$\text{Rel CI Lower} = \frac{\text{CI Lower}}{\bar{Y}_C}$$</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        rel_ci_upper (float): The upper bound of the relative confidence/credible interval, scaled relative to the control mean:</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">            $$\text{Rel CI Upper} = \frac{\text{CI Upper}}{\bar{Y}_C}$$</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">        power (float): The statistical power ($1 - \beta$) achieved by the sample size, denoting the probability of</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">            correctly rejecting the null hypothesis when the true treatment effect equals the observed difference.</span>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="n">metric_name</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="n">metric_type</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">control_mean</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">treatment_mean</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="n">control_var</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="n">treatment_var</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="n">control_n</span><span class="p">:</span> <span class="nb">int</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="n">treatment_n</span><span class="p">:</span> <span class="nb">int</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="n">absolute_difference</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="n">relative_lift</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="n">cuped_applied</span><span class="p">:</span> <span class="nb">bool</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="n">variance_reduction</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>    <span class="n">p_value</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="n">ci_lower</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span class="n">ci_upper</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a>    <span class="n">rel_ci_lower</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a>    <span class="n">rel_ci_upper</span><span class="p">:</span> <span class="nb">float</span>
+</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="n">power</span><span class="p">:</span> <span class="nb">float</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 
 

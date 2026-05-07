@@ -3299,6 +3299,10 @@
 
     <div class="doc doc-contents first">
 
+        <p>Game-theoretic feature interaction analysis using SHAP interaction indices.</p>
+<p>This module provides the <code>calculate_shap_interactions</code> function, which computes second-order Shapley
+interaction values to decompose joint black-box predictions into main and interaction components.</p>
+
 
 
 
@@ -3330,18 +3334,189 @@
 
     <div class="doc doc-contents ">
 
-        <p>Computes SHAP interaction values to decompose multi-factor combinations (expensive/gated).</p>
+        <p>Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).</p>
+<p>SHAP (SHapley Additive exPlanations) interaction values (Lundberg et al., 2018) are based on the coalitional game-theoretic
+Shapley Interaction Index (Grabisch and Roubens, 1999). While standard Shapley values partition a model's prediction
+additively among individual features, SHAP interaction values separate these contributions into pure main effects and
+pairwise interaction effects, providing an exact model-agnostic representation of how features cooperate or compete.</p>
+
+
+<details class="mathematical-formulation-and-coalition-deficits" open>
+  <summary>Mathematical Formulation and Coalition Deficits</summary>
+  <p>Let <span class="arithmatex">\(M\)</span> be the complete set of all features. The SHAP interaction value <span class="arithmatex">\(\Phi_{i,j}\)</span> between feature <span class="arithmatex">\(i\)</span> and feature <span class="arithmatex">\(j\)</span>
+(where <span class="arithmatex">\(i \neq j\)</span>) measures the pure interaction effect after accounting for all other subsets of features:
+$<span class="arithmatex">\(\Phi_{i,j} = \sum_{S \subseteq M \setminus \{i, j\}} \frac{|S|! (|M| - |S| - 2)!}{2 (|M| - 1)!} \Delta_{i,j}(S)\)</span>$
+where the second-order marginal contribution difference <span class="arithmatex">\(\Delta_{i,j}(S)\)</span> is defined as:
+$<span class="arithmatex">\(\Delta_{i,j}(S) = f(S \cup \{i, j\}) - f(S \cup \{i\}) - f(S \cup \{j\}) + f(S)\)</span>$</p>
+<p>The diagonal elements <span class="arithmatex">\(\Phi_{i,i}\)</span> capture the main effect of feature <span class="arithmatex">\(i\)</span> after removing all of its pairwise interactions
+with other features:
+$<span class="arithmatex">\(\Phi_{i,i} = \phi_i - \sum_{j \neq i} \Phi_{i,j}\)</span>$
+where <span class="arithmatex">\(\phi_i\)</span> is the standard Shapley value for feature <span class="arithmatex">\(i\)</span>.</p>
+<p>The complete set of main effects and interaction values decomposes the model prediction <span class="arithmatex">\(f(x)\)</span> exactly:
+$<span class="arithmatex">\(f(x) = \Phi_0 + \sum_{i=1}^{|M|} \Phi_{i,i} + \sum_{i \neq j} \Phi_{i,j}\)</span>$
+where <span class="arithmatex">\(\Phi_0 = E[f(x)]\)</span> is the base value (expected prediction of the model across the background training distribution).</p>
+</details>
+
+<details class="computational-complexity" open>
+  <summary>Computational Complexity</summary>
+  <p>Evaluating the summation requires computing model predictions across <span class="arithmatex">\(2^{|M|}\)</span> feature coalitions, which is NP-hard
+in the general case. To make this practical, modern libraries utilize TreeSHAP (Lundberg et al., 2020), which calculates
+exact tree-based Shapley interaction values in <span class="arithmatex">\(O(T L D^2)\)</span> time where <span class="arithmatex">\(T\)</span> is the number of trees, <span class="arithmatex">\(L\)</span> is max leaves,
+and <span class="arithmatex">\(D\)</span> is max depth.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A trained model (typically a tree ensemble like XGBoost or LightGBM).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_data</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The background evaluation matrix of covariate features.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>list</code></td>            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A nested list or 3D numpy array of shape <code>(num_samples, num_features, num_features)</code> containing
+individual Shapley interaction matrices.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\interactions\shap.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
-<span class="normal"><a href="#__codelineno-0-2">2</a></span>
-<span class="normal"><a href="#__codelineno-0-3">3</a></span>
-<span class="normal"><a href="#__codelineno-0-4">4</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_shap_interactions</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes SHAP interaction values to decompose multi-factor combinations (expensive/gated).&quot;&quot;&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>    <span class="c1"># TODO: Implement optional shap dependency check and interaction calculation</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="k">return</span> <span class="p">[]</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_shap_interactions</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">X_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    SHAP (SHapley Additive exPlanations) interaction values (Lundberg et al., 2018) are based on the coalitional game-theoretic</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    Shapley Interaction Index (Grabisch and Roubens, 1999). While standard Shapley values partition a model&#39;s prediction</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    additively among individual features, SHAP interaction values separate these contributions into pure main effects and</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    pairwise interaction effects, providing an exact model-agnostic representation of how features cooperate or compete.</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    Mathematical Formulation and Coalition Deficits:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        Let $M$ be the complete set of all features. The SHAP interaction value $\\Phi_{i,j}$ between feature $i$ and feature $j$</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        (where $i \\neq j$) measures the pure interaction effect after accounting for all other subsets of features:</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        $$\\Phi_{i,j} = \\sum_{S \\subseteq M \\setminus \\{i, j\\}} \\frac{|S|! (|M| - |S| - 2)!}{2 (|M| - 1)!} \\Delta_{i,j}(S)$$</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        where the second-order marginal contribution difference $\\Delta_{i,j}(S)$ is defined as:</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        $$\\Delta_{i,j}(S) = f(S \\cup \\{i, j\\}) - f(S \\cup \\{i\\}) - f(S \\cup \\{j\\}) + f(S)$$</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        The diagonal elements $\\Phi_{i,i}$ capture the main effect of feature $i$ after removing all of its pairwise interactions</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        with other features:</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        $$\\Phi_{i,i} = \\phi_i - \\sum_{j \\neq i} \\Phi_{i,j}$$</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">        where $\\phi_i$ is the standard Shapley value for feature $i$.</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        The complete set of main effects and interaction values decomposes the model prediction $f(x)$ exactly:</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        $$f(x) = \\Phi_0 + \\sum_{i=1}^{|M|} \\Phi_{i,i} + \\sum_{i \\neq j} \\Phi_{i,j}$$</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        where $\\Phi_0 = E[f(x)]$ is the base value (expected prediction of the model across the background training distribution).</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Computational Complexity:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        Evaluating the summation requires computing model predictions across $2^{|M|}$ feature coalitions, which is NP-hard</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        in the general case. To make this practical, modern libraries utilize TreeSHAP (Lundberg et al., 2020), which calculates</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        exact tree-based Shapley interaction values in $O(T L D^2)$ time where $T$ is the number of trees, $L$ is max leaves,</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">        and $D$ is max depth.</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        model: A trained model (typically a tree ensemble like XGBoost or LightGBM).</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        X_data: The background evaluation matrix of covariate features.</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        list: A nested list or 3D numpy array of shape `(num_samples, num_features, num_features)` containing</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            individual Shapley interaction matrices.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>    <span class="c1"># TODO: Implement optional shap dependency check and interaction calculation</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="k">return</span> <span class="p">[]</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>

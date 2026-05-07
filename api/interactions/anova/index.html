@@ -3299,6 +3299,10 @@
 
     <div class="doc doc-contents first">
 
+        <p>Factorial Analysis of Variance (ANOVA) and statistical interaction testing.</p>
+<p>This module provides functions to partition experimental variation across multiple independent factors
+and their interactions, enabling comprehensive Analysis of Variance for classical design of experiments (DoE).</p>
+
 
 
 
@@ -3331,17 +3335,213 @@
     <div class="doc doc-contents ">
 
         <p>Computes factorial ANOVA tables with interaction terms for DoE factors.</p>
+<p>Factorial ANOVA decomposes the total variability of an experimental outcome into portions attributable
+to main factor effects, multi-factor interaction effects, and random error. This is crucial for verifying
+which process factors have a statistically significant impact on the response variable, and whether factors
+behave synergetically or antagonistically when combined.</p>
+
+
+<details class="mathematical-formulation" open>
+  <summary>Mathematical Formulation</summary>
+  <p>For a two-factor experimental design (Factor <span class="arithmatex">\(A\)</span> with <span class="arithmatex">\(I\)</span> levels, Factor <span class="arithmatex">\(B\)</span> with <span class="arithmatex">\(J\)</span> levels, and <span class="arithmatex">\(K\)</span> replicates per cell),
+the response <span class="arithmatex">\(Y_{ijk}\)</span> is modeled as:
+$<span class="arithmatex">\(Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} + \varepsilon_{ijk}\)</span>$
+where:
+- <span class="arithmatex">\(\mu\)</span>: The grand mean of the response.
+- <span class="arithmatex">\(\alpha_i\)</span>: The main effect of Factor <span class="arithmatex">\(A\)</span> at level <span class="arithmatex">\(i\)</span> (subject to <span class="arithmatex">\(\sum_{i=1}^I \alpha_i = 0\)</span>).
+- <span class="arithmatex">\(\beta_j\)</span>: The main effect of Factor <span class="arithmatex">\(B\)</span> at level <span class="arithmatex">\(j\)</span> (subject to <span class="arithmatex">\(\sum_{j=1}^J \beta_j = 0\)</span>).
+- <span class="arithmatex">\((\alpha\beta)_{ij}\)</span> smokes: The interaction effect between Factor <span class="arithmatex">\(A\)</span> at level <span class="arithmatex">\(i\)</span> and Factor <span class="arithmatex">\(B\)</span> at level <span class="arithmatex">\(j\)</span>
+  (subject to <span class="arithmatex">\(\sum_{i=1}^I (\alpha\beta)_{ij} = \sum_{j=1}^J (\alpha\beta)_{ij} = 0\)</span>).
+- <span class="arithmatex">\(\varepsilon_{ijk}\)</span>: Independent and identically distributed normal error terms, <span class="arithmatex">\(\varepsilon_{ijk} \sim \mathcal{N}(0, \sigma^2)\)</span>.</p>
+</details>        <p>Decomposition of Sum of Squares (SS):
+    The total sum of squares (<span class="arithmatex">\(SS_{\text{Total}}\)</span>) measures total sample variation:
+    $<span class="arithmatex">\(SS_{\text{Total}} = SS_A + SS_B + SS_{AB} + SS_{\text{Error}}\)</span>$
+    where:
+    - <span class="arithmatex">\(SS_A = J K \sum_{i=1}^I (\bar{Y}_{i\cdot\cdot} - \bar{Y}_{\cdot\cdot\cdot})^2\)</span> (Main effect <span class="arithmatex">\(A\)</span>)
+    - <span class="arithmatex">\(SS_B = I K \sum_{j=1}^J (\bar{Y}_{\cdot j\cdot} - \bar{Y}_{\cdot\cdot\cdot})^2\)</span> (Main effect <span class="arithmatex">\(B\)</span>)
+    - <span class="arithmatex">\(SS_{AB} = K \sum_{i=1}^I \sum_{j=1}^J (\bar{Y}_{ij\cdot} - \bar{Y}_{i\cdot\cdot} - \bar{Y}_{\cdot j\cdot} + \bar{Y}_{\cdot\cdot\cdot})^2\)</span> (Interaction effect <span class="arithmatex">\(AB\)</span>)
+    - <span class="arithmatex">\(SS_{\text{Error}} = \sum_{i=1}^I \sum_{j=1}^J \sum_{k=1}^K (Y_{ijk} - \bar{Y}_{ij\cdot})^2\)</span> (Residual variation)</p>
+
+
+<details class="f-test-ratios" open>
+  <summary>F-Test Ratios</summary>
+  <p>Significance of each effect is evaluated by comparing the Mean Square (<span class="arithmatex">\(MS = SS / df\)</span>) against the residual Mean Square (<span class="arithmatex">\(MS_{\text{Error}}\)</span>):
+- For Factor <span class="arithmatex">\(A\)</span>:
+  $<span class="arithmatex">\(F_A = \frac{MS_A}{MS_{\text{Error}}} = \frac{SS_A / (I-1)}{SS_{\text{Error}} / [IJ(K-1)]} \sim F_{I-1, \ IJ(K-1)}\)</span>$
+- For Interaction <span class="arithmatex">\(AB\)</span>:
+  $<span class="arithmatex">\(F_{AB} = \frac{MS_{AB}}{MS_{\text{Error}}} = \frac{SS_{AB} / [(I-1)(J-1)]}{SS_{\text{Error}} / [IJ(K-1)]} \sim F_{(I-1)(J-1), \ IJ(K-1)}\)</span>$
+A significant <span class="arithmatex">\(F_{AB}\)</span> (<span class="arithmatex">\(p &lt; 0.05\)</span>) proves that the effect of Factor <span class="arithmatex">\(A\)</span> depends on the level of Factor <span class="arithmatex">\(B\)</span>. This indicates that
+interpreting main effects alone is statistically misleading; the interaction must be evaluated.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The experimental dataset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>formula</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>R-style regression formula (e.g., <code>"revenue ~ factor_a * factor_b"</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>pd.DataFrame: A standard ANOVA table detailing Sum of Squares, degrees of freedom (<span class="arithmatex">\(df\)</span>), F-statistics,
+and p-values for each term.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\interactions\anova.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-4">4</a></span>
-<span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_factorial_anova</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">formula</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes factorial ANOVA tables with interaction terms for DoE factors.&quot;&quot;&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>    <span class="c1"># TODO: Implement statsmodels OLS and anova_lm integration</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_factorial_anova</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">formula</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes factorial ANOVA tables with interaction terms for DoE factors.</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    Factorial ANOVA decomposes the total variability of an experimental outcome into portions attributable</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    to main factor effects, multi-factor interaction effects, and random error. This is crucial for verifying</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    which process factors have a statistically significant impact on the response variable, and whether factors</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    behave synergetically or antagonistically when combined.</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">    Mathematical Formulation:</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        For a two-factor experimental design (Factor $A$ with $I$ levels, Factor $B$ with $J$ levels, and $K$ replicates per cell),</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        the response $Y_{ijk}$ is modeled as:</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        $$Y_{ijk} = \\mu + \\alpha_i + \\beta_j + (\\alpha\\beta)_{ij} + \\varepsilon_{ijk}$$</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        where:</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        - $\\mu$: The grand mean of the response.</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        - $\\alpha_i$: The main effect of Factor $A$ at level $i$ (subject to $\\sum_{i=1}^I \\alpha_i = 0$).</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        - $\\beta_j$: The main effect of Factor $B$ at level $j$ (subject to $\\sum_{j=1}^J \\beta_j = 0$).</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        - $(\\alpha\\beta)_{ij}$ smokes: The interaction effect between Factor $A$ at level $i$ and Factor $B$ at level $j$</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">          (subject to $\\sum_{i=1}^I (\\alpha\\beta)_{ij} = \\sum_{j=1}^J (\\alpha\\beta)_{ij} = 0$).</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        - $\\varepsilon_{ijk}$: Independent and identically distributed normal error terms, $\\varepsilon_{ijk} \\sim \\mathcal{N}(0, \\sigma^2)$.</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    Decomposition of Sum of Squares (SS):</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        The total sum of squares ($SS_{\\text{Total}}$) measures total sample variation:</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        $$SS_{\\text{Total}} = SS_A + SS_B + SS_{AB} + SS_{\\text{Error}}$$</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        where:</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        - $SS_A = J K \\sum_{i=1}^I (\\bar{Y}_{i\\cdot\\cdot} - \\bar{Y}_{\\cdot\\cdot\\cdot})^2$ (Main effect $A$)</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        - $SS_B = I K \\sum_{j=1}^J (\\bar{Y}_{\\cdot j\\cdot} - \\bar{Y}_{\\cdot\\cdot\\cdot})^2$ (Main effect $B$)</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        - $SS_{AB} = K \\sum_{i=1}^I \\sum_{j=1}^J (\\bar{Y}_{ij\\cdot} - \\bar{Y}_{i\\cdot\\cdot} - \\bar{Y}_{\\cdot j\\cdot} + \\bar{Y}_{\\cdot\\cdot\\cdot})^2$ (Interaction effect $AB$)</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        - $SS_{\\text{Error}} = \\sum_{i=1}^I \\sum_{j=1}^J \\sum_{k=1}^K (Y_{ijk} - \\bar{Y}_{ij\\cdot})^2$ (Residual variation)</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    F-Test Ratios:</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        Significance of each effect is evaluated by comparing the Mean Square ($MS = SS / df$) against the residual Mean Square ($MS_{\\text{Error}}$):</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        - For Factor $A$:</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">          $$F_A = \\frac{MS_A}{MS_{\\text{Error}}} = \\frac{SS_A / (I-1)}{SS_{\\text{Error}} / [IJ(K-1)]} \\sim F_{I-1, \\ IJ(K-1)}$$</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        - For Interaction $AB$:</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">          $$F_{AB} = \\frac{MS_{AB}}{MS_{\\text{Error}}} = \\frac{SS_{AB} / [(I-1)(J-1)]}{SS_{\\text{Error}} / [IJ(K-1)]} \\sim F_{(I-1)(J-1), \\ IJ(K-1)}$$</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        A significant $F_{AB}$ ($p &lt; 0.05$) proves that the effect of Factor $A$ depends on the level of Factor $B$. This indicates that</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        interpreting main effects alone is statistically misleading; the interaction must be evaluated.</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        df (pd.DataFrame): The experimental dataset.</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        formula (str): R-style regression formula (e.g., `&quot;revenue ~ factor_a * factor_b&quot;`).</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        pd.DataFrame: A standard ANOVA table detailing Sum of Squares, degrees of freedom ($df$), F-statistics,</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">            and p-values for each term.</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="c1"># TODO: Implement statsmodels OLS and anova_lm integration</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>

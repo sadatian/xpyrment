@@ -3299,6 +3299,11 @@
 
     <div class="doc doc-contents first">
 
+        <p>Non-parametric bootstrap resampling and confidence interval estimation.</p>
+<p>This module provides the <code>run_bootstrap_ci</code> function, which performs computer-intensive resampling
+to estimate the sampling distribution of arbitrary statistical estimators, yielding robust confidence intervals
+without relying on asymptotic parametric assumptions.</p>
+
 
 
 
@@ -3330,18 +3335,234 @@
 
     <div class="doc doc-contents ">
 
-        <p>Computes nonparametric bootstrap confidence intervals for arbitrary complex metrics.</p>
+        <p>Computes non-parametric bootstrap confidence intervals for arbitrary complex metrics.</p>
+<p>Bootstrap resampling (Efron, 1979) is a non-parametric method used to estimate the standard error and confidence
+intervals of an estimator (such as means, medians, ratios, or quantiles). It is particularly valuable when the
+underlying metric distribution is highly non-normal (e.g., bi-modal, zero-inflated, or power-law) or when the
+estimator's mathematical variance cannot be easily derived analytically.</p>
+
+
+<details class="mathematical-and-algorithmic-formulation" open>
+  <summary>Mathematical and Algorithmic Formulation</summary>
+  <p>Let <span class="arithmatex">\(\mathbf{x} = (x_1, x_2, \dots, x_n)\)</span> be the observed sample of size <span class="arithmatex">\(n\)</span>, and let <span class="arithmatex">\(\hat{\theta} = s(\mathbf{x})\)</span>
+be the point estimate of interest.</p>
+<p>The bootstrap sampling distribution is constructed as follows:
+1. Draw a bootstrap sample <span class="arithmatex">\(\mathbf{x}^{*b}\)</span> of size <span class="arithmatex">\(n\)</span> by sampling uniformly <strong>with replacement</strong> from the
+   original sample <span class="arithmatex">\(\mathbf{x}\)</span>.
+2. Calculate the bootstrap replication of the estimator: <span class="arithmatex">\(\hat{\theta}^{*b} = s(\mathbf{x}^{*b})\)</span>.
+3. Repeat steps 1-2 a large number of times <span class="arithmatex">\(B\)</span> (where <span class="arithmatex">\(B = \text{num\_resamples}\)</span>, typically <span class="arithmatex">\(B \ge 2000\)</span>),
+   generating a set of replicates: <span class="arithmatex">\(\{\hat{\theta}^{*1}, \hat{\theta}^{*2}, \dots, \hat{\theta}^{*B}\}\)</span>.</p>
+</details>
+
+<details class="confidence-interval-methods" open>
+  <summary>Confidence Interval Methods</summary>
+  <ol>
+<li>
+<p><strong>Percentile Bootstrap</strong> (Simple and intuitive):
+   Sorts the bootstrap replicates in ascending order: <span class="arithmatex">\(\hat{\theta}^{*(1)} \le \hat{\theta}^{*(2)} \le \dots \le \hat{\theta}^{*(B)}\)</span>.
+   For a confidence level of <span class="arithmatex">\(1 - \alpha\)</span> (e.g., <span class="arithmatex">\(0.95\)</span> with <span class="arithmatex">\(\alpha = 0.05\)</span>), the interval endpoints are the
+   <span class="arithmatex">\(\alpha/2\)</span> and <span class="arithmatex">\(1 - \alpha/2\)</span> percentiles of the empirical bootstrap distribution:
+   $<span class="arithmatex">\(\left[ \hat{\theta}^{*(\lfloor B \cdot \alpha/2 \rfloor)}, \ \hat{\theta}^{*(\lfloor B \cdot (1 - \alpha/2) \rfloor)} \right]\)</span>$</p>
+</li>
+<li>
+<p><strong>Bias-Corrected and Accelerated (BCa) Bootstrap</strong> (Robust and accurate):
+   Adjusts the percentile endpoints to correct for both median bias (displacement of the bootstrap distribution
+   from the point estimate) and skewness (non-constant variance, represented by acceleration <span class="arithmatex">\(a\)</span>).</p>
+</li>
+<li>The bias-correction factor <span class="arithmatex">\(z_0\)</span> is:
+     $<span class="arithmatex">\(z_0 = \Phi^{-1} \left( \frac{\#\{\hat{\theta}^{*b} &lt; \hat{\theta}\}}{B} \right)\)</span>$
+     where <span class="arithmatex">\(\Phi^{-1}\)</span> is the inverse cumulative distribution function of the standard normal distribution.</li>
+<li>The acceleration parameter <span class="arithmatex">\(a\)</span> is computed using jackknife (leave-one-out) estimators:
+     $<span class="arithmatex">\(a = \frac{\sum_{i=1}^{n} (\bar{\theta}_{(\cdot)} - \theta_{(i)})^3}{6 \left[ \sum_{i=1}^{n} (\bar{\theta}_{(\cdot)} - \theta_{(i)})^2 \right]^{3/2}}\)</span>$
+     where <span class="arithmatex">\(\theta_{(i)}\)</span> is the estimate of <span class="arithmatex">\(\theta\)</span> calculated by omitting the <span class="arithmatex">\(i\)</span>-th observation, and
+     <span class="arithmatex">\(\bar{\theta}_{(\cdot)}\)</span> is the average of these jackknife estimates.</li>
+<li>Transformed confidence percentiles are then mapped back to the sorted replicates to construct the interval.</li>
+</ol>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>data_group</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The raw 1D array of observed values.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>num_resamples</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The number of bootstrap iterations (<span class="arithmatex">\(B\)</span>). Defaults to 2000.</p>
+              </div>
+            </td>
+            <td>
+                  <code>2000</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>confidence_level</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The desired confidence interval width (<span class="arithmatex">\(1 - \alpha\)</span>). Defaults to 0.95.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.95</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>tuple</code></td>            <td>
+                  <code><span title="tuple">tuple</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A tuple of floats <code>(lower_bound, upper_bound)</code> representing the calculated interval.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\xpyrment\analyze\inference\bootstrap.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-4">4</a></span>
-<span class="normal"><a href="#__codelineno-0-5">5</a></span>
-<span class="normal"><a href="#__codelineno-0-6">6</a></span>
-<span class="normal"><a href="#__codelineno-0-7">7</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_bootstrap_ci</span><span class="p">(</span><span class="n">data_group</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">confidence_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes nonparametric bootstrap confidence intervals for arbitrary complex metrics.&quot;&quot;&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>    <span class="c1"># TODO: Implement bootstrap resampler (using percentile or BCa methods)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="k">return</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data_group</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data_group</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">)))</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span>
+<span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_bootstrap_ci</span><span class="p">(</span><span class="n">data_group</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">confidence_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes non-parametric bootstrap confidence intervals for arbitrary complex metrics.</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    Bootstrap resampling (Efron, 1979) is a non-parametric method used to estimate the standard error and confidence</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    intervals of an estimator (such as means, medians, ratios, or quantiles). It is particularly valuable when the</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    underlying metric distribution is highly non-normal (e.g., bi-modal, zero-inflated, or power-law) or when the</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    estimator&#39;s mathematical variance cannot be easily derived analytically.</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    Mathematical and Algorithmic Formulation:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        Let $\\mathbf{x} = (x_1, x_2, \\dots, x_n)$ be the observed sample of size $n$, and let $\\hat{\\theta} = s(\\mathbf{x})$</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">        be the point estimate of interest.</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        The bootstrap sampling distribution is constructed as follows:</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">        1. Draw a bootstrap sample $\\mathbf{x}^{*b}$ of size $n$ by sampling uniformly **with replacement** from the</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">           original sample $\\mathbf{x}$.</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">        2. Calculate the bootstrap replication of the estimator: $\\hat{\\theta}^{*b} = s(\\mathbf{x}^{*b})$.</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        3. Repeat steps 1-2 a large number of times $B$ (where $B = \\text{num\\_resamples}$, typically $B \\ge 2000$),</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">           generating a set of replicates: $\\{\\hat{\\theta}^{*1}, \\hat{\\theta}^{*2}, \\dots, \\hat{\\theta}^{*B}\\}$.</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    Confidence Interval Methods:</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        1. **Percentile Bootstrap** (Simple and intuitive):</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">           Sorts the bootstrap replicates in ascending order: $\\hat{\\theta}^{*(1)} \\le \\hat{\\theta}^{*(2)} \\le \\dots \\le \\hat{\\theta}^{*(B)}$.</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">           For a confidence level of $1 - \\alpha$ (e.g., $0.95$ with $\\alpha = 0.05$), the interval endpoints are the</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">           $\\alpha/2$ and $1 - \\alpha/2$ percentiles of the empirical bootstrap distribution:</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">           $$\\left[ \\hat{\\theta}^{*(\\lfloor B \\cdot \\alpha/2 \\rfloor)}, \\ \\hat{\\theta}^{*(\\lfloor B \\cdot (1 - \\alpha/2) \\rfloor)} \\right]$$</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        2. **Bias-Corrected and Accelerated (BCa) Bootstrap** (Robust and accurate):</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">           Adjusts the percentile endpoints to correct for both median bias (displacement of the bootstrap distribution</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">           from the point estimate) and skewness (non-constant variance, represented by acceleration $a$).</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">           - The bias-correction factor $z_0$ is:</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">             $$z_0 = \\Phi^{-1} \\left( \\frac{\\#\\{\\hat{\\theta}^{*b} &lt; \\hat{\\theta}\\}}{B} \\right)$$</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">             where $\\Phi^{-1}$ is the inverse cumulative distribution function of the standard normal distribution.</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">           - The acceleration parameter $a$ is computed using jackknife (leave-one-out) estimators:</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">             $$a = \\frac{\\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^3}{6 \\left[ \\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^2 \\right]^{3/2}}$$</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">             where $\\theta_{(i)}$ is the estimate of $\\theta$ calculated by omitting the $i$-th observation, and</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">             $\\bar{\\theta}_{(\\cdot)}$ is the average of these jackknife estimates.</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">           - Transformed confidence percentiles are then mapped back to the sorted replicates to construct the interval.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        data_group (np.ndarray): The raw 1D array of observed values.</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        num_resamples (int): The number of bootstrap iterations ($B$). Defaults to 2000.</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        confidence_level (float): The desired confidence interval width ($1 - \\alpha$). Defaults to 0.95.</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        tuple: A tuple of floats `(lower_bound, upper_bound)` representing the calculated interval.</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="c1"># TODO: Implement bootstrap resampler (using percentile or BCa methods)</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">return</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data_group</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data_group</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">)))</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
