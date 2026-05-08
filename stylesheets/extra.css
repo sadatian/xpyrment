@@ -173,3 +173,9 @@ button,
 p:has(> .doc-section-title):has(+ details.example) {
   display: none;
 }
+
+/* Hide the repository statistics (stars, forks) from the top navigation header */
+.md-header__source .md-source__fact,
+.md-source__facts {
+  display: none !important;
+}

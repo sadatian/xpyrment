@@ -12,31 +12,31 @@
         <meta name="author" content="Dan Sadatian">
       
       
-        <link rel="canonical" href="https://xpyrment.example.com/api/run/assignment/">
+        <link rel="canonical" href="https://xpyrment.example.com/cli/">
       
       
-        <link rel="prev" href="../ingestion/">
+        <link rel="prev" href="..">
       
       
-        <link rel="next" href="../monitor/">
+        <link rel="next" href="../api/">
       
       
         
       
       
-      <link rel="icon" href="../../../assets/images/xpyrment_logo.svg">
+      <link rel="icon" href="../assets/images/xpyrment_logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Assignment - xpyrment</title>
+        <title>CLI Reference - xpyrment</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,18 +49,18 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
   <!-- Premium vector brand logo and favicon standard support -->
-  <link rel="icon" href="../../../assets/images/xpyrment_logo.svg" sizes="any" type="image/svg+xml" />
+  <link rel="icon" href="../assets/images/xpyrment_logo.svg" sizes="any" type="image/svg+xml" />
 
   </head>
   
@@ -79,7 +79,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#assignment" class="md-skip">
+        <a href="#command-line-interface-cli-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -93,9 +93,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="xpyrment" class="md-header__button md-logo" aria-label="xpyrment" data-md-component="logo">
+    <a href=".." title="xpyrment" class="md-header__button md-logo" aria-label="xpyrment" data-md-component="logo">
       
-  <img src="../../../assets/images/xpyrment_logo.svg" alt="logo">
+  <img src="../assets/images/xpyrment_logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Assignment
+              CLI Reference
             
           </span>
         </div>
@@ -205,7 +205,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -222,9 +222,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../../../cli/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -241,13 +243,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../api/" class="md-tabs__link">
           
   
   
@@ -281,9 +281,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="xpyrment" class="md-nav__button md-logo" aria-label="xpyrment" data-md-component="logo">
+    <a href=".." title="xpyrment" class="md-nav__button md-logo" aria-label="xpyrment" data-md-component="logo">
       
-  <img src="../../../assets/images/xpyrment_logo.svg" alt="logo">
+  <img src="../assets/images/xpyrment_logo.svg" alt="logo">
 
     </a>
     xpyrment
@@ -310,7 +310,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -334,10 +334,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../cli/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -353,6 +380,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#global-cli-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Global CLI Interface
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#power-analysis-and-sample-size-calculator-xpyrment-power" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚡ Power Analysis and Sample Size Calculator (xpyrment power)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#covariate-balance-checker-xpyrment-balance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Covariate Balance Checker (xpyrment balance)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tabular-ordinary-least-squares-xpyrment-regress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 Tabular Ordinary Least Squares (xpyrment regress)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -361,31 +452,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -403,7 +491,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -421,7 +509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../" class="md-nav__link">
+      <a href="../api/" class="md-nav__link">
         
   
   
@@ -455,13 +543,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -470,7 +555,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
             
   
   
@@ -506,7 +591,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/" class="md-nav__link">
+      <a href="../api/core/" class="md-nav__link">
         
   
   
@@ -534,7 +619,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/experiment/" class="md-nav__link">
+      <a href="../api/core/experiment/" class="md-nav__link">
         
   
   
@@ -562,7 +647,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/state/" class="md-nav__link">
+      <a href="../api/core/state/" class="md-nav__link">
         
   
   
@@ -590,7 +675,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/registry/" class="md-nav__link">
+      <a href="../api/core/registry/" class="md-nav__link">
         
   
   
@@ -618,7 +703,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/exceptions/" class="md-nav__link">
+      <a href="../api/core/exceptions/" class="md-nav__link">
         
   
   
@@ -646,7 +731,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/types/" class="md-nav__link">
+      <a href="../api/core/types/" class="md-nav__link">
         
   
   
@@ -688,13 +773,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -703,7 +785,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
         
           
-          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
             
   
   
@@ -739,7 +821,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../metrics/" class="md-nav__link">
+      <a href="../api/metrics/" class="md-nav__link">
         
   
   
@@ -767,7 +849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../metrics/taxonomy/" class="md-nav__link">
+      <a href="../api/metrics/taxonomy/" class="md-nav__link">
         
   
   
@@ -795,7 +877,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../metrics/guardrails/" class="md-nav__link">
+      <a href="../api/metrics/guardrails/" class="md-nav__link">
         
   
   
@@ -823,7 +905,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../metrics/transformations/" class="md-nav__link">
+      <a href="../api/metrics/transformations/" class="md-nav__link">
         
   
   
@@ -865,13 +947,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -880,7 +959,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
         
           
-          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
             
   
   
@@ -916,7 +995,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plan/" class="md-nav__link">
+      <a href="../api/plan/" class="md-nav__link">
         
   
   
@@ -944,7 +1023,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plan/hypothesis/" class="md-nav__link">
+      <a href="../api/plan/hypothesis/" class="md-nav__link">
         
   
   
@@ -972,7 +1051,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plan/power/" class="md-nav__link">
+      <a href="../api/plan/power/" class="md-nav__link">
         
   
   
@@ -1000,7 +1079,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plan/duration/" class="md-nav__link">
+      <a href="../api/plan/duration/" class="md-nav__link">
         
   
   
@@ -1028,7 +1107,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plan/preregistration/" class="md-nav__link">
+      <a href="../api/plan/preregistration/" class="md-nav__link">
         
   
   
@@ -1070,13 +1149,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1085,7 +1161,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
         
           
-          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
             
   
   
@@ -1121,7 +1197,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/" class="md-nav__link">
+      <a href="../api/design/" class="md-nav__link">
         
   
   
@@ -1149,7 +1225,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/randomization/" class="md-nav__link">
+      <a href="../api/design/randomization/" class="md-nav__link">
         
   
   
@@ -1177,7 +1253,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/stratification/" class="md-nav__link">
+      <a href="../api/design/stratification/" class="md-nav__link">
         
   
   
@@ -1205,7 +1281,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/splits/" class="md-nav__link">
+      <a href="../api/design/splits/" class="md-nav__link">
         
   
   
@@ -1287,7 +1363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/" class="md-nav__link">
+      <a href="../api/design/doe/" class="md-nav__link">
         
   
   
@@ -1315,7 +1391,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/base/" class="md-nav__link">
+      <a href="../api/design/doe/base/" class="md-nav__link">
         
   
   
@@ -1343,7 +1419,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/full_factorial/" class="md-nav__link">
+      <a href="../api/design/doe/full_factorial/" class="md-nav__link">
         
   
   
@@ -1371,7 +1447,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/fractional_factorial/" class="md-nav__link">
+      <a href="../api/design/doe/fractional_factorial/" class="md-nav__link">
         
   
   
@@ -1399,7 +1475,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/plackett_burman/" class="md-nav__link">
+      <a href="../api/design/doe/plackett_burman/" class="md-nav__link">
         
   
   
@@ -1427,7 +1503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/taguchi/" class="md-nav__link">
+      <a href="../api/design/doe/taguchi/" class="md-nav__link">
         
   
   
@@ -1455,7 +1531,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/dsd/" class="md-nav__link">
+      <a href="../api/design/doe/dsd/" class="md-nav__link">
         
   
   
@@ -1483,7 +1559,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/ccd/" class="md-nav__link">
+      <a href="../api/design/doe/ccd/" class="md-nav__link">
         
   
   
@@ -1511,7 +1587,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/box_behnken/" class="md-nav__link">
+      <a href="../api/design/doe/box_behnken/" class="md-nav__link">
         
   
   
@@ -1539,7 +1615,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/d_optimal/" class="md-nav__link">
+      <a href="../api/design/doe/d_optimal/" class="md-nav__link">
         
   
   
@@ -1567,7 +1643,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/lhs/" class="md-nav__link">
+      <a href="../api/design/doe/lhs/" class="md-nav__link">
         
   
   
@@ -1595,7 +1671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/mixture/" class="md-nav__link">
+      <a href="../api/design/doe/mixture/" class="md-nav__link">
         
   
   
@@ -1623,7 +1699,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/switchback/" class="md-nav__link">
+      <a href="../api/design/doe/switchback/" class="md-nav__link">
         
   
   
@@ -1651,7 +1727,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/doe/evop/" class="md-nav__link">
+      <a href="../api/design/doe/evop/" class="md-nav__link">
         
   
   
@@ -1701,13 +1777,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1716,7 +1789,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
         
           
-          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
             
   
   
@@ -1752,7 +1825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../validate/" class="md-nav__link">
+      <a href="../api/validate/" class="md-nav__link">
         
   
   
@@ -1780,7 +1853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../validate/srm/" class="md-nav__link">
+      <a href="../api/validate/srm/" class="md-nav__link">
         
   
   
@@ -1808,7 +1881,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../validate/aa_test/" class="md-nav__link">
+      <a href="../api/validate/aa_test/" class="md-nav__link">
         
   
   
@@ -1836,7 +1909,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../validate/balance/" class="md-nav__link">
+      <a href="../api/validate/balance/" class="md-nav__link">
         
   
   
@@ -1864,7 +1937,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../validate/novelty/" class="md-nav__link">
+      <a href="../api/validate/novelty/" class="md-nav__link">
         
   
   
@@ -1897,31 +1970,28 @@
                 
   
   
-    
   
   
-  
     
     
     
     
       
       
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
         
           
-          
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_7" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7" >
         
           
-          <label class="md-nav__link" for="__nav_3_7" id="__nav_3_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_7" id="__nav_3_7_label" tabindex="0">
             
   
   
@@ -1939,7 +2009,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1957,7 +2027,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../api/run/" class="md-nav__link">
         
   
   
@@ -1985,7 +2055,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ingestion/" class="md-nav__link">
+      <a href="../api/run/ingestion/" class="md-nav__link">
         
   
   
@@ -2010,37 +2080,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Assignment
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../api/run/assignment/" class="md-nav__link">
         
   
   
@@ -2056,82 +2099,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#xpyrment.run.assignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;assignment
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" assignment">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#xpyrment.run.assignment.AssignmentLogger" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AssignmentLogger
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" AssignmentLogger">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#xpyrment.run.assignment.AssignmentLogger.log_assignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;log_assignment
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#xpyrment.run.assignment.AssignmentLogger.get_deduplicated_exposures" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_deduplicated_exposures
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2144,7 +2111,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../monitor/" class="md-nav__link">
+      <a href="../api/run/monitor/" class="md-nav__link">
         
   
   
@@ -2172,7 +2139,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../stopping/" class="md-nav__link">
+      <a href="../api/run/stopping/" class="md-nav__link">
         
   
   
@@ -2214,13 +2181,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2229,7 +2193,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_8" >
         
           
-          <label class="md-nav__link" for="__nav_3_8" id="__nav_3_8_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_8" id="__nav_3_8_label" tabindex="0">
             
   
   
@@ -2265,7 +2229,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/" class="md-nav__link">
+      <a href="../api/analyze/" class="md-nav__link">
         
   
   
@@ -2293,7 +2257,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/orchestrator/" class="md-nav__link">
+      <a href="../api/analyze/orchestrator/" class="md-nav__link">
         
   
   
@@ -2321,7 +2285,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/variance_reduction/" class="md-nav__link">
+      <a href="../api/analyze/variance_reduction/" class="md-nav__link">
         
   
   
@@ -2349,7 +2313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/corrections/" class="md-nav__link">
+      <a href="../api/analyze/corrections/" class="md-nav__link">
         
   
   
@@ -2431,7 +2395,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/inference/" class="md-nav__link">
+      <a href="../api/analyze/inference/" class="md-nav__link">
         
   
   
@@ -2459,7 +2423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/inference/router/" class="md-nav__link">
+      <a href="../api/analyze/inference/router/" class="md-nav__link">
         
   
   
@@ -2487,7 +2451,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/inference/frequentist/" class="md-nav__link">
+      <a href="../api/analyze/inference/frequentist/" class="md-nav__link">
         
   
   
@@ -2515,7 +2479,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/inference/bayesian/" class="md-nav__link">
+      <a href="../api/analyze/inference/bayesian/" class="md-nav__link">
         
   
   
@@ -2543,7 +2507,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/inference/sequential/" class="md-nav__link">
+      <a href="../api/analyze/inference/sequential/" class="md-nav__link">
         
   
   
@@ -2571,7 +2535,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../analyze/inference/bootstrap/" class="md-nav__link">
+      <a href="../api/analyze/inference/bootstrap/" class="md-nav__link">
         
   
   
@@ -2621,13 +2585,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2636,7 +2597,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
         
           
-          <label class="md-nav__link" for="__nav_3_9" id="__nav_3_9_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
             
   
   
@@ -2672,7 +2633,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interactions/" class="md-nav__link">
+      <a href="../api/interactions/" class="md-nav__link">
         
   
   
@@ -2700,7 +2661,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interactions/detector/" class="md-nav__link">
+      <a href="../api/interactions/detector/" class="md-nav__link">
         
   
   
@@ -2728,7 +2689,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interactions/anova/" class="md-nav__link">
+      <a href="../api/interactions/anova/" class="md-nav__link">
         
   
   
@@ -2756,7 +2717,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interactions/regression/" class="md-nav__link">
+      <a href="../api/interactions/regression/" class="md-nav__link">
         
   
   
@@ -2784,7 +2745,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interactions/shap/" class="md-nav__link">
+      <a href="../api/interactions/shap/" class="md-nav__link">
         
   
   
@@ -2812,7 +2773,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interactions/hstat/" class="md-nav__link">
+      <a href="../api/interactions/hstat/" class="md-nav__link">
         
   
   
@@ -2840,7 +2801,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interactions/plots/" class="md-nav__link">
+      <a href="../api/interactions/plots/" class="md-nav__link">
         
   
   
@@ -2882,13 +2843,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2897,7 +2855,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_10" >
         
           
-          <label class="md-nav__link" for="__nav_3_10" id="__nav_3_10_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_10" id="__nav_3_10_label" tabindex="0">
             
   
   
@@ -2933,7 +2891,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interpret/" class="md-nav__link">
+      <a href="../api/interpret/" class="md-nav__link">
         
   
   
@@ -2961,7 +2919,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interpret/effect_size/" class="md-nav__link">
+      <a href="../api/interpret/effect_size/" class="md-nav__link">
         
   
   
@@ -2989,7 +2947,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interpret/hte/" class="md-nav__link">
+      <a href="../api/interpret/hte/" class="md-nav__link">
         
   
   
@@ -3017,7 +2975,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interpret/decision/" class="md-nav__link">
+      <a href="../api/interpret/decision/" class="md-nav__link">
         
   
   
@@ -3045,7 +3003,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../interpret/significance/" class="md-nav__link">
+      <a href="../api/interpret/significance/" class="md-nav__link">
         
   
   
@@ -3087,13 +3045,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3102,7 +3057,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_11" >
         
           
-          <label class="md-nav__link" for="__nav_3_11" id="__nav_3_11_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_11" id="__nav_3_11_label" tabindex="0">
             
   
   
@@ -3138,7 +3093,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../report/" class="md-nav__link">
+      <a href="../api/report/" class="md-nav__link">
         
   
   
@@ -3166,7 +3121,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../report/card/" class="md-nav__link">
+      <a href="../api/report/card/" class="md-nav__link">
         
   
   
@@ -3194,7 +3149,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../report/audit/" class="md-nav__link">
+      <a href="../api/report/audit/" class="md-nav__link">
         
   
   
@@ -3222,7 +3177,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../report/export/" class="md-nav__link">
+      <a href="../api/report/export/" class="md-nav__link">
         
   
   
@@ -3258,7 +3213,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../simulation/" class="md-nav__link">
+      <a href="../api/simulation/" class="md-nav__link">
         
   
   
@@ -3313,58 +3268,46 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#xpyrment.run.assignment" class="md-nav__link">
+  <a href="#global-cli-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;assignment
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" assignment">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#xpyrment.run.assignment.AssignmentLogger" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AssignmentLogger
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" AssignmentLogger">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#xpyrment.run.assignment.AssignmentLogger.log_assignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;log_assignment
+        🛠️ Global CLI Interface
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#xpyrment.run.assignment.AssignmentLogger.get_deduplicated_exposures" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#power-analysis-and-sample-size-calculator-xpyrment-power" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_deduplicated_exposures
+        ⚡ Power Analysis and Sample Size Calculator (xpyrment power)
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#covariate-balance-checker-xpyrment-balance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Covariate Balance Checker (xpyrment balance)
+      
+    </span>
+  </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#tabular-ordinary-least-squares-xpyrment-regress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 Tabular Ordinary Least Squares (xpyrment regress)
+      
+    </span>
+  </a>
   
 </li>
       
@@ -3388,378 +3331,28 @@
   
 
 
-<h1 id="assignment">Assignment</h1>
-
-
-<div class="doc doc-object doc-module">
-
-
-
-<h2 id="xpyrment.run.assignment" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <span class="doc doc-object-name doc-module-name">assignment</span>
-
-
-</h2>
-
-    <div class="doc doc-contents first">
-
-        <p>Live experiment assignment tracking and first-touch deduplication.</p>
-<p>This module provides the <code>AssignmentLogger</code> class, which handles the operational logging of unit exposures to
-variants, enforcing first-touch attribution to ensure correct temporal ordering for causal inference.</p>
-
-
-
-
-
-
-
-
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">CLASS</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" title="            AssignmentLogger (xpyrment.run.assignment.AssignmentLogger)" href="#xpyrment.run.assignment.AssignmentLogger">AssignmentLogger</a></code></td>
-            <td class="doc-class-details">
-              <div class="doc-md-description">
-                <p>Manages tracking live assignment exposures and deduplicating multiple logs.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h3 id="xpyrment.run.assignment.AssignmentLogger" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">AssignmentLogger</span>
-
-
-</h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">AssignmentLogger</span><span class="p">()</span>
+<h1 id="command-line-interface-cli-reference">💻 Command Line Interface (CLI) Reference</h1>
+<p>The <code>xpyrment</code> Python package includes a command-line tool designed for rapid analytical queries, statistical checks, and experiment planning. This reference guide dynamically showcases all available command sub-interfaces directly from the active module.</p>
+<hr />
+<h2 id="global-cli-interface">🛠️ Global CLI Interface</h2>
+<p>To run the CLI tool, call the package directly or use the <code>xpyrment</code> binary command:</p>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">$ </span>xpyrment<span class="w"> </span>--help
 </span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-
-
-        <p>Manages tracking live assignment exposures and deduplicating multiple logs.</p>
-<p>In live online systems, users can trigger assignment events repeatedly (e.g., refreshing a page or navigating
-back to a screen). For rigorous statistical evaluation, we must identify and lock the exact moment of
-<em>initial exposure</em> for each unit.</p>
-
-
-<details class="first-touch-attribution-and-causal-ordering" open>
-  <summary>First-Touch Attribution and Causal Ordering</summary>
-  <p>To establish a valid causal relationship, any metric event <span class="arithmatex">\(Y\)</span> must occur <em>after</em> the initial exposure
-to the treatment <span class="arithmatex">\(T\)</span>:
-$<span class="arithmatex">\(t_{\text{metric}} \ge t_{\text{initial\_exposure}}\)</span>$
-If we attribute a user's metric events to their assignment using a later exposure timestamp, we violate this
-temporal sequence, potentially including pre-treatment behavior in our post-treatment metric calculations,
-introducing severe selection bias.</p>
-<p>The <code>AssignmentLogger</code> records all exposure events and deduplicates them by sorting chronologically and retaining
-only the earliest occurrence per unit.</p>
-</details>
-
-<details class="pseudocode-for-first-touch-deduplication" open>
-  <summary>Pseudocode for first-touch deduplication</summary>
-  <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>function get_deduplicated_exposures(exposures_list):
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    1. Convert exposures_list to DataFrame.
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    2. Sort DataFrame by &quot;timestamp&quot; in ascending order.
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    3. Drop duplicate rows where &quot;unit_id&quot; is identical, keeping the first occurrence.
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    4. Return the cleaned DataFrame.
+<hr />
+<h2 id="power-analysis-and-sample-size-calculator-xpyrment-power">⚡ Power Analysis and Sample Size Calculator (<code>xpyrment power</code>)</h2>
+<p>The <code>power</code> command computes statistical power curves, minimum detectable effects (MDE), and the required sample size per variant for frequentist evaluation.</p>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="gp">$ </span>xpyrment<span class="w"> </span>power<span class="w"> </span>--help
 </span></code></pre></div>
-</details>
-
-
-
-
-
-
-
-
-
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">METHOD</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-            <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            log_assignment (xpyrment.run.assignment.AssignmentLogger.log_assignment)" href="#xpyrment.run.assignment.AssignmentLogger.log_assignment">log_assignment</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Logs an assignment exposure event.</p>
-                </div>
-              </td>
-            </tr>
-            <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            get_deduplicated_exposures (xpyrment.run.assignment.AssignmentLogger.get_deduplicated_exposures)" href="#xpyrment.run.assignment.AssignmentLogger.get_deduplicated_exposures">get_deduplicated_exposures</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Deduplicates multiple logs of the same unit_id, keeping only the earliest exposure.</p>
-                </div>
-              </td>
-            </tr>
-      </tbody>
-    </table>
-
-
-
-                  <details class="mkdocstrings-source">
-                    <summary>Source code in <code>src\xpyrment\run\assignment.py</code></summary>
-                    <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-38">38</a></span>
-<span class="normal"><a href="#__codelineno-0-39">39</a></span>
-<span class="normal"><a href="#__codelineno-0-40">40</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializes an empty AssignmentLogger.&quot;&quot;&quot;</span>
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span> <span class="o">=</span> <span class="p">[]</span>
-</span></code></pre></div></td></tr></table></div>
-                  </details>
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="xpyrment.run.assignment.AssignmentLogger.log_assignment" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">log_assignment</span>
-
-
-</h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">log_assignment</span><span class="p">(</span><span class="n">unit_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">variant</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timestamp</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span>
+<hr />
+<h2 id="covariate-balance-checker-xpyrment-balance">📊 Covariate Balance Checker (<code>xpyrment balance</code>)</h2>
+<p>Before running or analyzing an experiment, use the <code>balance</code> command to inspect Standardized Mean Differences (SMD) on pre-period covariates across your allocation groups to detect pre-assignment bias.</p>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gp">$ </span>xpyrment<span class="w"> </span>balance<span class="w"> </span>--help
 </span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Logs an assignment exposure event.</p>
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">PARAMETER</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>unit_id</code>
-            </td>
-            <td class="doc-param-details">
-              <div class="doc-md-description">
-                <p>Unique identifier of the experimental unit (e.g. user_id, cookie_id).</p>
-              </div>
-              <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><span title="str">str</span></code>
-                  </span>
-              </p>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>variant</code>
-            </td>
-            <td class="doc-param-details">
-              <div class="doc-md-description">
-                <p>The assigned variant label (e.g. "control", "treatment_a").</p>
-              </div>
-              <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><span title="str">str</span></code>
-                  </span>
-              </p>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>timestamp</code>
-            </td>
-            <td class="doc-param-details">
-              <div class="doc-md-description">
-                <p>ISO-8601 or epoch timestamp when the exposure occurred.</p>
-              </div>
-              <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><span title="str">str</span></code>
-                  </span>
-              </p>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src\xpyrment\run\assignment.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-42">42</a></span>
-<span class="normal"><a href="#__codelineno-0-43">43</a></span>
-<span class="normal"><a href="#__codelineno-0-44">44</a></span>
-<span class="normal"><a href="#__codelineno-0-45">45</a></span>
-<span class="normal"><a href="#__codelineno-0-46">46</a></span>
-<span class="normal"><a href="#__codelineno-0-47">47</a></span>
-<span class="normal"><a href="#__codelineno-0-48">48</a></span>
-<span class="normal"><a href="#__codelineno-0-49">49</a></span>
-<span class="normal"><a href="#__codelineno-0-50">50</a></span>
-<span class="normal"><a href="#__codelineno-0-51">51</a></span>
-<span class="normal"><a href="#__codelineno-0-52">52</a></span>
-<span class="normal"><a href="#__codelineno-0-53">53</a></span>
-<span class="normal"><a href="#__codelineno-0-54">54</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="k">def</span><span class="w"> </span><span class="nf">log_assignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">variant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Logs an assignment exposure event.</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>
-</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        unit_id (str): Unique identifier of the experimental unit (e.g. user_id, cookie_id).</span>
-</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        variant (str): The assigned variant label (e.g. &quot;control&quot;, &quot;treatment_a&quot;).</span>
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        timestamp (str): ISO-8601 or epoch timestamp when the exposure occurred.</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>        <span class="s2">&quot;unit_id&quot;</span><span class="p">:</span> <span class="n">unit_id</span><span class="p">,</span>
-</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>        <span class="s2">&quot;variant&quot;</span><span class="p">:</span> <span class="n">variant</span><span class="p">,</span>
-</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>        <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">timestamp</span>
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="p">})</span>
-</span></code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="xpyrment.run.assignment.AssignmentLogger.get_deduplicated_exposures" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">get_deduplicated_exposures</span>
-
-
-</h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_deduplicated_exposures</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="pandas.DataFrame">DataFrame</span></span>
+<hr />
+<h2 id="tabular-ordinary-least-squares-xpyrment-regress">📈 Tabular Ordinary Least Squares (<code>xpyrment regress</code>)</h2>
+<p>The <code>regress</code> command executes an ordinary least squares linear regression solver on a local CSV table to check for linear coefficients, standard errors, t-statistics, and p-values.</p>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gp">$ </span>xpyrment<span class="w"> </span>regress<span class="w"> </span>--help
 </span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Deduplicates multiple logs of the same unit_id, keeping only the earliest exposure.</p>
-<p>This enforces the first-touch exposure model, establishing a robust temporal baseline for
-subsequent metric windowing and causal analysis.</p>
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">RETURNS</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <span class="doc-returns-annotation">
-                    <code><span title="pandas.DataFrame">DataFrame</span></code>
-                </span>
-            </td>
-            <td class="doc-returns-details">
-              <div class="doc-md-description">
-                <p>pd.DataFrame: A pandas DataFrame containing unique <code>unit_id</code> rows, with their original
-earliest <code>variant</code> and <code>timestamp</code>.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src\xpyrment\run\assignment.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-56">56</a></span>
-<span class="normal"><a href="#__codelineno-0-57">57</a></span>
-<span class="normal"><a href="#__codelineno-0-58">58</a></span>
-<span class="normal"><a href="#__codelineno-0-59">59</a></span>
-<span class="normal"><a href="#__codelineno-0-60">60</a></span>
-<span class="normal"><a href="#__codelineno-0-61">61</a></span>
-<span class="normal"><a href="#__codelineno-0-62">62</a></span>
-<span class="normal"><a href="#__codelineno-0-63">63</a></span>
-<span class="normal"><a href="#__codelineno-0-64">64</a></span>
-<span class="normal"><a href="#__codelineno-0-65">65</a></span>
-<span class="normal"><a href="#__codelineno-0-66">66</a></span>
-<span class="normal"><a href="#__codelineno-0-67">67</a></span>
-<span class="normal"><a href="#__codelineno-0-68">68</a></span>
-<span class="normal"><a href="#__codelineno-0-69">69</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_deduplicated_exposures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Deduplicates multiple logs of the same unit_id, keeping only the earliest exposure.</span>
-</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>
-</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    This enforces the first-touch exposure model, establishing a robust temporal baseline for</span>
-</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">    subsequent metric windowing and causal analysis.</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a>
-</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        pd.DataFrame: A pandas DataFrame containing unique `unit_id` rows, with their original</span>
-</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">            earliest `variant` and `timestamp`.</span>
-</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">)</span>
-</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a>        <span class="k">return</span> <span class="n">df</span>
-</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;unit_id&quot;</span><span class="p">],</span> <span class="n">keep</span><span class="o">=</span><span class="s2">&quot;first&quot;</span><span class="p">)</span>
-</span></code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
 
 
 
@@ -3815,10 +3408,10 @@ earliest <code>variant</code> and <code>timestamp</code>.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
       
