@@ -17,6 +17,9 @@ from xpyrment.core.experiment import Experiment
 from xpyrment.analyze.orchestrator import AnalysisResult, run_analysis, setup
 from xpyrment.analyze.variance_reduction import apply_cuped
 from xpyrment.analyze.corrections import apply_multiple_testing_correction
+from xpyrment.analyze.streaming import StreamingOLS
+from xpyrment.analyze.confounding import AliasResolver
+from xpyrment.analyze.copula import CopulaMultiMetricInference
 from xpyrment.analyze import inference
 
 # Dynamically inject run_analysis method to the Experiment container
@@ -32,5 +35,8 @@ __all__ = [
     "setup",
     "apply_cuped",
     "apply_multiple_testing_correction",
+    "StreamingOLS",
+    "AliasResolver",
+    "CopulaMultiMetricInference",
     "inference",
 ]

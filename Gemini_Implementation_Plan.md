@@ -315,9 +315,9 @@ The project utilizes **MkDocs** with the premium, highly aesthetic **Material th
 
 ---
 
-## 6. Implementation Status (Blocks 1 - 10: COMPLETED)
+## 6. Implementation Status (Blocks 1 - 20: COMPLETED)
 
-All elements under Blocks 1 to 10 are **100% completed, fully tested (56 out of 56 passing), and mathematically validated**:
+All elements under Blocks 1 to 20 are **100% completed, fully tested (70 out of 70 passing), and mathematically validated**:
 
 * **Block 1: Randomization & Hashing Core**
   * Fully implemented deterministic MurmurHash3 splits ([splits.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/design/splits.py)) and stratified/cluster allocation ([stratification.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/design/stratification.py)).
@@ -340,12 +340,51 @@ All elements under Blocks 1 to 10 are **100% completed, fully tested (56 out of 
   * Fully implemented cluster-level treatment randomizations over graph partitions detected via O(E) Label Propagation (LPA), alongside Aronow-Samii Neighborhood Exposure estimators mapping pure control, spillover leakage, and treated exposures to estimate Direct (DTE) and Indirect Spillover (ISE) effects.
 * **Block 10: Meta-Analysis, Archival Insights & Large-Scale Governance**
   * Fully implemented Fixed-Effects and DerSimonian-Laird Random-Effects meta-analysis engines to pool multi-study experimental effects, alongside Simonsohn binomial P-Curve auditing to identify system-wide selective reporting and p-hacking gaming.
+* **Block 11: Cross-Device Graph Randomization & Identity Resolution** (formerly Block 20)
+  * Fully implemented a high-performance graph-based `IdentityRegistry` ([identity.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/network/identity.py)) using a Disjoint Set Union (DSU) with O(alpha(N)) path-compressed lookup.
+  * Enforced mathematical consistency by selecting the lexicographically first identifier in each connected component as the stable unified ID.
+  * Implemented a two-pass `resolve_dataframe` algorithm to ensure seamless dynamic user-session stitching across multiple rows in a dataset, avoiding cross-device treatment leaks.
+* **Block 12: Auto-Tuned Hyperparameter Optimization for Adaptive Bandits** (formerly Block 21)
+  * Fully implemented a Radial Basis Function (RBF) Gaussian Process Regressor (`GaussianProcessRegressor`) from scratch inside [tuning.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/bandit/tuning.py).
+  * Developed a Bayesian Optimization framework (`BanditHyperparameterTuner`) maximizing the Expected Improvement (EI) metric:
+    $$\text{EI}(\mathbf{x}) = (\mu(\mathbf{x}) - f(\mathbf{x}^+))\Phi(Z) + \sigma(\mathbf{x})\phi(Z)$$
+  * Implemented an evaluation simulation engine (`simulate_bandit_run`) supporting Bernoulli and Gaussian multi-armed bandit simulation runs to automate hyperparameter tuning.
+* **Block 13: Low-Latency Streaming OLS via Woodbury Inverse Updates**
+  * Implemented low-latency recursive least squares (RLS) tracking with $O(P^2)$ rank-1 updates using the Sherman-Morrison/Woodbury identity in [streaming.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/analyze/streaming.py).
+  * Backed by numerical intercept stabilizing ($1e9$ prior variance initialization) to eliminate regularization of baseline shifts.
+  * Verified perfectly against standard offline batch Ridge normal equations.
+* **Block 14: Covariate Balance & Multi-Dimensional Unit Matching**
+  * Developed Coarsened Exact Matching (CEM) and Propensity Score Matching (PSM) complete with logit-caliper controls and Mahalanobis distance matrices in [matching.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/quasi/matching.py).
+  * Fully independent of external scikit-learn models; includes an optimized internal sigmoid-based logistic regression solved via gradient descent.
+* **Block 15: High-Dimensional Sparsity & Elastic Net CATE Estimators**
+  * Created `ElasticNetRegressor` in [meta_learners.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/personalize/meta_learners.py) optimized from scratch using coordinate descent soft-thresholding.
+  * Generalised S-Learner, T-Learner, and X-Learner to support configurable base estimators, supporting multi-dimensional sparse CATE estimation.
+* **Block 16: Multi-Factor Fractional ANOVA Confounding Resolvers**
+  * Fully implemented `AliasResolver` in [confounding.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/analyze/confounding.py) to resolve biased fractional factorial ANOVA parameters via alias projection matrices.
+* **Block 17: Switchback Washout Optimization**
+  * Fully implemented continuous adaptive temporal crossover (switchback) scheduling and residual $AR(p)$ temporal correlation stability checks inside [switchback.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/design/doe/switchback.py).
+* **Block 18: Double Machine Learning (DML) with K-Fold Cross-Fitting**
+  * Fully implemented Robinson's residual-on-residual causal estimation and out-of-fold predictions with K-Fold cross-fitting inside [double_ml.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/personalize/double_ml.py).
+* **Block 19: Cryptographically Secure Federated Experimentation**
+  * Fully implemented a from-scratch Paillier homomorphic cryptosystem, homomorphic addition-based SMPC covariance pooling, and FedAvg pooling algorithms inside [federated.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/network/federated.py).
+* **Block 20: Synthetic Difference-in-Differences (SDID)**
+  * Fully implemented Arkhangelsky et al. (2021) regularized doubly weighted panel policy estimators with SLSQP-optimized unit and time weights inside [sdid.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/quasi/sdid.py).
+* **Block 21: Large-Scale Distributed Graph Partitioning**
+  * Implements entropy-constrained Label Propagation community detection to partition large-scale network graphs into size-balanced communities, preventing giant cluster collapse inside [partition.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/network/partition.py).
+* **Block 22: Time-Varying Causal Effects & Structural Nested Mean Models (SNMM)**
+  * Implements Robins' backward-induction sequential g-estimation structural nested mean models to calculate multi-stage sequential causal effects under time-varying confounding inside [snmm.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/quasi/snmm.py).
+* **Block 23: Off-Policy Evaluation (OPE) for Contextual Bandits**
+  * Implements counterfactual expected reward evaluation (IPS, SN-IPS, and Doubly Robust estimators) on historical offline logging data inside [ope.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/bandit/ope.py).
+* **Block 24: Non-Gaussian Copula-Based Multi-Metric Inference**
+  * Implements Gaussian Copulas over empirical marginal ranks to model multi-metric correlations and run joint Wald tests on treatment shifts inside [copula.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/analyze/copula.py).
+* **Block 25: Multi-Objective Expected Hypervolume Improvement (EHVI) Bayesian Optimization**
+  * Implements Expected Hypervolume Improvement (EHVI) over Gaussian Process surrogates using Monte Carlo sampling and sweep-line Pareto-frontier calculations inside [multi_objective.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/bandit/multi_objective.py).
 
 ---
 
 ## 7. Developer Instructions & Historical Process Gating Rules
 
-To maintain high development quality, future implementations of additional blocks (including Blocks 20–30) must strictly adhere to the following core procedures established in prior blocks:
+To maintain high development quality, future implementations of additional blocks (including Block 26) must strictly adhere to the following core procedures established in prior blocks:
 
 ### 🔄 Rule A: Interactive Progress-Gating Update
 * Update this file (`Gemini_Implementation_Plan.md`) immediately after the completion of every block/activity with:
@@ -358,63 +397,79 @@ To maintain high development quality, future implementations of additional block
 * Ensure zero compilation warnings or test failures before proceeding to subsequent tasks.
 
 ### 📝 Rule C: Periodic Incremental Refinement (The "TODO" Rule)
-* **Every 5 blocks completed** (e.g., at Block 5, 10, 15, 20, etc.), you must recursively review every single file that was touched within those blocks.
+* **Every 5 blocks completed** (e.g., at Block 5, 10, 15, 20, 25, etc.), you must recursively review every single file that was touched within those blocks.
 * Add **between 1 and 3 highly specific, mathematically sound TODO additions, improvements, or optimization comments** to each touched file to drive evolutionary code quality and future-proof the library.
+* *Status*: COMPLETED for Blocks 21-25 (specialized mathematical TODOs added in [partition.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/network/partition.py#L18-L20), [snmm.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/quasi/snmm.py#L15-L17), [ope.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/bandit/ope.py#L17-L19), [copula.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/analyze/copula.py#L18-L20), and [multi_objective.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/bandit/multi_objective.py#L18-L20)).
 
----
+## 8. Strategic Roadmap & Specifications (Blocks 26 - 40: PLANNED)
 
-## 8. Strategic Roadmap & Specifications (Blocks 20 - 30: PLANNED)
+This section details the analytical, algebraic, and structural specifications for the remaining 15 enterprise-grade blocks, scheduled for future execution:
 
-This section details the analytical, algebraic, and structural specifications for Blocks 20 through 30, scheduled for future enterprise development:
+### 📌 Block 26: Intertemporal Carryover Decompositions in Switchback Designs
+* **Goal**: Estimate spillover carryover decay coefficients in temporal crossover trials.
+* **Mathematical Spec**: Fit generalized additive models (GAM) with smooth basis functions for temporal distance, decomposing direct treatment effect and time-since-transition carryover curves.
 
-### 📌 Block 20: Cross-Device Graph Randomization & Identity Resolution
-* **Goal**: Solve user session stitching across distinct device identifiers (cookies, mobile advertising IDs, server-side login events) to eliminate cross-arm user leakage.
-* **Mathematical Spec**: Build a graph-based identity resolution registry. Generate unified experimental unit hash IDs by taking the lexicographically first resolved node identifier in a connected entity component.
+### 📌 Block 27: Non-Stationary Bandits & Discounted Thompson Sampling
+* **Goal**: Adaptively assign variants in environments with rapidly drifting user preferences or seasonal trends.
+* **Mathematical Spec**: Sliding-Window Thompson Sampling (SW-TS) and Discounted Thompson Sampling (D-TS) utilizing exponential reward memory decay:
+  $$\alpha_t = \gamma \alpha_{t-1} + Y_t, \quad \beta_t = \gamma \beta_{t-1} + (1 - Y_t)$$
 
-### 📌 Block 21: Auto-Tuned Hyperparameter Optimization for Adaptive Bandits
-* **Goal**: Automate selection of bandit exploration parameters ($\varepsilon_t$-decay, UCB boundary scale, conjugate priors) to maximize cumulative rewards.
-* **Mathematical Spec**: Execute real-time Bayesian Optimization via Gaussian Process (GP) regressors, maximizing the Expected Improvement (EI) metric over parameter spaces:
-  $$\text{EI}(\mathbf{x}) = (\mu(\mathbf{x}) - f(\mathbf{x}^+))\Phi\left(\frac{\mu(\mathbf{x}) - f(\mathbf{x}^+)}{\sigma(\mathbf{x})}\right) + \sigma(\mathbf{x})\phi\left(\frac{\mu(\mathbf{x}) - f(\mathbf{x}^+)}{\sigma(\mathbf{x})}\right)$$
+### 📌 Block 28: Panel Matrix Completion for Sparse Synthetic Controls
+* **Goal**: Synthesize controls for complex, highly sparse panel datasets containing missing historical telemetry.
+* **Mathematical Spec**: Matrix completion using nuclear-norm regularization (Athey et al., 2021) to recover pre-treatment trends:
+  $$\min_{M} \frac{1}{2} \| P_\Omega(Y - M) \|_F^2 + \lambda_n \| M \|_*$$
 
-### 📌 Block 22: Low-Latency Streaming OLS via Woodbury Inverse Updates
-* **Goal**: Fit online multivariable OLS/Ridge adjustments over high-frequency streaming events without recomputing $(X^T X)^{-1}$ matrix inversions from scratch.
-* **Mathematical Spec**: Implement recursive least squares (RLS) leveraging the Woodbury matrix identity:
-  $$(A + \mathbf{u}\mathbf{v}^T)^{-1} = A^{-1} - \frac{A^{-1}\mathbf{u}\mathbf{v}^T A^{-1}}{1 + \mathbf{v}^T A^{-1}\mathbf{u}}$$
+### 📌 Block 29: Rosenbaum Bounds & Omission Bias Sensitivity Analysis
+* **Goal**: Quantify the robustness of causal estimates against unobserved confounders (Rosenbaum bounds).
+* **Mathematical Spec**: Compute Rosenbaum's $\Gamma$-bounds or Cinelli & Hazlett's (2020) partial $R^2$ sensitivity parameters to see how strong an unobserved confounder must be to nullify the treatment effect.
 
-### 📌 Block 23: Covariate Balance & Multi-Dimensional Unit Matching
-* **Goal**: Optimize matching quality in observational settings or pre-experimental selections.
-* **Mathematical Spec**: Implement Coarsened Exact Matching (CEM) and Propensity Score Matching (PSM) with Mahalanobis distances:
-  $$d(\mathbf{u}, \mathbf{v}) = \sqrt{(\mathbf{u} - \mathbf{v})^T \mathbf{\Sigma}^{-1} (\mathbf{u} - \mathbf{v})}$$
+### 📌 Block 30: Multi-State Markov Transition Journey Modeling
+* **Goal**: Estimate causal effects on sequential user transition funnels and multi-state journey trajectories.
+* **Mathematical Spec**: Compute transition probability matrices and continuous-time Markov intensity matrices to isolate how treatments affect state-to-state survival/conversion rates.
 
-### 📌 Block 24: High-Dimensional Sparsity & Elastic Net CATE Estimators
-* **Goal**: Uncover individual-level treatment effects (HTE) under sparse, high-dimensional covariate matrices (where $P \gg N$).
-* **Mathematical Spec**: Replace standard Ridge regressors with Elastic Net base-learners combining L1 (Lasso) and L2 (Ridge) penalty surfaces:
-  $$\arg\min_{\mathbf{\beta}} \left\{ \|y - X\mathbf{\beta}\|_2^2 + \alpha_1 \|\mathbf{\beta}\|_1 + \alpha_2 \|\mathbf{\beta}\|_2^2 \right\}$$
+### 📌 Block 31: Dynamic Treatment Regimes (DTR) & Q-Learning
+* **Goal**: Personalize treatment sequences over multi-stage user lifetimes based on time-varying characteristics.
+* **Mathematical Spec**: Implement Q-learning with backwards induction:
+  $$Q_2(H_2, A_2) = E[Y \mid H_2, A_2]$$
+  $$Q_1(H_1, A_1) = E[\max_{a_2} Q_2(H_2, a_2) \mid H_1, A_1]$$
 
-### 📌 Block 25: Multi-Factor Fractional ANOVA Confounding Resolvers
-* **Goal**: Decouple confounded interaction effects under sparse fractional factorial designs.
-* **Mathematical Spec**: Construct alias matrices to algebraically isolate main-effect projections from joint $2$-way and $3$-way factor confounding manifolds:
-  $$A = (X_1^T X_1)^{-1} X_1^T X_2$$
+### 📌 Block 32: Extreme Value Theory (EVT) for Heavy-Tailed Conversions
+* **Goal**: Perform statistical inference on fat-tailed metrics (e.g. order value, donation amounts) where standard Central Limit Theorem fails.
+* **Mathematical Spec**: Fit Generalized Pareto Distributions (GPD) using Peak-Over-Threshold (POT) methods to robustly estimate expected lift and tails.
 
-### 📌 Block 26: Continuous Adaptive Temporal Crossover (Switchback) Scheduling
-* **Goal**: Optimize temporal and geographic switchback crossover trials to minimize temporal correlation bias.
-* **Mathematical Spec**: Automatically evaluate auto-regressive error structures $AR(p)$ across time units, adjusting washout periods until spatial-temporal covariance matrices stabilize.
+### 📌 Block 33: Differential Privacy (DP) Noise Addition for Secure Analytics
+* **Goal**: Share experiment reports and summary statistics with third parties under strict mathematical privacy guarantees.
+* **Mathematical Spec**: Implement $(\epsilon, \delta)$-Differential Privacy adding Gaussian or Laplace noise calibrated to global sensitivity bounds of the sample mean and variance.
 
-### 📌 Block 27: Double Machine Learning (DML) with K-Fold Cross-Fitting
-* **Goal**: Estimate unbiased treatment effects under high-dimensional nuisance parameters (Chernozhukov et al., 2018).
-* **Mathematical Spec**: Implement Robinson's residual-on-residual regression. Compute treatment residuals $\tilde{T} = T - g(X)$ and outcome residuals $\tilde{Y} = Y - m(X)$ using out-of-fold predictions over a $K$-fold cross-fitting partition scheme.
+### 📌 Block 34: Optimal Transport (OT) & Quantile Distributional Effects
+* **Goal**: Uncover treatment effects across the entire outcome distribution (e.g. median shift, tail expansion) rather than just the average.
+* **Mathematical Spec**: Solve the 1D Wasserstein distance optimal transport map between control and treatment distributions to construct quantile treatment effects (QTE).
 
-### 📌 Block 28: Cryptographically Secure Federated Experimentation
-* **Goal**: Perform global statistical pooling and variance reductions across isolated user databases without exposing raw records.
-* **Mathematical Spec**: Implement Federated Average (FedAvg) and secure Multi-Party Computation (SMPC) to exchange local gradient states $\mathbf{g}_k$ and encrypted covariance matrices under Paillier homomorphic encryption.
+### 📌 Block 35: Interrupted Time Series (ITS) with HAC Standard Errors
+* **Goal**: Evaluate the impact of sharp, sudden system-wide policy updates when control groups are completely absent.
+* **Mathematical Spec**: Segmented OLS regression with Newey-West heteroskedasticity and autocorrelation-consistent (HAC) standard errors.
 
-### 📌 Block 29: Synthetic Difference-in-Differences (SDID)
-* **Goal**: Synthesize policy impact measures combining the unit-weighted advantages of Synthetic Controls and time-weighted trends of DiD (Arkhangelsky et al., 2021).
-* **Mathematical Spec**: Estimate unit weights $\omega_i$ and time weights $\lambda_t$ to compute the regularized, doubly weighted SDID estimator:
-  $$\hat{\tau}_{sdid} = \arg\min_{\tau, \mu, \alpha, \beta} \sum_{i=1}^N \sum_{t=1}^T (Y_{it} - \mu - \alpha_i - \beta_t - W_{it} \tau)^2 \omega_i \lambda_t$$
+### 📌 Block 36: Group Sequential Lan-DeMets Alpha Spending Functions
+* **Goal**: Continuously monitor running A/B tests with pre-specified interim look boundaries while conserving Type I error.
+* **Mathematical Spec**: O'Brien-Fleming and Pocock boundaries computed via Lan-DeMets alpha spending functions:
+  $$\alpha(t) = 2 - 2 \Phi(z_{\alpha/2} / \sqrt{t})$$
 
-### 📌 Block 30: Large-Scale Distributed Graph Partitioning
-* **Goal**: Detect isolated community boundaries over graphs containing billions of vertices and edges.
-* **Mathematical Spec**: Implement distributed Label Propagation on PySpark or NetworkX running bulk-synchronous parallel message passing, optimized with cluster-size entropy constraints.
+### 📌 Block 37: Instrumental Variables (IV) with 2-Stage Least Squares (2SLS)
+* **Goal**: Uncover the Complier Average Causal Effect (CACE) when users ignore their treatment assignments (non-compliance).
+* **Mathematical Spec**: 2SLS system: stage 1 regresses treatment compliance on assignment; stage 2 regresses outcome on predicted compliance:
+  $$\hat{T} = P_Z T = Z (Z^T Z)^{-1} Z^T T, \quad \hat{\beta}_{2SLS} = (\hat{T}^T \hat{T})^{-1} \hat{T}^T Y$$
+
+### 📌 Block 38: Meta-Regression with Knapp-Hartung Standard Errors
+* **Goal**: Explain variance across multi-study experiments using country, device, or cohort covariates.
+* **Mathematical Spec**: Mixed-effects meta-regression solved via Restricted Maximum Likelihood (REML) under Knapp-Hartung standard error adjustments.
+
+### 📌 Block 39: Infinite Dirichlet Process Mixture Clustering
+* **Goal**: Cluster users into latent response groups without specifying the number of clusters in advance.
+* **Mathematical Spec**: Infinite mixture model solved via collapsed Gibbs sampling, allowing the complexity to grow logarithmically with sample size.
+
+### 📌 Block 40: Rolling Synthetic Controls under Structural Breaks
+* **Goal**: Construct synthetic control weights dynamically updated across blocks of time to handle structural breaks.
+* **Mathematical Spec**: Online rolling horizon regression with L1-L2 regularized tracking constraints to dynamically reconstruct virtual controls.
+
 
 

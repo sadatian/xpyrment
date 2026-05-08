@@ -464,3 +464,51 @@ def test_evop_generation():
     assert set(df["pressure"].unique()) == {48.0, 50.0, 52.0}
 
 
+def test_switchback_washout_optimization():
+    """Validates auto-regressive AR(p) washout optimization inside SwitchbackDesign."""
+    from xpyrment.design.doe.switchback import SwitchbackDesign
+    import numpy as np
+    import pandas as pd
+
+    rng = np.random.default_rng(42)
+    N = 100
+    
+    # Chronological sequence of elapsed times to exhibit a smooth physical carryover decay
+    time_elapsed = np.sort(rng.choice([0, 5, 10, 15, 20, 25, 30, 40, 50, 60], size=N))
+    treatment = rng.choice([0, 1], size=N)
+    
+    # Initialize metric with standard values plus noise
+    metric = np.zeros(N)
+    metric[0] = 10.0 + 2.5 * treatment[0] + rng.normal(0, 0.05)
+    
+    # Inject strong auto-regressive carryover (correlation) for times < 20 minutes
+    # and keep it small / stable for times >= 20 minutes.
+    for i in range(1, N):
+        if time_elapsed[i] < 20:
+            # Strong sequential carryover
+            metric[i] = 10.0 + 2.5 * treatment[i] + 0.8 * (metric[i-1] - (10.0 + 2.5 * treatment[i-1])) + rng.normal(0, 0.05)
+        else:
+            # Independent observations
+            metric[i] = 10.0 + 2.5 * treatment[i] + rng.normal(0, 0.05)
+
+    df = pd.DataFrame({
+        "time": time_elapsed,
+        "metric": metric,
+        "treatment": treatment
+    })
+
+    design = SwitchbackDesign(factors={"dispatch_algorithm": ["greedy", "predictive"]})
+    optimal_washout = design.optimize_washout(
+        df=df,
+        time_col="time",
+        metric_col="metric",
+        treatment_col="treatment",
+        max_p=1,
+        stability_threshold=0.1
+    )
+
+    # Autocorrelation dies out starting at 20 minutes (10 is also highly stable compared to 0)
+    assert optimal_washout in [10, 20, 30]
+
+
+

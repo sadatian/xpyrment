@@ -15,6 +15,11 @@ It is designed to bring the user-friendly, high-level API style of **PyCaret** t
 * **Experimental Diagnostics**: Built-in automated Chi-square tests to detect **Sample Ratio Mismatch (SRM)**, pre-experiment covariate balance validation, and time-series novelty/primacy effect detectors.
 * **Sequential Monitoring & Early Stopping**: Sequential monitoring bounds and always-valid confidence intervals via **mixture SPRT (mSPRT)** and Pocock/O'Brien-Fleming alpha-spending functions.
 * **Multi-Testing Correction**: Avoid "p-hacking" by automatically adjusting p-values for multiple metric runs using Holm-Bonferroni, Bonferroni, or Benjamini-Hochberg (FDR).
+* **Multi-Armed Bandits & Adaptive Traffic**: Optimize real-time traffic splits with Beta-Binomial / Normal-Normal **Thompson Sampling**, standard/decaying **$\varepsilon$-Greedy**, and classical **UCB1** optimistic exploration.
+* **Heterogeneous Treatment Effects (HTE)**: Personalize variant targeting using CATE estimators (**S-Learner**, **T-Learner**, and propensity-weighted **X-Learner**) alongside custom bootstrapped **Causal Forests**.
+* **Synthetic Controls & Quasi-Experiments**: Analyze unrandomized policy deployments using Abadie SLSQP-constrained **Synthetic Controls** and multi-variable **Difference-in-Differences (DiD)** regressions.
+* **Network Effects & Cluster Randomization**: Group treatment nodes over graph partitions via $O(E)$ **Label Propagation**, and compute spillover leakages via **Neighborhood Exposure** models.
+* **Meta-Analysis & Governance Checks**: Pool historic experiment point estimates using **DerSimonian-Laird Random-Effects** models and detect system-wide reporting bias with Simonsohn binomial **P-Curve** audits.
 * **Premium Visualizations**: Publication-ready, color-coded forest plots (confidence intervals) and power curves built with `matplotlib` and `seaborn`.
 
 ---
@@ -195,16 +200,21 @@ results.plot()
 To support industrial-scale digital tests and classical DoE, the package has been fully restructured under `src/xpyrment` following a one-way dependency gating layout:
 
 ```text
-metrics/     ← no upstream imports. Houses core metric taxonomy and guardrail thresholds.
-core/        ← depends on metrics/. Powers the phase gating lifecycle & spec registries.
-plan/        ← depends on core/, metrics/. Computes pre-registration power/durations.
-design/      ← depends on core/, metrics/. Handles randomizations, splits & DoE matrices.
-validate/    ← depends on core/, metrics/. Houses SRM checks and covariate balance tests.
-run/         ← depends on core/, design/, validate/. Handles ingestion & mSPRT monitors.
-analyze/     ← depends on core/, metrics/, run/. Orchestrates frequentist/Bayesian engines.
-interactions/← depends on analyze/, design/. Decomposes multi-factor ANOVA interaction terms.
-interpret/   ← depends on analyze/, interactions/, metrics/. Infers ship/no-ship decisions.
-report/      ← terminal consumer of all phases. Compiles audit trails & exportable reports.
+metrics/     ← Houses core metric taxonomy and guardrail thresholds.
+core/        ← Powers the phase gating lifecycle & spec registries.
+plan/        ← Computes pre-registration power/durations.
+design/      ← Handles randomizations, splits & DoE matrices.
+validate/    ← Houses SRM checks and covariate balance tests.
+run/         ← Handles ingestion & mSPRT monitors.
+analyze/     ← Orchestrates frequentist/Bayesian engines.
+interactions/← Decomposes multi-factor ANOVA interaction terms.
+interpret/   ← Infers ship/no-ship decisions.
+bandit/      ← Multi-armed adaptive traffic allocation algorithms.
+personalize/ ← Heterogeneous treatment effects & personalized CATE forests.
+quasi/       ← Observational policy evaluation (DiD & Synthetic Controls).
+network/     ← Cluster randomization & neighborhood spillover models.
+governance/  ← Large-scale experimental pooling & p-curve reporting bias checks.
+report/      ← Terminal consumer of all phases. Compiles audit trails & exportable reports.
 ```
 
 ---
@@ -235,6 +245,19 @@ For ratio metrics, `xpyrment` applies CUPED adjustment separately to the numerat
 A Pearson Chi-square test is calculated on the observed sample counts against the expected design weights to flag assignment bugs early:
 $$\chi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i}$$
 If the test p-value $< 0.001$, an `SRMError` is raised.
+
+### DerSimonian-Laird Random-Effects Meta-Analysis
+To pool historical experiment estimates $\hat{\theta}_j$ with study variances $v_j$ across $k$ independent studies, the DerSimonian-Laird random-effects model accounts for between-study variance $\tau^2$:
+$$\tau^2 = \max\left(0, \ \frac{Q - (k - 1)}{\sum w_j - \frac{\sum w_j^2}{\sum w_j}}\right)$$
+where $w_j = \frac{1}{v_j}$ are inverse-variance fixed weights, and $Q = \sum w_j (\hat{\theta}_j - \bar{\theta}_F)^2$ is Cochran's $Q$ heterogeneity statistic. Random weights $w_j^* = \frac{1}{v_j + \tau^2}$ are then applied to yield the pooled Random Effect estimate:
+$$\bar{\theta}_R = \frac{\sum w_j^* \hat{\theta}_j}{\sum w_j^*}$$
+
+### Simonsohn P-Curve Distribution Audits
+To detect p-hacking, early peeking, or selective publication bias across independent experiments, the p-curve binomial test calculates the proportion of significant p-values ($p < 0.05$) lying in the low half ($p \le 0.025$):
+* **True Evidential Power (Right-Skewed)**:
+  $$p_{right\_skew} = 1 - F_{binom}(N_{low} - 1; N_{total}, 0.5)$$
+* **Reporting Bias / Selective Stopping (Left-Skewed)**:
+  $$p_{left\_skew} = F_{binom}(N_{low}; N_{total}, 0.5)$$
 
 ---
 

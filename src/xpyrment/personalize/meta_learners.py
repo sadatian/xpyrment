@@ -1,17 +1,20 @@
 """Meta-learners for estimating Heterogeneous Treatment Effects (HTE).
 
 This module provides standard meta-learning structures, including S-Learner, T-Learner,
-and X-Learner, using analytical multi-variable Ridge regression as base models.
+and X-Learner, using analytical multi-variable Ridge regression or Elastic Net
+regression (L1 + L2) solved via Coordinate Descent.
+
+# TODO: Implement cyclic coordinate descent path optimization (warm starts over a regularization grid lambda) to compute the complete Elastic Net path efficiently.
 """
 
-from typing import Optional
+from typing import Optional, Type, Any
 import numpy as np
 
 
 class RidgeRegressor:
     """Analytical Ridge regression estimator for high-performance linear model fitting."""
 
-    def __init__(self, alpha: float = 1.0):
+    def __init__(self, alpha: float = 1.0) -> None:
         """Initializes the RidgeRegressor.
 
         Args:
@@ -20,7 +23,7 @@ class RidgeRegressor:
         self.alpha = alpha
         self.beta = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "RidgeRegressor":
         """Fits the regression model analytically using closed-form normal equations.
 
         Args:
@@ -54,18 +57,98 @@ class RidgeRegressor:
         return np.dot(X_bias, self.beta)
 
 
+class ElasticNetRegressor:
+    """Coordinate descent based Elastic Net regressor combining L1 and L2 regularization."""
+
+    def __init__(
+        self, alpha1: float = 0.5, alpha2: float = 0.5, max_iter: int = 1000, tol: float = 1e-4
+    ) -> None:
+        """Initializes the ElasticNetRegressor.
+
+        Args:
+            alpha1 (float): L1 regularization penalty (Lasso). Defaults to 0.5.
+            alpha2 (float): L2 regularization penalty (Ridge). Defaults to 0.5.
+            max_iter (int): Maximum coordinate descent iterations. Defaults to 1000.
+            tol (float): Convergence tolerance. Defaults to 1e-4.
+        """
+        self.alpha1 = alpha1
+        self.alpha2 = alpha2
+        self.max_iter = max_iter
+        self.tol = tol
+        self.beta = None
+        self.beta_0 = 0.0
+
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "ElasticNetRegressor":
+        """Fits the Elastic Net model using Coordinate Descent optimization.
+
+        Args:
+            X (np.ndarray): Feature matrix of shape (n_samples, n_features).
+            y (np.ndarray): Target vector of shape (n_samples,).
+        """
+        N, P = X.shape
+        self.beta = np.zeros(P)
+        self.beta_0 = float(np.mean(y))
+
+        # Vectorized precomputation of column squared norms: 1/N * ||X_j||^2
+        z = np.sum(X**2, axis=0) / N
+
+        for _ in range(self.max_iter):
+            beta_old = self.beta.copy()
+            beta_0_old = self.beta_0
+
+            # Iterate over coordinates (features)
+            for j in range(P):
+                # Calculate running residuals: r = y - beta_0 - X * beta
+                r = y - self.beta_0 - np.dot(X, self.beta)
+
+                # Single feature partial residual prediction: rho_j
+                rho_j = np.dot(X[:, j], r) / N + self.beta[j] * z[j]
+
+                # Apply soft-thresholding operator S(rho_j, alpha1)
+                val = np.abs(rho_j) - self.alpha1
+                if val > 0:
+                    self.beta[j] = np.sign(rho_j) * val / (z[j] + self.alpha2)
+                else:
+                    self.beta[j] = 0.0
+
+            # Update intercept (unpenalized)
+            self.beta_0 = float(np.mean(y - np.dot(X, self.beta)))
+
+            # Check convergence criteria
+            diff_beta = np.max(np.abs(self.beta - beta_old)) if P > 0 else 0.0
+            diff_beta_0 = np.abs(self.beta_0 - beta_0_old)
+            if max(diff_beta, diff_beta_0) < self.tol:
+                break
+
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predicts target outcomes using estimated coefficients and intercept.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+
+        Returns:
+            np.ndarray: Vector of predicted values.
+        """
+        return np.dot(X, self.beta) + self.beta_0
+
+
 class SLearner:
     """Single-model meta-learner for Conditional Average Treatment Effect (CATE) estimation."""
 
-    def __init__(self, alpha: float = 1.0):
+    def __init__(self, alpha: float = 1.0, base_learner_class: Type[Any] = RidgeRegressor, **kwargs) -> None:
         """Initializes the S-Learner.
 
         Args:
             alpha (float): Regularization parameter for the base Ridge model. Defaults to 1.0.
+            base_learner_class (Type): Class of regression base-learner. Defaults to RidgeRegressor.
         """
-        self.model = RidgeRegressor(alpha=alpha)
+        if base_learner_class == RidgeRegressor:
+            kwargs.setdefault("alpha", alpha)
+        self.model = base_learner_class(**kwargs)
 
-    def fit(self, X: np.ndarray, treatment: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, treatment: np.ndarray, y: np.ndarray) -> "SLearner":
         """Fits the single model on the joint features, treatment, and interaction terms [X, T, X * T].
 
         Args:
@@ -99,16 +182,19 @@ class SLearner:
 class TLearner:
     """Two-model meta-learner for Conditional Average Treatment Effect (CATE) estimation."""
 
-    def __init__(self, alpha: float = 1.0):
+    def __init__(self, alpha: float = 1.0, base_learner_class: Type[Any] = RidgeRegressor, **kwargs) -> None:
         """Initializes the T-Learner.
 
         Args:
             alpha (float): Regularization parameter for the two Ridge models. Defaults to 1.0.
+            base_learner_class (Type): Class of regression base-learner. Defaults to RidgeRegressor.
         """
-        self.model_0 = RidgeRegressor(alpha=alpha)
-        self.model_1 = RidgeRegressor(alpha=alpha)
+        if base_learner_class == RidgeRegressor:
+            kwargs.setdefault("alpha", alpha)
+        self.model_0 = base_learner_class(**kwargs)
+        self.model_1 = base_learner_class(**kwargs)
 
-    def fit(self, X: np.ndarray, treatment: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, treatment: np.ndarray, y: np.ndarray) -> "TLearner":
         """Fits separate estimators for control and treatment observations.
 
         Args:
@@ -138,25 +224,24 @@ class TLearner:
 
 
 class XLearner:
-    """Cross-model meta-learner for unbalanced Conditional Average Treatment Effect (CATE) estimation.
+    """Cross-model meta-learner for unbalanced Conditional Average Treatment Effect (CATE) estimation."""
 
-    # TODO: Support arbitrary custom base-learner regression estimators instead of strictly RidgeRegressor.
-    # TODO: Implement a logistic regression or other custom propensity score model rather than a constant mean scalar.
-    """
-
-    def __init__(self, alpha: float = 1.0):
+    def __init__(self, alpha: float = 1.0, base_learner_class: Type[Any] = RidgeRegressor, **kwargs) -> None:
         """Initializes the X-Learner.
 
         Args:
             alpha (float): Regularization parameter for the internal models. Defaults to 1.0.
+            base_learner_class (Type): Class of regression base-learner. Defaults to RidgeRegressor.
         """
-        self.mu_0 = RidgeRegressor(alpha=alpha)
-        self.mu_1 = RidgeRegressor(alpha=alpha)
-        self.tau_0 = RidgeRegressor(alpha=alpha)
-        self.tau_1 = RidgeRegressor(alpha=alpha)
+        if base_learner_class == RidgeRegressor:
+            kwargs.setdefault("alpha", alpha)
+        self.mu_0 = base_learner_class(**kwargs)
+        self.mu_1 = base_learner_class(**kwargs)
+        self.tau_0 = base_learner_class(**kwargs)
+        self.tau_1 = base_learner_class(**kwargs)
         self.propensity_score = 0.5
 
-    def fit(self, X: np.ndarray, treatment: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, treatment: np.ndarray, y: np.ndarray) -> "XLearner":
         """Executes the 4-stage X-Learner optimization algorithm on unbalanced assignments.
 
         Args:

@@ -1,8 +1,12 @@
 import pytest
 import numpy as np
-from xpyrment.bandit.epsilon_greedy import EpsilonGreedyBandit
-from xpyrment.bandit.ucb import UCB1Bandit
-from xpyrment.bandit.thompson import ThompsonSamplingBandit
+from xpyrment.bandit import (
+    EpsilonGreedyBandit,
+    UCB1Bandit,
+    ThompsonSamplingBandit,
+    BanditHyperparameterTuner,
+    simulate_bandit_run,
+)
 
 
 def test_epsilon_greedy_bandit():
@@ -98,3 +102,153 @@ def test_thompson_sampling_continuous():
 
     assert bandit.params["A"][1] == 3.0
     assert bandit.params["A"][0] == pytest.approx(6.0)
+
+
+def test_gp_regressor():
+    """Validates basic functionality and predictive mean/variance of the scratch GaussianProcessRegressor."""
+    from xpyrment.bandit.tuning import GaussianProcessRegressor
+
+    gp = GaussianProcessRegressor(l=1.0, sigma_f=1.0, sigma_n=1e-3)
+
+    # Simple 1D dataset: y = x^2
+    X = np.array([[1.0], [2.0], [3.0]])
+    y = np.array([1.0, 4.0, 9.0])
+
+    gp.fit(X, y)
+
+    # Predict at training points: posterior mean should match training points, variance should be small
+    mu_train, std_train = gp.predict(X)
+    assert mu_train[0] == pytest.approx(1.0, abs=1e-2)
+    assert mu_train[1] == pytest.approx(4.0, abs=1e-2)
+    assert mu_train[2] == pytest.approx(9.0, abs=1e-2)
+    assert std_train[0] < 0.1
+
+    # Predict at a test point far from training data: std dev should increase towards prior std dev (sigma_f = 1.0)
+    mu_far, std_far = gp.predict(np.array([[20.0]]))
+    assert mu_far[0] == pytest.approx(0.0, abs=0.1)  # reverts to prior mean
+    assert std_far[0] == pytest.approx(1.0, abs=0.1)  # reverts to prior std dev
+
+
+def test_bandit_hyperparameter_tuner():
+    """Validates Bayesian Optimization tuning of EpsilonGreedyBandit hyperparameters on a static binary environment."""
+    # Define a simple Bernoulli bandit environment
+    arms = ["arm_A", "arm_B"]
+    true_means = {"arm_A": 0.9, "arm_B": 0.2}  # A is significantly better
+
+    # Evaluation function: runs the simulation 3 times with given hyperparameters and returns the average reward
+    def evaluate_fn(params: dict) -> float:
+        rewards = []
+        for seed in [1, 2, 3]:
+            # Scale parameters if needed (bounds are checked)
+            reward = simulate_bandit_run(
+                bandit_class=EpsilonGreedyBandit,
+                bandit_args={
+                    "epsilon": params["epsilon"],
+                    "decay_rate": params["decay_rate"],
+                },
+                arms=arms,
+                true_means=true_means,
+                reward_type="binary",
+                steps=100,
+                seed=seed,
+            )
+            rewards.append(reward)
+        return float(np.mean(rewards))
+
+    # Parameter space: search bounds for epsilon and decay_rate
+    bounds = {
+        "epsilon": (0.01, 0.40),
+        "decay_rate": (0.90, 0.999),
+    }
+
+    tuner = BanditHyperparameterTuner(bounds=bounds, evaluate_fn=evaluate_fn, l=0.5)
+
+    # Run the optimization
+    best_params = tuner.optimize(n_init=3, n_iter=5, seed=42)
+
+    assert "epsilon" in best_params
+    assert "decay_rate" in best_params
+    assert bounds["epsilon"][0] <= best_params["epsilon"] <= bounds["epsilon"][1]
+    assert bounds["decay_rate"][0] <= best_params["decay_rate"] <= bounds["decay_rate"][1]
+
+    # Verify optimizer logged execution history
+    assert len(tuner.X_history) == 8  # 3 init + 5 iter
+    assert len(tuner.y_history) == 8
+    assert tuner.best_score > 0.0
+
+
+def test_off_policy_evaluation():
+    """Validates the three-tier Off-Policy Evaluation (IPS, SN-IPS, DR) suite on bandit logs."""
+    from xpyrment.bandit.ope import OffPolicyEvaluator
+
+    rng = np.random.default_rng(42)
+    n = 200
+
+    # 1D Context
+    X = rng.uniform(0.0, 1.0, size=(n, 1))
+    
+    # Historical actions selected at random (propensities = 0.5)
+    actions = rng.binomial(1, 0.5, size=n)
+    propensities = np.full(n, 0.5)
+
+    # Historical rewards: arm 1 has higher baseline
+    # Expected reward for arm 0 is X * 2.0; for arm 1 is X * 5.0
+    rewards = np.zeros(n)
+    for i in range(n):
+        if actions[i] == 0:
+            rewards[i] = X[i, 0] * 2.0 + rng.normal(scale=0.01)
+        else:
+            rewards[i] = X[i, 0] * 5.0 + rng.normal(scale=0.01)
+
+    # Target policy: always play arm 1 with probability 1.0 (probs shape: (n, 2))
+    def target_policy(context: np.ndarray) -> np.ndarray:
+        probs = np.zeros((context.shape[0], 2))
+        probs[:, 1] = 1.0  # arm 1
+        return probs
+
+    evaluator = OffPolicyEvaluator(target_policy=target_policy, l2_penalty=1e-3)
+    estimates = evaluator.evaluate(X, actions, propensities, rewards)
+
+    assert "ips" in estimates
+    assert "sn_ips" in estimates
+    assert "dr" in estimates
+
+    # Expected value of arm 1 = E[5.0 * X] = 5.0 * 0.5 = 2.5
+    assert estimates["ips"] == pytest.approx(2.5, abs=0.4)
+    assert estimates["sn_ips"] == pytest.approx(2.5, abs=0.4)
+    assert estimates["dr"] == pytest.approx(2.5, abs=0.4)
+
+
+def test_multi_objective_tuning():
+    """Validates hypervolume calculations, Pareto front detection, and Expected Hypervolume Improvement propose_next logic."""
+    from xpyrment.bandit.multi_objective import MultiObjectiveTuner
+
+    # Reference point is (0.0, 0.0)
+    tuner = MultiObjectiveTuner(bounds=[(0.0, 5.0)], reference_point=(0.0, 0.0))
+
+    # Add three points
+    tuner.add_observation(np.array([1.0]), (1.0, 5.0))
+    tuner.add_observation(np.array([2.0]), (2.0, 4.0))
+    tuner.add_observation(np.array([3.0]), (1.5, 3.0))  # Dominated by (2.0, 4.0)
+
+    # 1. Verify Pareto frontier extraction
+    frontier = tuner.get_pareto_frontier()
+    assert frontier.shape[0] == 2
+    # The non-dominated points are exactly (1, 5) and (2, 4)
+    point_set = {tuple(p) for p in frontier}
+    assert (1.0, 5.0) in point_set
+    assert (2.0, 4.0) in point_set
+
+    # 2. Verify hypervolume calculation
+    # Area = (1.0 - 0.0) * (5.0 - 0.0) + (2.0 - 1.0) * (4.0 - 0.0) = 5.0 + 4.0 = 9.0
+    hv = tuner.compute_hypervolume(frontier)
+    assert hv == pytest.approx(9.0)
+
+    # 3. Test EHVI computation and proposal selection
+    candidates = np.linspace(0.1, 4.9, 10).reshape(-1, 1)
+    best_candidate = tuner.propose_next(candidates, n_samples=10)
+    
+    assert best_candidate.shape == (1,)
+    assert 0.0 <= best_candidate[0] <= 5.0
+
+

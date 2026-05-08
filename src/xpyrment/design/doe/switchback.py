@@ -115,3 +115,71 @@ class SwitchbackDesign(DesignMatrix):
         # TODO: Add option to optimize period switchover frequencies to minimize carrying-over spillover effects.
         # TODO: Implement Latin Square multi-period and multi-variant Latin Square crossover balancing to optimize more than 2 variants.
         return pd.DataFrame(rows)
+
+    def optimize_washout(
+        self,
+        df: pd.DataFrame,
+        time_col: str,
+        metric_col: str,
+        treatment_col: str,
+        max_p: int = 3,
+        stability_threshold: float = 0.05,
+    ) -> int:
+        """Evaluates AR(p) error structures across candidate washout times to stabilize covariance.
+
+        Args:
+            df (pd.DataFrame): Experimental telemetry dataset.
+            time_col (str): Minute/second elapsed column since block transition.
+            metric_col (str): Target evaluation metric.
+            treatment_col (str): Column indicating binary/categorical treatment assignment.
+            max_p (int): Maximum autoregressive lag order. Defaults to 3.
+            stability_threshold (float): Variance/autocorrelation index threshold representing stability.
+                Defaults to 0.05.
+
+        Returns:
+            int: The optimal washout period in minutes.
+        """
+        import numpy as np
+
+        # Candidate washout periods in minutes
+        candidates = [0, 10, 20, 30, 45, 60]
+        optimal_washout = candidates[-1]
+
+        for wash in candidates:
+            # Filter telemetry data outside the current candidate washout window and sort by time
+            filtered_df = df[df[time_col] >= wash].sort_values(by=time_col).copy()
+            if len(filtered_df) < (max_p + 15):
+                continue
+
+            # Subtract treatment effect to compute residual time-series
+            X_design = filtered_df[treatment_col].to_numpy().reshape(-1, 1)
+            y = filtered_df[metric_col].to_numpy()
+            
+            # Unpenalized regression
+            X_bias = np.hstack([np.ones((X_design.shape[0], 1)), X_design])
+            XTX = np.dot(X_bias.T, X_bias)
+            beta = np.linalg.solve(XTX + 1e-6 * np.eye(2), np.dot(X_bias.T, y))
+            residuals = y - np.dot(X_bias, beta)
+
+            # Fit AR(p) model via OLS on residuals: residuals_t = phi_1 * res_{t-1} + ... + phi_p * res_{t-p}
+            N_res = len(residuals)
+            Z = np.zeros((N_res - max_p, max_p))
+            for lag in range(1, max_p + 1):
+                Z[:, lag - 1] = residuals[max_p - lag : -lag]
+
+            target_y = residuals[max_p:]
+
+            try:
+                ZTZ = np.dot(Z.T, Z)
+                phi = np.linalg.solve(ZTZ + 1e-6 * np.eye(max_p), np.dot(Z.T, target_y))
+
+                # Compute autocorrelation index (L2 norm of AR parameters)
+                ar_index = float(np.sum(phi**2))
+                if ar_index < stability_threshold:
+                    optimal_washout = wash
+                    break
+            except np.linalg.LinAlgError:
+                continue
+
+        return optimal_washout
+

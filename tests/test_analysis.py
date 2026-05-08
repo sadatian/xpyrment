@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import numpy as np
 
 from xpyrment.analyze.orchestrator import run_analysis, setup
 from xpyrment.core.exceptions import PhaseOrderError
@@ -172,4 +173,149 @@ def test_bayesian_inference_conjugate_normal_normal():
     # Probability treatment is superior must be near 1
     assert results["pbb"] > 0.99
     assert results["expected_loss"] < 0.01
+
+
+def test_streaming_ols():
+    """Validates the mathematical correctness and low-latency Woodbury updates of StreamingOLS."""
+    import numpy as np
+    from xpyrment.analyze.streaming import StreamingOLS
+
+    rng = np.random.default_rng(42)
+    n_samples = 150
+    n_features = 3
+
+    # Generate synthetic regression dataset: y = X * beta + bias + noise
+    X = rng.normal(loc=0.0, scale=1.0, size=(n_samples, n_features))
+    true_beta = np.array([2.5, -1.0, 4.0])
+    true_intercept = 10.0
+    y = np.dot(X, true_beta) + true_intercept + rng.normal(loc=0.0, scale=0.5, size=n_samples)
+
+    # 1. Initialize Streaming OLS
+    stream_model = StreamingOLS(n_features=n_features, l2_penalty=0.1, fit_intercept=True)
+
+    # 2. Run sequential streaming updates
+    for i in range(n_samples):
+        stream_model.update(X[i], y[i])
+
+    # 3. Calculate batch Ridge regression offline as target benchmark
+    X_bias = np.hstack([np.ones((n_samples, 1)), X])
+    XTX = np.dot(X_bias.T, X_bias)
+    I = np.eye(n_features + 1)
+    I[0, 0] = 0.0  # Do not penalize intercept
+    expected_beta_batch = np.linalg.solve(XTX + 0.1 * I, np.dot(X_bias.T, y))
+
+    # Assert that StreamingOLS coefficients closely match offline batch OLS parameters
+    assert stream_model.coefficients == pytest.approx(expected_beta_batch, rel=1e-5)
+
+    # 4. Predict on a new sample batch
+    X_new = rng.normal(loc=0.0, scale=1.0, size=(10, n_features))
+    pred_stream = stream_model.predict(X_new)
+    
+    # Check predictions match offline batch regression predictions
+    pred_expected = np.dot(np.hstack([np.ones((10, 1)), X_new]), expected_beta_batch)
+    assert pred_stream == pytest.approx(pred_expected, rel=1e-5)
+
+
+def test_alias_resolver():
+    """Validates fractional factorial ANOVA alias structures and coefficient de-biasing."""
+    import pandas as pd
+    import numpy as np
+    from xpyrment.analyze.confounding import AliasResolver
+
+    # Create a fractional factorial design (e.g., 2^{3-1} with I = A B C)
+    # This means C = A * B, so A is completely confounded with the B * C interaction!
+    data = {
+        "A": [1, 1, -1, -1],
+        "B": [1, -1, 1, -1],
+        "C": [1, -1, -1, 1],  # C = A * B
+    }
+    df = pd.DataFrame(data)
+    
+    # Create the interaction columns
+    df["BC"] = df["B"] * df["C"]  # BC = A
+    df["AC"] = df["A"] * df["C"]  # AC = B
+    df["AB"] = df["A"] * df["B"]  # AB = C
+
+    resolver = AliasResolver(
+        primary_cols=["A", "B", "C"],
+        potential_confounding_cols=["AB", "AC", "BC"]
+    )
+
+    A_matrix = resolver.compute_alias_matrix(df)
+    
+    # A is confounded with BC (coefficient 1.0)
+    # B is confounded with AC (coefficient 1.0)
+    # C is confounded with AB (coefficient 1.0)
+    assert A_matrix.shape == (4, 3)
+    
+    report = resolver.get_alias_report(df)
+    
+    # Check alias reports
+    assert "A" in report
+    assert any(col == "BC" and abs(val - 1.0) < 1e-3 for col, val in report["A"])
+    assert "B" in report
+    assert any(col == "AC" and abs(val - 1.0) < 1e-3 for col, val in report["B"])
+    assert "C" in report
+    assert any(col == "AB" and abs(val - 1.0) < 1e-3 for col, val in report["C"])
+
+    # Test coefficient de-biasing
+    beta1_true = np.array([10.0, 2.0, 3.0, 4.0])  # [intercept, A, B, C]
+    beta2_true = np.array([1.5, 0.5, 2.5])        # [AB, AC, BC]
+    beta1_biased = beta1_true + np.dot(A_matrix, beta2_true)
+
+    resolved = resolver.resolve_coefficients(beta1_biased, beta2_true)
+    assert resolved == pytest.approx(beta1_true, rel=1e-5)
+
+
+def test_copula_multi_metric_inference():
+    """Validates the Gaussian Copula multi-metric Wald test on non-Gaussian joint distributions."""
+    from xpyrment.analyze.copula import CopulaMultiMetricInference
+
+    rng = np.random.default_rng(42)
+    n = 300
+
+    # Simulate: non-Gaussian joint distribution
+    # Conversion (binary Bernoulli) and Revenue (skewed log-normal)
+    # Treatment group experiences a shift in both conversion rate and revenue scale
+    treatment = rng.binomial(1, 0.5, size=n)
+
+    converted = np.zeros(n)
+    revenue = np.zeros(n)
+
+    for i in range(n):
+        # Base conversion rate: 0.20 control, 0.35 treatment
+        prob = 0.35 if treatment[i] == 1 else 0.20
+        converted[i] = rng.binomial(1, prob)
+
+        # Revenue is log-normally distributed, higher if converted
+        if converted[i] == 1:
+            base_log_rev = 3.5 if treatment[i] == 1 else 3.0
+            revenue[i] = rng.lognormal(mean=base_log_rev, sigma=0.5)
+        else:
+            revenue[i] = 0.0
+
+    df = pd.DataFrame({
+        "treatment": treatment,
+        "converted": converted,
+        "revenue": revenue
+    })
+
+    copula_engine = CopulaMultiMetricInference(l2_penalty=1e-5)
+    results = copula_engine.test_joint_shift(df, "treatment", ["converted", "revenue"])
+
+    assert "wald_statistic" in results
+    assert "p_value" in results
+    assert "covariance_matrix" in results
+
+    # The covariance matrix should be symmetric and of shape (2, 2)
+    cov = results["covariance_matrix"]
+    assert cov.shape == (2, 2)
+    assert cov[0, 1] == pytest.approx(cov[1, 0])
+
+    # The treatment shift is highly significant, so joint p-value should be low
+    assert results["p_value"] < 0.05
+    assert results["wald_statistic"] > 5.0
+
+
+
 

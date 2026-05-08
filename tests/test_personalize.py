@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from xpyrment.personalize.meta_learners import RidgeRegressor, SLearner, TLearner, XLearner
+from xpyrment.personalize.meta_learners import RidgeRegressor, SLearner, TLearner, XLearner, ElasticNetRegressor
 from xpyrment.personalize.causal_forest import CausalTree, CausalForest
 
 
@@ -93,3 +93,83 @@ def test_causal_tree_and_forest():
     assert forest_cate.shape == (100,)
     assert np.mean(forest_cate[X[:, 0] > 0.0]) > 0.0
     assert np.mean(forest_cate[X[:, 0] <= 0.0]) < 0.0
+
+
+def test_elastic_net_regressor():
+    """Validates L1/L2 coordinate descent of ElasticNetRegressor for sparsity & weight selection."""
+    rng = np.random.default_rng(42)
+    n = 100
+    p = 10
+
+    # High-dimensional dataset where only first 2 features have true signal (sparse setting)
+    X = rng.normal(size=(n, p))
+    y = 5.0 + 3.0 * X[:, 0] - 2.0 * X[:, 1] + rng.normal(scale=0.1, size=n)
+
+    # Elastic Net Regressor with small penalty to verify convergence to true coefficients
+    en = ElasticNetRegressor(alpha1=0.02, alpha2=0.01, max_iter=1000, tol=1e-5)
+    en.fit(X, y)
+
+    # Assert model predicted intercept and relevant coefficients accurately
+    assert en.beta_0 == pytest.approx(5.0, abs=0.2)
+    assert en.beta[0] == pytest.approx(3.0, abs=0.2)
+    assert en.beta[1] == pytest.approx(-2.0, abs=0.2)
+
+    # Assert irrelevant features' weights are close to 0 (sparsity effect)
+    for j in range(2, p):
+        assert abs(en.beta[j]) < 0.2
+
+
+def test_elastic_net_meta_learners():
+    """Validates CATE estimation of S, T, X Learners configured with Elastic Net base estimators."""
+    rng = np.random.default_rng(42)
+    n = 150
+    p = 5
+
+    X = rng.normal(size=(n, p))
+    treatment = rng.binomial(1, 0.5, size=n)
+    
+    # Lift of +3.0 only for users with x_0 > 0
+    true_lift = np.where(X[:, 0] > 0.0, 3.0, 0.0)
+    y = 12.0 + 1.0 * X[:, 1] + treatment * true_lift + rng.normal(scale=0.1, size=n)
+
+    # Instantiate meta-learners with ElasticNetRegressor
+    s_en = SLearner(base_learner_class=ElasticNetRegressor, alpha1=0.1, alpha2=0.1)
+    t_en = TLearner(base_learner_class=ElasticNetRegressor, alpha1=0.1, alpha2=0.1)
+    x_en = XLearner(base_learner_class=ElasticNetRegressor, alpha1=0.1, alpha2=0.1)
+
+    for learner in [s_en, t_en, x_en]:
+        learner.fit(X, treatment, y)
+        cate = learner.estimate_effect(X)
+
+        assert cate.shape == (n,)
+        # Verify CATE estimates reflect the high-impact subgroup
+        assert np.mean(cate[X[:, 0] > 0.0]) > np.mean(cate[X[:, 0] <= 0.0])
+
+
+def test_double_machine_learning():
+    """Validates Robinson's Double Machine Learning (DML) treatment effect estimation with K-Fold cross-fitting."""
+    from xpyrment.personalize.double_ml import DoubleMachineLearning
+    import numpy as np
+
+    rng = np.random.default_rng(42)
+    n = 200
+    p = 5
+
+    X = rng.normal(size=(n, p))
+    # Confounded treatment assignment: treatment depends on X[:, 0]
+    prop_score = 1.0 / (1.0 + np.exp(-1.5 * X[:, 0]))
+    treatment = rng.binomial(1, prop_score).astype(float)
+
+    # True treatment effect is exactly 2.5
+    # Outcome has heavy confounder contribution from X[:, 0]
+    y = 10.0 + 5.0 * X[:, 0] + 2.5 * treatment + rng.normal(scale=0.1, size=n)
+
+    dml = DoubleMachineLearning(n_folds=3, model_y_kwargs={"alpha": 0.1}, model_t_kwargs={"alpha": 0.1})
+    dml.fit(X, treatment, y, seed=42)
+
+    # Assert estimated treatment effect is highly accurate (controlling for confounding via DML residuals)
+    assert dml.treatment_effect == pytest.approx(2.5, abs=0.25)
+    assert dml.standard_error > 0.0
+    assert dml.p_value < 1e-3
+
+
