@@ -12,7 +12,8 @@ def estimate_duration_days(required_sample_size: int, daily_traffic: int) -> flo
     Translates the calculated target sample size ($N_{\text{required}}$) into the estimated calendar days
     needed to accumulate that sample volume based on active daily traffic ($T_{\text{daily}}$).
 
-    Mathematical Model:
+    ??? mathbox "Mathematical Model"
+
         The duration in days ($D$) is computed as:
         $$
         D = \frac{N_{\text{required}}}{T_{\text{daily}}}

@@ -51,16 +51,16 @@ class GuardrailMetric:
     def check_breach(self, calculation_result: Dict[str, Any]) -> bool:
         r"""Determines if the calculated lift breaches the guardrail thresholds.
 
-        ### Mathematical Representation
+        ??? mathbox "Mathematical Representation"
 
-        Let $L$ be the relative lift calculated for the wrapped metric:
-        $$
-        L = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}
-        $$
-        A breach is detected if the magnitude of the relative lift exceeds the maximum allowed change:
-        $$
-        \text{Breach} = |L| > \text{max\_allowed\_change}
-        $$
+            Let $L$ be the relative lift calculated for the wrapped metric:
+            $$
+            L = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}
+            $$
+            A breach is detected if the magnitude of the relative lift exceeds the maximum allowed change:
+            $$
+            \text{Breach} = |L| > \text{max\_allowed\_change}
+            $$
         Args:
             calculation_result (Dict[str, Any]): Output dictionary produced by calling
                 `metric.calculate()` on experimental data.

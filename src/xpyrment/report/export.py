@@ -120,15 +120,14 @@ def plot_power_curve(
 ) -> tuple:
     r"""Plots required sample size per variant across a range of Minimum Detectable Effects (MDE).
 
-    This plotting function illustrates the fundamental trade-off in experimental planning between the
-    Minimum Detectable Effect ($\\delta$, MDE) and the required sample size per variant ($N$).
-    Because sample size scales quadratically with the inverse of the MDE:
-    $$
-    N \\propto \\frac{1}{\\delta^2}
-    $$
-    small increases in the precision requirements (smaller MDE) trigger massive increases in the required sample size.
+    ??? mathbox "Mathematical Relationship and CUPED Savings"
 
-    Demonstrating CUPED Sample Size Savings:
+        Because sample size scales quadratically with the inverse of the MDE:
+        $$
+        N \\propto \\frac{1}{\\delta^2}
+        $$
+        small increases in the precision requirements (smaller MDE) trigger massive increases in the required sample size.
+
         If a pre-period covariate is registered, the plot overlays a second curve displaying the required sample size
         when applying CUPED variance reduction.
         - Let $\\rho$ be the correlation coefficient between the pre-period covariate and the post-period outcome.

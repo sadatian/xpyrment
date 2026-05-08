@@ -14,7 +14,8 @@ def check_practical_significance(relative_lift: float, min_valuable_effect: floa
     irrelevant, failing to justify the ongoing maintenance overhead of the new code.
     This function evaluates whether the observed effect size meets or exceeds a pre-defined practical threshold.
 
-    Statistical Significance vs. Practical Significance:
+    ??? mathbox "Statistical Significance vs. Practical Significance"
+
         Let $\\hat{\\theta}$ be the estimated treatment effect, let $[\\theta_{\\text{lower}}, \\ \\theta_{\\text{upper}}]$
         be its confidence interval, and let $\\delta_{\\text{MVE}}$ be the Minimum Valuable Effect (MVE).
 

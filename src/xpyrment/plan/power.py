@@ -6,23 +6,23 @@ Detectable Effect (MDE) with specified Type I and Type II error thresholds ($\al
 It also handles variance reduction credit (CUPED sample-size deflation) and estimated experiment
 runtimes.
 
-### Mathematical Specifications
+??? mathbox "Mathematical Specifications"
 
-The required sample size per variant $n$ for a two-sample t-test is given by:
-$$
-n = \frac{2 \sigma^2 \left(Z_{1 - \alpha/2} + Z_{1 - \beta}\right)^2}{\delta^2}
-$$
-where:
-- $\sigma^2$: Population variance. For binary proportions ($p$), $\sigma^2 = p(1 - p)$.
-- $Z_{1 - \alpha/2}$: Standard normal critical value for a two-sided test at significance level $\alpha$.
-- $Z_{1 - \beta}$: Standard normal quantile corresponding to the desired statistical power ($1 - \beta$).
-- $\delta$: The target absolute Minimum Detectable Effect (MDE).
+    The required sample size per variant $n$ for a two-sample t-test is given by:
+    $$
+    n = \frac{2 \sigma^2 \left(Z_{1 - \alpha/2} + Z_{1 - \beta}\right)^2}{\delta^2}
+    $$
+    where:
+    - $\sigma^2$: Population variance. For binary proportions ($p$), $\sigma^2 = p(1 - p)$.
+    - $Z_{1 - \alpha/2}$: Standard normal critical value for a two-sided test at significance level $\alpha$.
+    - $Z_{1 - \beta}$: Standard normal quantile corresponding to the desired statistical power ($1 - \beta$).
+    - $\delta$: The target absolute Minimum Detectable Effect (MDE).
 
-If pre-period baseline covariates are available, the CUPED variance-adjusted sample size is:
-$$
-n_{\text{CUPED}} = n \left(1 - \rho^2\right)
-$$
-where $\rho$ is the correlation between pre-period and experiment-period values.
+    If pre-period baseline covariates are available, the CUPED variance-adjusted sample size is:
+    $$
+    n_{\text{CUPED}} = n \left(1 - \rho^2\right)
+    $$
+    where $\rho$ is the correlation between pre-period and experiment-period values.
 """
 
 from typing import Dict, Any, Optional

@@ -47,7 +47,8 @@ class SRMError(Exception):
     An SRM is a critical indicator of data quality issues, selection bias, or bugs
     in the randomization/assignment mechanism.
 
-    Mathematical Background:
+    ??? mathbox "Mathematical Background"
+
         A Pearson Chi-Square Goodness-of-Fit test is performed to evaluate the discrepancy:
         $$
         \chi^2 = \sum_{i=1}^{k} \frac{(O_i - E_i)^2}{E_i}
@@ -86,7 +87,8 @@ class AliasError(Exception):
     - The design resolution (III, IV, or V) is insufficient to support the hypothesis or
       interaction analysis requested.
 
-    Mathematical Context:
+    ??? mathbox "Mathematical Context"
+
         Let $X$ be the design matrix and $C = (X^T X)^{-1} X^T Y$ be the parameter estimates.
         If the design is fractional, some columns of $X$ are linear combinations of others,
         leading to a rank-deficient matrix where unique solutions for all factors and

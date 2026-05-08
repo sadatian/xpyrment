@@ -389,6 +389,34 @@ We resolved mathematical and LaTeX rendering defects throughout the entire docum
 4. **Synced Package Version (`1.1.2.0`)**: Bumped package version from `1.1.1.0` to `1.1.2.0` in `pyproject.toml` and verified that automated build pipelines successfully cascade the update.
 5. **Verified Zero Regression**: Confirmed 100% test success (138/138 green) and successfully built warning-free documentation with `mkdocs build`.
 
+
+## 📊 Collapsible Pink Mathematical Admonitions (Completed)
+
+We integrated support for premium, theme-matching pink collapsible blocks for all mathematical sections generated from Python docstrings.
+
+### a) What was accomplished:
+1. **Added Custom CSS**: Configured `docs/stylesheets/extra.css` to support beautiful collapsible blocks under `.pink` and `.mathematical` classes. These blocks leverage a premium pink/rose-gold border and background (`#e91e63`), with a custom math/statistics icon emoji (`📊`).
+2. **Migrated Python Docstrings (Comprehensive)**: Located and migrated all occurrences of math sections and complex block math (`$$...$$`) across the entire codebase to use pink collapsible blocks, including:
+   - [srm.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/validate/srm.py): `??? mathbox "Mathematical Formulation"`
+   - [novelty.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/validate/novelty.py): `??? mathbox "Mathematical Representation and Regression Detection"`
+   - [balance.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/validate/balance.py): `??? mathbox "Mathematical Representation"`
+   - [power.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/plan/power.py): `??? mathbox "Mathematical Specifications"`
+   - [hypothesis.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/plan/hypothesis.py): `??? mathbox "Mathematical Specifications"`
+   - [transformations.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/metrics/transformations.py): `??? mathbox "Mathematical Representation"` and `??? mathbox "Mathematical Context"`
+   - [taxonomy.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/metrics/taxonomy.py): `??? mathbox "Mathematical Background"` and `??? mathbox "Mathematical Representation"`
+   - [guardrails.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/metrics/guardrails.py): `??? mathbox "Mathematical Representation"`
+   - [taguchi.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/design/doe/taguchi.py): `??? mathbox "Mathematical Specifications..."`
+   - [simulation.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/simulation.py): `??? mathbox "Mathematical and Generative Specifications"`
+   - [stopping.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/run/stopping.py): `??? mathbox "Mathematical Theory and Martingale Boundaries"`, `??? mathbox "Likelihood Ratio Formulation"`, and `??? mathbox "Mathematical Formulation"`
+   - [monitor.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/run/monitor.py): `??? mathbox "Temporal Binning and Accumulation Theory"`
+   - [assignment.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/run/assignment.py): `??? mathbox "First-Touch Attribution and Causal Ordering"`
+   - [export.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/report/export.py): `??? mathbox "Mathematical Relationship and CUPED Savings"`
+   - [audit.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/report/audit.py): `??? mathbox "Cryptographic Verification and State-Chaining"`
+   - [duration.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/plan/duration.py): `??? mathbox "Mathematical Model"`
+   - [significance.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/interpret/significance.py): `??? mathbox "Statistical Significance vs. Practical Significance"`
+3. **Bumped Package Version (`1.1.2.2`)**: Incremented the package revision to `1.1.2.2` in `pyproject.toml`.
+4. **Verified warning-free compilation & test passes**: Built with `mkdocs build` with zero warnings or errors, and ran `pytest` with 100% test success.
+
 ### b) What must be done next:
 1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
 

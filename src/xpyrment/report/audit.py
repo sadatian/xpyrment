@@ -15,7 +15,8 @@ class AuditTrail:
     is critical for governance, auditing, and scientific reproducibility. An audit trail acts as a tamper-evident,
     chronological log tracking every key lifecycle change, modification to allocation parameters, and analytical peeking event.
 
-    Cryptographic Verification and State-Chaining:
+    ??? mathbox "Cryptographic Verification and State-Chaining"
+
         To satisfy strict regulatory compliance frameworks, the audit log entries are structured as a linear hash chain:
         - Each log entry is represented as a state block $B_k = (t_k, a_k, d_k, h_{k-1})$ where:
           - $t_k$: Coordinated Universal Time (ISO 8601 UTC timestamp).

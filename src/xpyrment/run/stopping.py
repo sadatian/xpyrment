@@ -13,7 +13,8 @@ class StoppingRules:
     and stopping the test early if the p-value is significant severely inflates the Type I error rate (the peeking problem).
     mSPRT solves this by constructing a sequence of likelihood ratios that form a non-negative martingale.
 
-    Mathematical Theory and Martingale Boundaries:
+    ??? mathbox "Mathematical Theory and Martingale Boundaries"
+
         Under the null hypothesis $H_0$ (no effect), the mixture likelihood ratio sequence $\Lambda_n$ is a martingale
         with expected value $E[\Lambda_n] = 1$. By **Doob's Martingale Inequality**, the probability that the likelihood
         ratio ever exceeds a critical threshold $1/\alpha$ at *any* point in the infinite sequence is strictly bounded by $\alpha$:
@@ -24,7 +25,8 @@ class StoppingRules:
         ratio crosses the boundary, they can stop the experiment immediately with a mathematically guaranteed Type I error
         rate controlled at $\alpha$.
 
-    Likelihood Ratio Formulation ($\Lambda_n$):
+    ??? mathbox "Likelihood Ratio Formulation ($\Lambda_n$)"
+
         For a continuous metric with cumulative sample variance $\sigma^2$ and a normal mixing distribution
         $H(\theta) = \mathcal{N}(0, \tau^2)$ over the expected effect size $\theta$, the mixture likelihood ratio
         at accumulated sample size $n$ is calculated as:
@@ -83,7 +85,8 @@ class StoppingRules:
     ) -> float:
         r"""Calculates the mixture Sequential Probability Ratio Test (mSPRT) likelihood ratio (Lambda_n).
 
-        Mathematical Formulation:
+        ??? mathbox "Mathematical Formulation"
+
             $$
             \Lambda_n = \sqrt{\frac{\sigma^2}{\sigma^2 + n\tau^2}} \exp \left( \frac{n^2 \bar{Y}_n^2 \tau^2}{2\sigma^2(\sigma^2 + n\tau^2)} \right)
             $$

@@ -17,24 +17,24 @@ class TaguchiDesign(DesignMatrix):
     variability of responses. Rather than optimizing the mean alone, Taguchi methods prioritize "robustness"
     — making the system insensitive to uncontrollable "noise factors".
 
-    ### Mathematical Specifications for Signal-to-Noise ($S/N$, denoted $\eta$) Ratios
+    ??? mathbox "Mathematical Specifications for Signal-to-Noise ($S/N$, denoted $\eta$) Ratios"
 
-    Taguchi methods convert multiple experimental response replicates $y_1, y_2, \dots, y_n$ at each run
-    into an $S/N$ ratio ($\eta$ in decibels) depending on the optimization objective:
+        Taguchi methods convert multiple experimental response replicates $y_1, y_2, \dots, y_n$ at each run
+        into an $S/N$ ratio ($\eta$ in decibels) depending on the optimization objective:
 
-    1. **Smaller-The-Better** (e.g., latency, defects, material wear):
-       $$
-       \eta = -10 \log_{10} \left( \frac{1}{n} \sum_{i=1}^{n} y_i^2 \right)
-       $$
-    2. **Larger-The-Better** (e.g., conversion rate, user engagement, revenue):
-       $$
-       \eta = -10 \log_{10} \left( \frac{1}{n} \sum_{i=1}^{n} \frac{1}{y_i^2} \right)
-       $$
-    3. **Nominal-The-Best** (e.g., precise target dimensions, exact fluid viscosity):
-       $$
-       \eta = 10 \log_{10} \left( \frac{\bar{y}^2}{s^2} \right)
-       $$
-       where $\bar{y}$ is the sample mean and $s^2$ is the sample variance across the replicates.
+        1. **Smaller-The-Better** (e.g., latency, defects, material wear):
+           $$
+           \eta = -10 \log_{10} \left( \frac{1}{n} \sum_{i=1}^{n} y_i^2 \right)
+           $$
+        2. **Larger-The-Better** (e.g., conversion rate, user engagement, revenue):
+           $$
+           \eta = -10 \log_{10} \left( \frac{1}{n} \sum_{i=1}^{n} \frac{1}{y_i^2} \right)
+           $$
+        3. **Nominal-The-Best** (e.g., precise target dimensions, exact fluid viscosity):
+           $$
+           \eta = 10 \log_{10} \left( \frac{\bar{y}^2}{s^2} \right)
+           $$
+           where $\bar{y}$ is the sample mean and $s^2$ is the sample variance across the replicates.
 
     ### Orthogonal Array Database Selection Algorithm
 

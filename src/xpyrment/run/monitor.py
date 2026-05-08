@@ -15,7 +15,8 @@ class LiveMonitor:
     trends in real time, experimenters can verify that the randomization splits remain stable and that
     no asymmetric telemetry dropouts or scheduling anomalies occur.
 
-    Temporal Binning and Accumulation Theory:
+    ??? mathbox "Temporal Binning and Accumulation Theory"
+
         Let there be $k$ variants. Let the experimental logs be grouped into sequential, non-overlapping temporal
         intervals (bins) $t \in \{1, 2, \dots, H\}$ (such as hours or days).
         - Let $n_v(t)$ be the number of unique units newly exposed to variant $v$ during time bin $t$.

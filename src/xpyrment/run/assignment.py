@@ -14,7 +14,8 @@ class AssignmentLogger:
     back to a screen). For rigorous statistical evaluation, we must identify and lock the exact moment of
     *initial exposure* for each unit.
 
-    First-Touch Attribution and Causal Ordering:
+    ??? mathbox "First-Touch Attribution and Causal Ordering"
+
         To establish a valid causal relationship, any metric event $Y$ must occur *after* the initial exposure
         to the treatment $T$:
         $$

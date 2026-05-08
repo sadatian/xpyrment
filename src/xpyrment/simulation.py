@@ -27,7 +27,8 @@ def generate_ab_data(
     statistical engines, validating Type I / Type II error rates, and profiling variance reduction (CUPED) performance.
     It generates both pre-period and post-period metrics to support covariate-adjustment modeling.
 
-    Mathematical and Generative Specifications:
+    ??? mathbox "Mathematical and Generative Specifications"
+
         1. **Continuous Metric (Revenue) with Pre/Post Covariance**:
            Revenue is modeled using a bivariate normal distribution to inject a pre-defined correlation ($\rho$)
            between pre-period (covariate) and post-period (outcome) performance.

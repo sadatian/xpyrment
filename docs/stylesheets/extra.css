@@ -179,3 +179,26 @@ p:has(> .doc-section-title):has(+ details.example) {
 .md-source__facts {
   display: none !important;
 }
+
+/* Custom mathbox / Mathematical Collapsible Admonitions */
+.md-typeset .admonition.mathbox,
+.md-typeset details.mathbox,
+.md-typeset .admonition.mathematical,
+.md-typeset details.mathematical {
+  border-color: #e91e63 !important;
+}
+
+.md-typeset .mathbox>.admonition-title,
+.md-typeset details.mathbox>summary,
+.md-typeset .mathematical>.admonition-title,
+.md-typeset details.mathematical>summary {
+  background-color: rgba(233, 30, 99, 0.08) !important;
+  border-color: #e91e63 !important;
+}
+
+.md-typeset .mathbox>.admonition-title::before,
+.md-typeset details.mathbox>summary::before,
+.md-typeset .mathematical>.admonition-title::before,
+.md-typeset details.mathematical>summary::before {
+  background-color: #e91e63 !important;
+}
