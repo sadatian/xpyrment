@@ -17,35 +17,37 @@ class TaguchiDesign(DesignMatrix):
     variability of responses. Rather than optimizing the mean alone, Taguchi methods prioritize "robustness"
     — making the system insensitive to uncontrollable "noise factors".
 
-    Mathematical Specifications for Signal-to-Noise ($S/N$, denoted $\eta$) Ratios:
-        Taguchi methods convert multiple experimental response replicates $y_1, y_2, \dots, y_n$ at each run
-        into an $S/N$ ratio ($\eta$ in decibels) depending on the optimization objective:
+    ### Mathematical Specifications for Signal-to-Noise ($S/N$, denoted $\eta$) Ratios
 
-        1. **Smaller-The-Better** (e.g., latency, defects, material wear):
-           $$\eta = -10 \log_{10} \left( \frac{1}{n} \sum_{i=1}^{n} y_i^2 \right)$$
-        2. **Larger-The-Better** (e.g., conversion rate, user engagement, revenue):
-           $$\eta = -10 \log_{10} \left( \frac{1}{n} \sum_{i=1}^{n} \frac{1}{y_i^2} \right)$$
-        3. **Nominal-The-Best** (e.g., precise target dimensions, exact fluid viscosity):
-           $$\eta = 10 \log_{10} \left( \frac{\bar{y}^2}{s^2} \right)$$
-           where $\bar{y}$ is the sample mean and $s^2$ is the sample variance across the replicates.
+    Taguchi methods convert multiple experimental response replicates $y_1, y_2, \dots, y_n$ at each run
+    into an $S/N$ ratio ($\eta$ in decibels) depending on the optimization objective:
 
-    Orthogonal Array Database Selection Algorithm:
-        - The user requests a specific array (e.g., $L_9$, which supports up to 4 factors with 3 levels each).
-        - The algorithm maps the requested physical factors to columns in the standard predefined $L_9$ template:
-          ```text
-          L9 template (coded levels 1, 2, 3):
-          Run | Col 1 | Col 2 | Col 3 | Col 4
-          1   |   1   |   1   |   1   |   1
-          2   |   1   |   2   |   2   |   2
-          3   |   1   |   3   |   3   |   3
-          4   |   2   |   1   |   2   |   3
-          5   |   2   |   2   |   3   |   1
-          6   |   2   |   3   |   1   |   2
-          7   |   3   |   1   |   3   |   2
-          8   |   3   |   2   |   1   |   3
-          9   |   3   |   3   |   2   |   1
-          ```
-        - These levels are mapped back to the physical factor levels provided in `factors`.
+    1. **Smaller-The-Better** (e.g., latency, defects, material wear):
+       $$\eta = -10 \log_{10} \left( \frac{1}{n} \sum_{i=1}^{n} y_i^2 \right)$$
+    2. **Larger-The-Better** (e.g., conversion rate, user engagement, revenue):
+       $$\eta = -10 \log_{10} \left( \frac{1}{n} \sum_{i=1}^{n} \frac{1}{y_i^2} \right)$$
+    3. **Nominal-The-Best** (e.g., precise target dimensions, exact fluid viscosity):
+       $$\eta = 10 \log_{10} \left( \frac{\bar{y}^2}{s^2} \right)$$
+       where $\bar{y}$ is the sample mean and $s^2$ is the sample variance across the replicates.
+
+    ### Orthogonal Array Database Selection Algorithm
+
+    * The user requests a specific array (e.g., $L_9$, which supports up to 4 factors with 3 levels each).
+    * The algorithm maps the requested physical factors to columns in the standard predefined $L_9$ template:
+
+    | Run | Col 1 (Coded) | Col 2 (Coded) | Col 3 (Coded) | Col 4 (Coded) |
+    | :--- | :--- | :--- | :--- | :--- |
+    | **1** | 1 | 1 | 1 | 1 |
+    | **2** | 1 | 2 | 2 | 2 |
+    | **3** | 1 | 3 | 3 | 3 |
+    | **4** | 2 | 1 | 2 | 3 |
+    | **5** | 2 | 2 | 3 | 1 |
+    | **6** | 2 | 3 | 1 | 2 |
+    | **7** | 3 | 1 | 3 | 2 |
+    | **8** | 3 | 2 | 1 | 3 |
+    | **9** | 3 | 3 | 2 | 1 |
+
+    These levels are mapped back to the physical factor levels provided in `factors`.
 
     Attributes:
         array_name (str): The name of the target Taguchi Orthogonal Array (e.g., `"L9"`, `"L18"`, `"L27"`).

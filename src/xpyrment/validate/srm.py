@@ -18,26 +18,28 @@ def check_srm(observed_counts: List[int], expected_ratios: List[float]) -> float
     This method performs a Pearson Chi-square goodness-of-fit test to determine whether the observed counts
     are statistically compatible with the expected ratios.
 
-    Mathematical Formulation:
-        Let $k$ be the number of variants, let $O_i$ be the observed count of units in variant $i$ ($i \in \{1, \dots, k\}$),
-        and let $r_i$ be the planned allocation ratio for variant $i$.
-        The total observed sample size is:
-        $$N = \sum_{i=1}^{k} O_i$$
-        The expected sample count $E_i$ for variant $i$ is calculated as:
-        $$E_i = N \times \frac{r_i}{\sum_{j=1}^{k} r_j}$$
-        The Pearson Chi-square test statistic is computed as:
-        $$\chi^2 = \sum_{i=1}^{k} \frac{(O_i - E_i)^2}{E_i}$$
-        Under the null hypothesis $H_0$ (there is no SRM, and the assignment mechanism is unbiased):
-        $$\chi^2 \sim \chi^2_{k-1}$$
-        where $k-1$ is the degrees of freedom of the distribution. The p-value is calculated as:
-        $$p = 1 - F_{\chi^2_{k-1}}(\chi^2_{\text{calc}})$$
-        where $F$ is the cumulative distribution function of the Chi-square distribution.
+    ### Mathematical Formulation
 
-    Interpretation Threshold:
-        - If $p < 0.001$ ($0.1\%$ significance): The null hypothesis of perfect assignment is rejected. An SRM is
-          highly likely, signaling a telemetry or system bug that invalidates downstream causal inferences.
-        - Common causes of SRM: browser-specific treatment crashes, asymmetric page-redirection delays, bot filters
-          interacting with treatment flags, or mid-experiment changes in allocation rates.
+    Let $k$ be the number of variants, let $O_i$ be the observed count of units in variant $i$ ($i \in \{1, \dots, k\}$),
+    and let $r_i$ be the planned allocation ratio for variant $i$.
+    The total observed sample size is:
+    $$N = \sum_{i=1}^{k} O_i$$
+    The expected sample count $E_i$ for variant $i$ is calculated as:
+    $$E_i = N \times \frac{r_i}{\sum_{j=1}^{k} r_j}$$
+    The Pearson Chi-square test statistic is computed as:
+    $$\chi^2 = \sum_{i=1}^{k} \frac{(O_i - E_i)^2}{E_i}$$
+    Under the null hypothesis $H_0$ (there is no SRM, and the assignment mechanism is unbiased):
+    $$\chi^2 \sim \chi^2_{k-1}$$
+    where $k-1$ is the degrees of freedom of the distribution. The p-value is calculated as:
+    $$p = 1 - F_{\chi^2_{k-1}}(\chi^2_{\text{calc}})$$
+    where $F$ is the cumulative distribution function of the Chi-square distribution.
+
+    ### Interpretation Threshold
+
+    - If $p < 0.001$ ($0.1\%$ significance): The null hypothesis of perfect assignment is rejected. An SRM is
+      highly likely, signaling a telemetry or system bug that invalidates downstream causal inferences.
+    - Common causes of SRM: browser-specific treatment crashes, asymmetric page-redirection delays, bot filters
+      interacting with treatment flags, or mid-experiment changes in allocation rates.
 
     Args:
         observed_counts (List[int]): The actual recorded sample sizes allocated to each variant (e.g., `[50122, 49878]`).

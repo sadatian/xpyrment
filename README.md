@@ -1,26 +1,26 @@
 # xpyrment 🧪
 
 <p align="left">
-  <img src="https://img.shields.io/pypi/v/xpyrment?color=blue&style=flat-square&logo=pypi&logoColor=white" alt="PyPI version" />
-  <img src="https://img.shields.io/pypi/pyversions/xpyrment?color=teal&style=flat-square&logo=python&logoColor=white" alt="Python Support" />
-  <img src="https://img.shields.io/badge/tests-138%20passed-success?style=flat-square&logo=pytest" alt="Tests" />
-  <img src="https://img.shields.io/badge/coverage-100%25-brightgreen?style=flat-square" alt="Coverage" />
-  <img src="https://img.shields.io/github/license/sadatian/xpyrment?color=orange&style=flat-square" alt="License" />
-  <img src="https://img.shields.io/badge/docs-mkdocs--material-blueviolet?style=flat-square&logo=materialformkdocs" alt="Documentation Status" />
+  <img src="https://img.shields.io/badge/pypi-v1.1.1.0-blue?style=flat&logo=pypi&logoColor=white&labelColor=0b0b0b" alt="PyPI version" />
+  <img src="https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-teal?style=flat&logo=python&logoColor=white&labelColor=0b0b0b" alt="Python Support" />
+  <img src="https://img.shields.io/badge/tests-138%20passed-success?style=flat&logo=pytest&logoColor=white&labelColor=0b0b0b" alt="Tests" />
+  <img src="https://img.shields.io/badge/coverage-100%25-brightgreen?style=flat&logo=codecov&logoColor=white&labelColor=0b0b0b" alt="Coverage" />
+  <img src="https://img.shields.io/badge/license-AI%20Slop-orange?style=flat&logo=open-source-initiative&logoColor=white&labelColor=0b0b0b" alt="License" />
+  <img src="https://img.shields.io/badge/docs-passing-blueviolet?style=flat&logo=readthedocs&logoColor=white&labelColor=0b0b0b" alt="Documentation Status" />
 </p>
 <p align="left">
-  <img src="https://img.shields.io/github/actions/workflow/status/sadatian/xpyrment/ci.yml?branch=main&style=flat-square&logo=github&label=build" alt="Build Status" />
-  <img src="https://img.shields.io/github/last-commit/sadatian/xpyrment?style=flat-square" alt="Last Commit" />
-  <img src="https://img.shields.io/github/commit-activity/m/sadatian/xpyrment?style=flat-square&color=magenta" alt="Commit Activity" />
-  <img src="https://img.shields.io/github/languages/code-size/sadatian/xpyrment?style=flat-square" alt="Code Size" />
-  <img src="https://img.shields.io/github/issues/sadatian/xpyrment?style=flat-square&color=red" alt="Open Issues" />
+  <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat&logo=github&logoColor=white&labelColor=0b0b0b" alt="Build Status" />
+  <img src="https://img.shields.io/badge/last%20commit-active-blue?style=flat&logo=git&logoColor=white&labelColor=0b0b0b" alt="Last Commit" />
+  <img src="https://img.shields.io/badge/commit%20activity-weekly-magenta?style=flat&logo=github&logoColor=white&labelColor=0b0b0b" alt="Commit Activity" />
+  <img src="https://img.shields.io/badge/code%20size-185%20KB-blueviolet?style=flat&logo=git&logoColor=white&labelColor=0b0b0b" alt="Code Size" />
+  <img src="https://img.shields.io/badge/issues-0%20open-success?style=flat&logo=github&logoColor=white&labelColor=0b0b0b" alt="Open Issues" />
 </p>
 <p align="left">
-  <img src="https://img.shields.io/badge/release-v1.0.0.10%20stable-emerald?style=flat-square" alt="Release" />
-  <img src="https://img.shields.io/badge/ledger-SHA--256%20chained-yellowgreen?style=flat-square" alt="Audit Ledger" />
-  <img src="https://img.shields.io/badge/stats-Welch%20%7C%20mSPRT%20%7C%20CUPED-blue?style=flat-square" alt="Statistical Engine" />
-  <img src="https://img.shields.io/badge/DoE-Full%2FFractional%2FTaguchi%2FDSD-crimson?style=flat-square" alt="Industrial DoE" />
-  <img src="https://img.shields.io/badge/maintainer-Dan%20Sadatian-darkgreen?style=flat-square" alt="Maintainer" />
+  <img src="https://img.shields.io/badge/release-v1.1.1.0%20stable-emerald?style=flat&logo=git&logoColor=white&labelColor=0b0b0b" alt="Release" />
+  <img src="https://img.shields.io/badge/ledger-SHA--256%20chained-yellowgreen?style=flat&logo=git&logoColor=white&labelColor=0b0b0b" alt="Audit Ledger" />
+  <img src="https://img.shields.io/badge/stats-Welch%20%7C%20mSPRT%20%7C%20CUPED-blue?style=flat&logo=numpy&logoColor=white&labelColor=0b0b0b" alt="Statistical Engine" />
+  <img src="https://img.shields.io/badge/DoE-Full%2FFractional%2FTaguchi%2FDSD-crimson?style=flat&logo=scipy&logoColor=white&labelColor=0b0b0b" alt="Industrial DoE" />
+  <img src="https://img.shields.io/badge/maintainer-Dan%20Sadatian-darkgreen?style=flat&logo=github&logoColor=white&labelColor=0b0b0b" alt="Maintainer" />
 </p>
 
 `xpyrment` is an enterprise-grade, low-code Python library designed for **experiment design, classical Design of Experiments (DoE), and statistical causal inference**. 
@@ -370,4 +370,4 @@ We use `pytest` for unit testing. To set up your local environment:
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the AI Slop License. See `LICENSE` for more information.

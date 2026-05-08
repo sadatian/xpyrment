@@ -116,19 +116,10 @@ class ExperimentReportGenerator:
         Returns:
             str: Portable HTML report page content with embedded modern CSS and layouts.
         """
-        # Load custom favicons and SVG logo
-        favicon_16_b64 = self._get_icon_base64("favicon_16.png")
-        favicon_32_b64 = self._get_icon_base64("favicon_32.png")
-        favicon_64_b64 = self._get_icon_base64("favicon_64.png")
+        # Load premium custom SVG logo which also serves as the favicon
         svg_logo_text = self._get_svg_logo()
 
         favicon_tags = []
-        if favicon_16_b64:
-            favicon_tags.append(f'<link rel="icon" href="data:image/png;base64,{favicon_16_b64}" sizes="16x16" type="image/png">')
-        if favicon_32_b64:
-            favicon_tags.append(f'<link rel="icon" href="data:image/png;base64,{favicon_32_b64}" sizes="32x32" type="image/png">')
-        if favicon_64_b64:
-            favicon_tags.append(f'<link rel="icon" href="data:image/png;base64,{favicon_64_b64}" sizes="64x64" type="image/png">')
         if svg_logo_text:
             import base64
             svg_b64 = base64.b64encode(svg_logo_text.encode("utf-8")).decode("utf-8")
@@ -597,18 +588,7 @@ class ExperimentReportGenerator:
             f.write(self.generate_markdown())
 
     def _get_icon_base64(self, filename: str) -> str:
-        """Helper to load and base64-encode package icon assets."""
-        try:
-            import base64
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            pkg_dir = os.path.dirname(current_dir)
-            icon_path = os.path.join(pkg_dir, "assets", "icons", filename)
-            if os.path.exists(icon_path):
-                with open(icon_path, "rb") as f:
-                    data = f.read()
-                return base64.b64encode(data).decode("utf-8")
-        except Exception:
-            pass
+        """Removed as icons folder has been deleted."""
         return ""
 
     def _get_svg_logo(self) -> str:
@@ -616,7 +596,7 @@ class ExperimentReportGenerator:
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             pkg_dir = os.path.dirname(current_dir)
-            svg_path = os.path.join(pkg_dir, "assets", "icons", "xpyment_logo_wbg.svg")
+            svg_path = os.path.join(pkg_dir, "assets", "images", "xpyrment_logo.svg")
             if os.path.exists(svg_path):
                 with open(svg_path, "r", encoding="utf-8") as f:
                     return f.read()

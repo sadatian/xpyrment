@@ -8,8 +8,8 @@ repo_url: https://github.com/sadatian/xpyrment
 theme:
   name: material
   custom_dir: docs/overrides
-  logo: assets/icons/xpyment_logo_wbg.svg
-  favicon: assets/icons/favicon_16.png
+  logo: assets/images/xpyrment_logo.svg
+  favicon: assets/images/xpyrment_logo.svg
   palette:
     scheme: default
     primary: custom
@@ -58,7 +58,8 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path: ["."]
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -78,6 +79,7 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - CLI Reference: cli.md
   - API Reference:
       - Overview: api/index.md
       - Core Module:

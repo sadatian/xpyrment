@@ -6,28 +6,29 @@ It implements a modular metrics hierarchy to support continuous (`MeanMetric`), 
 t-test for hypothesis testing, and the continuous and ratio engines support integrated
 CUPED (Controlled-comparison Using Pre-Existing Data) for variance reduction.
 
-Mathematical Background:
-    1. **Welch's t-test**:
-       Unlike Student's t-test, Welch's t-test does not assume equal variances between control and
-       treatment groups. The test statistic is:
-       $$t = \frac{\bar{Y}_T - \bar{Y}_C}{\sqrt{\frac{s_C^2}{N_C} + \frac{s_T^2}{N_T}}}$$
-       And degrees of freedom $\nu$ are approximated using the Welch-Satterthwaite equation:
-       $$\nu \approx \frac{\left(\frac{s_C^2}{N_C} + \frac{s_T^2}{N_T}\right)^2}{\frac{\left(s_C^2 / N_C\right)^2}{N_C - 1} + \frac{\left(s_T^2 / N_T\right)^2}{N_T - 1}}$$
+### Mathematical Background
 
-    2. **CUPED (Controlled-comparison Using Pre-Existing Data)**:
-       CUPED utilizes pre-experiment covariate data ($X$) to explain away pre-existing variance in
-       the experiment period metric ($Y$), thereby increasing statistical power.
-       $$Y_{\text{CUPED}} = Y - \theta (X - E[X])$$
-       where $\theta$ is the optimal scaling factor computed as:
-       $$\theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}$$
-       The variance of the CUPED-adjusted metric is:
-       $$\text{Var}(Y_{\text{CUPED}}) = \text{Var}(Y)(1 - \rho^2)$$
-       where $\rho$ is the Pearson correlation coefficient between $Y$ and $X$.
+1. **Welch's t-test**:
+   Unlike Student's t-test, Welch's t-test does not assume equal variances between control and
+   treatment groups. The test statistic is:
+   $$t = \frac{\bar{Y}_T - \bar{Y}_C}{\sqrt{\frac{s_C^2}{N_C} + \frac{s_T^2}{N_T}}}$$
+   And degrees of freedom $\nu$ are approximated using the Welch-Satterthwaite equation:
+   $$\nu \approx \frac{\left(\frac{s_C^2}{N_C} + \frac{s_T^2}{N_T}\right)^2}{\frac{\left(s_C^2 / N_C\right)^2}{N_C - 1} + \frac{\left(s_T^2 / N_T\right)^2}{N_T - 1}}$$
 
-    3. **Delta Method for Ratios**:
-       For a ratio metric $R = U / V$ (e.g., clicks/impressions), the sample variance is approximated
-       using a first-order Taylor expansion:
-       $$\text{Var}(R) \approx \frac{1}{\mu_V^2} \text{Var}(U) + \frac{\mu_U^2}{\mu_V^4} \text{Var}(V) - 2 \frac{\mu_U}{\mu_V^3} \text{Cov}(U, V)$$
+2. **CUPED (Controlled-comparison Using Pre-Existing Data)**:
+   CUPED utilizes pre-experiment covariate data ($X$) to explain away pre-existing variance in
+   the experiment period metric ($Y$), thereby increasing statistical power.
+   $$Y_{\text{CUPED}} = Y - \theta (X - E[X])$$
+   where $\theta$ is the optimal scaling factor computed as:
+   $$\theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}$$
+   The variance of the CUPED-adjusted metric is:
+   $$\text{Var}(Y_{\text{CUPED}}) = \text{Var}(Y)(1 - \rho^2)$$
+   where $\rho$ is the Pearson correlation coefficient between $Y$ and $X$.
+
+3. **Delta Method for Ratios**:
+   For a ratio metric $R = U / V$ (e.g., clicks/impressions), the sample variance is approximated
+   using a first-order Taylor expansion:
+   $$\text{Var}(R) \approx \frac{1}{\mu_V^2} \text{Var}(U) + \frac{\mu_U^2}{\mu_V^4} \text{Var}(V) - 2 \frac{\mu_U}{\mu_V^3} \text{Cov}(U, V)$$
 """
 
 from abc import ABC, abstractmethod
@@ -88,15 +89,16 @@ class BaseMetric(ABC):
         This method executes Welch's t-test to compare control and treatment means when group
         variances are unequal. It also computes statistical power using a non-central t-distribution.
 
-        Mathematical Representation:
-            Degrees of freedom ($\nu$) approximation:
-            $$\nu = \frac{\left(\frac{\sigma_C^2}{N_C} + \frac{\sigma_T^2}{N_T}\right)^2}{\frac{\left(\sigma_C^2 / N_C\right)^2}{N_C - 1} + \frac{\left(\sigma_T^2 / N_T\right)^2}{N_T - 1}}$$
-            Standard error of difference:
-            $$\text{SE}_{\text{diff}} = \sqrt{\frac{\sigma_C^2}{N_C} + \frac{\sigma_T^2}{N_T}}$$
-            Confidence Interval:
-            $$\text{CI} = (\bar{Y}_T - \bar{Y}_C) \pm t_{\text{crit}, 1-\alpha/2, \nu} \times \text{SE}_{\text{diff}}$$
-            Power ($1-\beta$) is calculated using the Non-Central Parameter (NCP):
-            $$\text{NCP} = \frac{|\bar{Y}_T - \bar{Y}_C|}{\text{SE}_{\text{diff}}}$$
+        ### Mathematical Representation
+
+        Degrees of freedom ($\nu$) approximation:
+        $$\nu = \frac{\left(\frac{\sigma_C^2}{N_C} + \frac{\sigma_T^2}{N_T}\right)^2}{\frac{\left(\sigma_C^2 / N_C\right)^2}{N_C - 1} + \frac{\left(\sigma_T^2 / N_T\right)^2}{N_T - 1}}$$
+        Standard error of difference:
+        $$\text{SE}_{\text{diff}} = \sqrt{\frac{\sigma_C^2}{N_C} + \frac{\sigma_T^2}{N_T}}$$
+        Confidence Interval:
+        $$\text{CI} = (\bar{Y}_T - \bar{Y}_C) \pm t_{\text{crit}, 1-\alpha/2, \nu} \times \text{SE}_{\text{diff}}$$
+        Power ($1-\beta$) is calculated using the Non-Central Parameter (NCP):
+        $$\text{NCP} = \frac{|\bar{Y}_T - \bar{Y}_C|}{\text{SE}_{\text{diff}}}$$
 
         Args:
             mean_c (float): Control group mean ($\bar{Y}_C$).
