@@ -1,4 +1,4 @@
-# Implementation Plan: xpyrment Python Package (v1.0.0.9)
+# Implementation Plan: xpyrment Python Package (v1.0.0.10)
 
 This is the active implementation plan for **`xpyrment`**—a highly modular, phase-gated library designed to support the entire lifecycle of industrial-scale digital experimentation and classical Design of Experiments (DoE).
 
@@ -232,6 +232,19 @@ We streamlined the project landing page design by removing the standard forks an
 1. **Removed Stars & Forks Counters**: Pruned the standard GitHub social counters for forks and stars from both [README.md](file:///c:/Users/Dan/projects/xpyrment/README.md) and the documentation homepage [docs/index.md](file:///c:/Users/Dan/projects/xpyrment/docs/index.md).
 2. **Branded Navigation Header**: Configured the top bar repository display name `repo_name` in [mkdocs.yml](file:///c:/Users/Dan/projects/xpyrment/mkdocs.yml) to display `xpyrment v1.0.0.9` instead of raw repository subpaths, providing direct, professional visibility of the package version.
 3. **Synced Revision Versions**: Incremented package version to `1.0.0.9` globally across Python package config metadata, version files, landing pages, and badges.
+
+### b) What must be done next:
+1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
+
+## 🚀 Dynamic MkDocs Macros & Top Navigation Pruning (Completed)
+
+We integrated the `mkdocs-macros-plugin` to dynamically inject the active package version across all documentation markdown pages and suppressed the GitHub-provided stars and forks counters from the top header using custom CSS overrides, bumping the revision version to `1.0.0.10`.
+
+### a) What was accomplished:
+1. **Dynamic Version Template Tag (`{{ version }}`)**: Installed `mkdocs-macros-plugin` and created [main.py](file:///c:/Users/Dan/projects/xpyrment/main.py) to automatically extract the active version string from `src/xpyrment/_version.py`. This exposes `{{ version }}` to be dynamically rendered on all Markdown documents.
+2. **Dynamic Top-Bar Version**: Configured the macro hook in [main.py](file:///c:/Users/Dan/projects/xpyrment/main.py) to dynamically override the `repo_name` key in the MkDocs configuration to `xpyrment v{__version__}` at compile time.
+3. **Pruned Header Repository Statistics**: Added targeted CSS overrides to [docs/stylesheets/extra.css](file:///c:/Users/Dan/projects/xpyrment/docs/stylesheets/extra.css) to permanently hide the stars, forks, and repository statistics blocks (`.md-source__fact`, `.md-source__repository`, `.md-source__facts`) from the top navigation header bar.
+4. **Synced Revision Versions**: Incremented package version to `1.0.0.10` globally across Python package config metadata, version files, landing pages, and badges.
 
 ### b) What must be done next:
 1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).

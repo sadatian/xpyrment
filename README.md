@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/github/issues/sadatian/xpyrment?style=flat-square&color=red" alt="Open Issues" />
 </p>
 <p align="left">
-  <img src="https://img.shields.io/badge/release-v1.0.0.9%20stable-emerald?style=flat-square" alt="Release" />
+  <img src="https://img.shields.io/badge/release-v1.0.0.10%20stable-emerald?style=flat-square" alt="Release" />
   <img src="https://img.shields.io/badge/ledger-SHA--256%20chained-yellowgreen?style=flat-square" alt="Audit Ledger" />
   <img src="https://img.shields.io/badge/stats-Welch%20%7C%20mSPRT%20%7C%20CUPED-blue?style=flat-square" alt="Statistical Engine" />
   <img src="https://img.shields.io/badge/DoE-Full%2FFractional%2FTaguchi%2FDSD-crimson?style=flat-square" alt="Industrial DoE" />
