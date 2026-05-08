@@ -317,5 +317,61 @@ def test_copula_multi_metric_inference():
     assert results["wald_statistic"] > 5.0
 
 
+def test_markov_journey_transition_homogeneity():
+    """Validates Markov journey extraction, transition probability matrices, stationary limits, and Chi-squared homogeneity."""
+    from xpyrment.analyze.markov import MarkovJourneyAnalyzer
+
+    states = ["Onboarding", "Active", "Retained"]
+    analyzer = MarkovJourneyAnalyzer(states=states)
+
+    assert analyzer.S == 3
+
+    # Generate synthetic transitions: Control (more churn/reversion)
+    control_tx = (
+        [("Onboarding", "Active")] * 70
+        + [("Onboarding", "Onboarding")] * 30
+        + [("Active", "Retained")] * 40
+        + [("Active", "Onboarding")] * 30
+    )
+
+    # Treatment (higher retention, fewer reversions)
+    treatment_tx = (
+        [("Onboarding", "Active")] * 90
+        + [("Onboarding", "Onboarding")] * 10
+        + [("Active", "Retained")] * 80
+        + [("Active", "Onboarding")] * 10
+    )
+
+    results = analyzer.test_transition_homogeneity(control_tx, treatment_tx)
+
+    assert "chi2_statistic" in results
+    assert "p_value" in results
+    assert "control_transition_probabilities" in results
+    assert "treatment_transition_probabilities" in results
+
+    # Check matrix shapes
+    P_c = results["control_transition_probabilities"]
+    P_t = results["treatment_transition_probabilities"]
+    assert P_c.shape == (3, 3)
+    assert P_t.shape == (3, 3)
+
+    # Check rows sum to 1.0 (valid transition matrices)
+    assert np.allclose(np.sum(P_c, axis=1), 1.0)
+    assert np.allclose(np.sum(P_t, axis=1), 1.0)
+
+    # Homogeneity test: treatment transitions are highly superior, so reject H0
+    assert results["p_value"] < 0.01
+
+    # Check stationary distribution pi
+    pi_c = analyzer.compute_stationary_distribution(P_c)
+    pi_t = analyzer.compute_stationary_distribution(P_t)
+
+    assert len(pi_c) == 3
+    assert len(pi_t) == 3
+    assert np.isclose(np.sum(pi_c), 1.0)
+    assert np.isclose(np.sum(pi_t), 1.0)
+
+
+
 
 

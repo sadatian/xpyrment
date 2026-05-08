@@ -24,18 +24,59 @@ class AnalysisResult:
         raw_results (List[dict]): A list of metric calculation result dictionaries (keys: mean, lift, p_value, etc.).
         alpha (float): Nominal significance level (Type I error rate) used in the analysis. Defaults to 0.05.
         df_raw (pd.DataFrame): The raw, unformatted results compiled into a pandas DataFrame.
+        balance_checker (Optional[Any]): Fitted balance checker object if covariates were present.
     """
 
-    def __init__(self, raw_results: List[dict], alpha: float = 0.05):
+    def __init__(self, raw_results: List[dict], alpha: float = 0.05, balance_checker: Optional[Any] = None):
         """Initializes an AnalysisResult.
 
         Args:
             raw_results (List[dict]): Raw list of metric results.
             alpha (float): Nominal significance level used.
+            balance_checker (Optional[Any]): Fitted CovariateBalanceChecker if covariates were specified.
         """
         self.raw_results = raw_results
         self.alpha = alpha
         self.df_raw = pd.DataFrame(raw_results)
+        self.balance_checker = balance_checker
+
+    def love_plot(self) -> str:
+        """Returns the ASCII Love Plot visualization for baseline covariate balance.
+
+        Returns:
+            str: An ASCII text-based representation or message.
+        """
+        if self.balance_checker is None:
+            return "No covariate balance diagnostics were compiled (no covariates provided)."
+        return self.balance_checker.generate_love_plot()
+
+    def to_dict(self) -> dict:
+        """Converts the complete analysis results and metadata to a robust, serializable dictionary.
+
+        Includes significance thresholds (alpha), raw metric outcomes, and covariate balance diagnostics if present.
+
+        Returns:
+            dict: A nested dictionary with native Python types, guaranteed to be JSON serializable.
+        """
+        from xpyrment.core.serialization import make_serializable
+        state = {
+            "alpha": self.alpha,
+            "metrics": self.raw_results,
+            "covariate_balance": self.balance_checker.diagnostics_ if (self.balance_checker is not None) else None,
+        }
+        return make_serializable(state)
+
+    def to_json(self, indent: Optional[int] = None) -> str:
+        """Converts the analysis results into a standardized, portable JSON string.
+
+        Args:
+            indent (Optional[int]): If provided, formats the JSON string with this indentation level.
+
+        Returns:
+            str: Standardized JSON representation of the analysis results.
+        """
+        from xpyrment.core.serialization import serialize_to_json
+        return serialize_to_json(self.to_dict(), indent=indent)
 
     def summary(self, formatted: bool = True) -> pd.DataFrame:
         r"""Returns a summarized, human-readable DataFrame of the analysis.
@@ -103,7 +144,23 @@ class AnalysisResult:
                 }
             )
 
-        return pd.DataFrame(summary_data)
+        summary_df = pd.DataFrame(summary_data)
+
+        # Automatically raise an alert / print warning if covariate imbalance is detected
+        if self.balance_checker is not None and self.balance_checker.diagnostics_:
+            imbalanced = []
+            for name, stats in self.balance_checker.diagnostics_.items():
+                if abs(stats["smd"]) > 0.1:
+                    imbalanced.append(f"'{name}' (SMD={stats['smd']:+.4f})")
+            if imbalanced:
+                import warnings
+                warnings.warn(
+                    f"COVARIATE IMBALANCE DETECTED: The following baseline covariates have standardized mean "
+                    f"differences (SMD) exceeding the standard 0.1 threshold: {', '.join(imbalanced)}. "
+                    f"Consider running CUPED adjustments, matching, or checking your randomization procedure."
+                )
+
+        return summary_df
 
     def plot(self, **kwargs: Any) -> Any:
         """Generates and returns a forest plot of the relative metric lifts and confidence intervals.
@@ -127,6 +184,7 @@ def run_analysis(
     treatment: str = "treatment",
     alpha: float = 0.05,
     multi_test_correction: Optional[str] = None,
+    covariates: Optional[List[str]] = None,
 ) -> AnalysisResult:
     """Executes the statistical analysis across all registered metrics in an Experiment container.
 
@@ -134,24 +192,14 @@ def run_analysis(
     confidence intervals, and power. If requested, applies multiple testing corrections across the p-values,
     updates the experiment state to `ANALYZED`, and returns a structured `AnalysisResult`.
 
-    Mathematical Logic Flow:
-        1. Validates that the experiment is currently in `ExperimentState.COLLECTED` or a compatible state.
-        2. Asserts that the dataset contains the designated `control` and `treatment` variant arms.
-        3. For each registered metric in `experiment.metrics`:
-           - Runs `metric.calculate()`, computing group statistics, delta method variances, and test outcomes.
-        4. If `multi_test_correction` is specified, extracts all p-values and applies adjustments
-           (e.g., Benjamini-Hochberg FDR) before writing adjusted values back to results.
-        5. Performs the programmatic transition:
-           `experiment.transition_to(ExperimentState.ANALYZED)`
-        6. Wraps and returns results in an `AnalysisResult` instance.
-
     Args:
         experiment (Experiment): The initialized, pre-registered experiment setup container.
         control (str): The label of the control variant in the treatment column. Defaults to `"control"`.
         treatment (str): The label of the treatment variant in the treatment column. Defaults to `"treatment"`.
         alpha (float): Significance level (Type I error probability) for confidence intervals. Defaults to 0.05.
         multi_test_correction (str, optional): Multiple testing correction algorithm to apply across the
-            registered metrics. Options: `"bonferroni"`, `"holm"`, `"fdr_bh"`. Defaults to None.
+            registered metrics. Options: `"bonferroni"`, `"holm"`, `"fdr_bh"`, `"fdr_by"`, `"hochberg"`. Defaults to None.
+        covariates (List[str], optional): List of covariates to check balance and adjust.
 
     Returns:
         AnalysisResult: A rich, summarized results container.
@@ -161,15 +209,68 @@ def run_analysis(
             the active dataset.
         PhaseOrderError: If the experiment is in an invalid state for running analysis.
     """
-    if not experiment.metrics:
-        raise ValueError("No metrics have been added to the experiment.")
-
     unique_variants = experiment.data[experiment.treatment_col].unique()
     if control not in unique_variants:
         raise ValueError(f"Control label '{control}' not found.")
     if treatment not in unique_variants:
         raise ValueError(f"Treatment label '{treatment}' not found.")
 
+    # 1. Topological sorted evaluation of MetricRegistry DAG if present
+    if getattr(experiment, "metric_registry", None) is not None:
+        registry = experiment.metric_registry
+        raw_inputs = {}
+        for node_name, node_info in registry.nodes.items():
+            if node_info["type"] == "raw" and node_name in experiment.data.columns:
+                raw_inputs[node_name] = experiment.data[node_name].to_numpy()
+        
+        evaluated_cache = registry.evaluate(raw_inputs)
+        for key, val in evaluated_cache.items():
+            if key not in experiment.data.columns or registry.nodes.get(key, {}).get("type") == "derived":
+                if len(val) == len(experiment.data):
+                    experiment.data[key] = val
+
+        # Auto-populate metrics from DAG if metrics list is currently empty
+        if not experiment.metrics:
+            from xpyrment.metrics.taxonomy import MeanMetric
+            for name in evaluated_cache.keys():
+                experiment.metrics.append(MeanMetric(name, value_col=name))
+
+    if not experiment.metrics:
+        raise ValueError("No metrics have been added to the experiment.")
+
+    # Resolve global and method-specific covariates
+    covs_to_check = covariates if covariates is not None else getattr(experiment, "covariates", [])
+
+    # 2. Automated Covariate-adjusted CUPED routing
+    if covs_to_check:
+        for metric in experiment.metrics:
+            from xpyrment.metrics.taxonomy import MeanMetric
+            if isinstance(metric, MeanMetric) and not getattr(metric, "pre_period_col", None):
+                possible_candidates = [
+                    f"pre_{metric.value_col}",
+                    f"{metric.value_col}_pre",
+                    f"{metric.value_col}_baseline",
+                ]
+                for cand in possible_candidates:
+                    if cand in covs_to_check and cand in experiment.data.columns:
+                        metric.pre_period_col = cand
+                        break
+
+    # 3. Covariate imbalance checking in a single call
+    balance_checker = None
+    if covs_to_check:
+        valid_covs = [c for c in covs_to_check if c in experiment.data.columns]
+        if valid_covs:
+            from xpyrment.quasi.balance import CovariateBalanceChecker
+            sub_df = experiment.data[experiment.data[experiment.treatment_col].isin([control, treatment])].dropna(subset=valid_covs)
+            if len(sub_df) > 0:
+                import numpy as np
+                X = sub_df[valid_covs].to_numpy()
+                T = (sub_df[experiment.treatment_col] == treatment).astype(int).to_numpy()
+                balance_checker = CovariateBalanceChecker(covariate_names=valid_covs)
+                balance_checker.fit(X, T)
+
+    # 4. Statistical Evaluation of each Metric
     results = []
     for metric in experiment.metrics:
         res = metric.calculate(
@@ -181,7 +282,7 @@ def run_analysis(
         )
         results.append(res)
 
-    # Apply corrections if requested
+    # Apply multiple testing corrections if requested
     if multi_test_correction and len(results) > 1:
         p_vals = [res["p_value"] for res in results]
         adjusted_p = apply_multiple_testing_correction(p_vals, alpha=alpha, method=multi_test_correction)
@@ -189,13 +290,14 @@ def run_analysis(
             results[i]["p_value"] = val
 
     experiment.transition_to(ExperimentState.ANALYZED)
-    return AnalysisResult(results, alpha=alpha)
+    return AnalysisResult(results, alpha=alpha, balance_checker=balance_checker)
 
 
 def setup(
     data: pd.DataFrame,
     treatment_col: str,
     id_col: Optional[str] = None,
+    covariates: Optional[List[str]] = None,
 ) -> Experiment:
     """Initializes the experimental setup container, serving as the library's primary entrypoint.
 
@@ -206,6 +308,7 @@ def setup(
         data (pd.DataFrame): The main experiment dataset containing exposure logs and outcomes.
         treatment_col (str): Column name containing variant strings (e.g., `"variant"`).
         id_col (str, optional): Column name containing unique unit identifiers (e.g., `"user_id"`).
+        covariates (List[str], optional): Optional list of baseline covariates.
 
     Returns:
         Experiment: A state-gated `Experiment` orchestrator instance, ready for metric registration and planning.
@@ -218,5 +321,5 @@ def setup(
     if id_col:
         print(f"ID column:             {id_col}")
 
-    exp = Experiment(data, treatment_col, id_col)
+    exp = Experiment(data, treatment_col, id_col, covariates=covariates)
     return exp

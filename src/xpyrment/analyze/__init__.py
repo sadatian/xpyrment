@@ -20,6 +20,15 @@ from xpyrment.analyze.corrections import apply_multiple_testing_correction
 from xpyrment.analyze.streaming import StreamingOLS
 from xpyrment.analyze.confounding import AliasResolver
 from xpyrment.analyze.copula import CopulaMultiMetricInference
+from xpyrment.analyze.markov import MarkovJourneyAnalyzer
+from xpyrment.analyze.extreme import ExtremeValueTailEstimator
+from xpyrment.analyze.its import InterruptedTimeSeries
+from xpyrment.analyze.sequential import GroupSequentialMonitor
+from xpyrment.analyze.meta_regression import MetaRegressor
+from xpyrment.analyze.srm import SampleRatioMismatchDetector
+from xpyrment.analyze.outliers import WinsorizationEngine
+from xpyrment.analyze.ratio import RatioMetricDeltaMethod
+from xpyrment.analyze.registry import MetricRegistry
 from xpyrment.analyze import inference
 
 # Dynamically inject run_analysis method to the Experiment container
@@ -38,5 +47,14 @@ __all__ = [
     "StreamingOLS",
     "AliasResolver",
     "CopulaMultiMetricInference",
+    "MarkovJourneyAnalyzer",
+    "ExtremeValueTailEstimator",
+    "InterruptedTimeSeries",
+    "GroupSequentialMonitor",
+    "MetaRegressor",
+    "SampleRatioMismatchDetector",
+    "WinsorizationEngine",
+    "RatioMetricDeltaMethod",
+    "MetricRegistry",
     "inference",
 ]

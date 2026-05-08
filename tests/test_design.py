@@ -511,4 +511,51 @@ def test_switchback_washout_optimization():
     assert optimal_washout in [10, 20, 30]
 
 
+def test_carryover_decomposition():
+    """Validates Intertemporal Carryover Decomposition direct effect and decay rate estimations."""
+    from xpyrment.design.doe.carryover import CarryoverDecomposition
+
+    rng = np.random.default_rng(42)
+    N = 150
+    times = np.zeros(N)
+    for i in range(1, N):
+        times[i] = times[i-1] + rng.uniform(0.5, 2.5)
+
+    # Independent random Bernoulli assignments to eliminate collinearity
+    treatments = rng.choice([0.0, 1.0], size=N)
+
+    # True parameters: baseline = 10.0, direct = 2.5, carryover = 1.8, lambda = 0.5
+    baseline = 10.0
+    direct = 2.5
+    carryover = 1.8
+    lmb = 0.5
+
+    outcomes = np.zeros(N)
+    outcomes[0] = baseline + rng.normal(scale=0.01)
+
+    for t in range(1, N):
+        dt = times[t] - times[t-1]
+        carry_term = treatments[t-1] * np.exp(-lmb * dt)
+        outcomes[t] = (
+            baseline 
+            + direct * treatments[t] 
+            + carryover * carry_term 
+            + rng.normal(scale=0.01)
+        )
+
+    decomposer = CarryoverDecomposition(l2_penalty=1e-5)
+    decomposer.fit(outcomes, treatments, times)
+
+    summary = decomposer.summary
+    assert "decay_constant_lambda" in summary
+    assert "baseline" in summary["coefficients"]
+
+    # Assert accurate recovery within numerical bounds
+    assert decomposer.beta_baseline_ == pytest.approx(10.0, abs=0.1)
+    assert decomposer.beta_direct_ == pytest.approx(2.5, abs=0.1)
+    assert decomposer.beta_carryover_ == pytest.approx(1.8, abs=0.1)
+    assert decomposer.lambda_ == pytest.approx(0.5, abs=0.1)
+
+
+
 

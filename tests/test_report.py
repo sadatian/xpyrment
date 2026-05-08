@@ -101,3 +101,58 @@ def test_visualizations_plot_generation():
     assert isinstance(fig_power, plt.Figure)
     assert isinstance(ax_power, plt.Axes)
     plt.close(fig_power)
+
+
+def test_experiment_report_generator(tmp_path):
+    """Verifies standalone HTML dashboard and Github-compatible Markdown report generation and file writes."""
+    from xpyrment.analyze.orchestrator import setup
+    from xpyrment.report.generator import ExperimentReportGenerator
+
+    # Mock experimental setup
+    df = pd.DataFrame({
+        "variant": ["control"] * 100 + ["treatment"] * 100,
+        "revenue": np.random.default_rng(42).normal(10, 2, 200),
+        "pre_revenue": np.random.default_rng(42).normal(10, 2, 200),
+        "user_id": range(200),
+    })
+
+    exp = setup(df, treatment_col="variant", id_col="user_id", covariates=["pre_revenue"])
+    exp.register_metric("revenue")
+
+    res = exp.run_analysis(control="control", treatment="treatment")
+
+    # Instantiate generator
+    generator = ExperimentReportGenerator(res, experiment_name="Harden Growth Experiment")
+
+    # Verify SRM computation
+    assert generator.control_n == 100
+    assert generator.treatment_n == 100
+    assert generator.srm_passed is True
+    assert generator.srm_p_value == 1.0  # Perfect 50/50 division
+
+    # Test Markdown compilation
+    md_report = generator.generate_markdown()
+    assert "Harden Growth Experiment" in md_report
+    assert "revenue" in md_report.lower()
+    assert "CUPED" in md_report
+    assert "Covariate Balance Love Plot" in md_report
+
+    # Test HTML compilation
+    html_report = generator.generate_html()
+    assert "<!DOCTYPE html>" in html_report
+    assert "Harden Growth Experiment" in html_report
+    assert "revenue" in html_report.lower()
+    assert "smd-success" in html_report.lower()  # balanced covariate styles
+
+    # Test saving capabilities
+    html_file = tmp_path / "report.html"
+    md_file = tmp_path / "report.md"
+
+    generator.save_html(str(html_file))
+    generator.save_markdown(str(md_file))
+
+    assert html_file.exists()
+    assert md_file.exists()
+    assert len(html_file.read_text(encoding="utf-8")) > 1000
+    assert len(md_file.read_text(encoding="utf-8")) > 100
+

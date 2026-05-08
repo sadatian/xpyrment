@@ -14,6 +14,9 @@ def apply_multiple_testing_correction(
 ) -> List[float]:
     """Applies multiple testing corrections on p-values using statsmodels.
 
+    TODO: Implement step-down Dunnett's correction procedure for multi-arm comparisons against a common control.
+    TODO: Support family-wise bootstrap-based resampling corrections to account for non-normal dependency structures.
+
     When performing multiple statistical tests simultaneously, the probability of obtaining at least one
     false positive (rejecting $H_0$ when it is actually true) increases with the number of tests.
     This inflation of Type I error is known as the **Multiple Testing Problem**.
@@ -45,11 +48,18 @@ def apply_multiple_testing_correction(
            The adjusted p-values are calculated as:
            $$p^{\\text{adj}}_{(i)} = \\min \\left( \\frac{m}{i} \\times p_{(i)}, \\ p^{\\text{adj}}_{(i+1)} \\right) \\quad \\text{for } i \\le m - 1$$
            (with $p^{\\text{adj}}_{(m)} = p_{(m)}$, bounded above by $1.0$).
+        4. **Benjamini-Yekutieli (BY) Procedure** (`"fdr_by"`):
+           Controls the False Discovery Rate under arbitrary dependency structures (i.e. positive regression dependency or negative correlation)
+           among test statistics. BY applies an additional harmonic penalty:
+           $$P_{(i)} \\le \\frac{i}{m \\sum_{j=1}^m \\frac{1}{j}} \\alpha$$
+        5. **Hochberg Step-up Procedure** (`"hochberg"`):
+           A step-up FWER controlling procedure that is uniformly more powerful than Holm-Bonferroni, but requires the test statistics
+           to be independent or satisfy Simes' inequality. It starts from the largest p-value down to the smallest.
 
     Args:
         p_values (List[float]): List of raw, unadjusted p-values calculated from various metric tests.
         alpha (float): Nominal significance level (e.g., 0.05). Defaults to 0.05.
-        method (str): Correction algorithm. Options include `"bonferroni"`, `"holm"`, `"fdr_bh"`.
+        method (str): Correction algorithm. Options include `"bonferroni"`, `"holm"`, `"fdr_bh"`, `"fdr_by"`, `"hochberg"`.
             Defaults to `"fdr_bh"`.
 
     Returns:
@@ -67,7 +77,13 @@ def apply_multiple_testing_correction(
         return p_values
 
     adjusted_p = p_array.copy()
-    _, adj, _, _ = multipletests(p_array[mask], alpha=alpha, method=method)
+    
+    # Map friendly names to statsmodels internal keys
+    statsmodels_method = method
+    if method.lower() == "hochberg":
+        statsmodels_method = "simes-hochberg"
+
+    _, adj, _, _ = multipletests(p_array[mask], alpha=alpha, method=statsmodels_method)
     adjusted_p[mask] = adj
 
     return adjusted_p.tolist()

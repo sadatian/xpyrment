@@ -41,7 +41,7 @@ from xpyrment.plan.power import design_experiment, generate_power_curve_data
 from xpyrment.validate.srm import check_srm
 from xpyrment.analyze.orchestrator import setup, run_analysis
 from xpyrment.report.export import plot_forest, plot_power_curve
-from xpyrment.simulation import generate_ab_data
+from xpyrment.simulation import generate_ab_data, ExperimentSimulator
 
 __all__ = [
     "__version__",
@@ -58,4 +58,5 @@ __all__ = [
     "plot_forest",
     "plot_power_curve",
     "generate_ab_data",
+    "ExperimentSimulator",
 ]

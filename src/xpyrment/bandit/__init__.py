@@ -12,6 +12,7 @@ from xpyrment.bandit.thompson import ThompsonSamplingBandit
 from xpyrment.bandit.tuning import BanditHyperparameterTuner, simulate_bandit_run
 from xpyrment.bandit.ope import OffPolicyEvaluator
 from xpyrment.bandit.multi_objective import MultiObjectiveTuner
+from xpyrment.bandit.non_stationary import DiscountedThompsonSamplingBandit, SlidingWindowThompsonSamplingBandit
 
 __all__ = [
     "EpsilonGreedyBandit",
@@ -21,4 +22,6 @@ __all__ = [
     "simulate_bandit_run",
     "OffPolicyEvaluator",
     "MultiObjectiveTuner",
+    "DiscountedThompsonSamplingBandit",
+    "SlidingWindowThompsonSamplingBandit",
 ]

@@ -32,6 +32,7 @@ from xpyrment.design.doe.mixture import MixtureDesign
 from xpyrment.design.doe.plackett_burman import PlackettBurmanDesign
 from xpyrment.design.doe.switchback import SwitchbackDesign
 from xpyrment.design.doe.taguchi import TaguchiDesign
+from xpyrment.design.doe.carryover import CarryoverDecomposition
 
 __all__ = [
     "DesignMatrix",
@@ -47,4 +48,5 @@ __all__ = [
     "MixtureDesign",
     "SwitchbackDesign",
     "EVOPDesign",
+    "CarryoverDecomposition",
 ]

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q2 Premium Revenue Growth Test (CUPED)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --teal: #0ea5e9;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header block */
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #0ea5e9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header .meta-tag {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* KPI Cards Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: var(--teal);
+        }
+
+        .card h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .card .sub {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .card-success-border {
+            border-left: 5px solid var(--success);
+        }
+
+        .card-danger-border {
+            border-left: 5px solid var(--danger);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .badge-danger {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .badge-gray {
+            background-color: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+        }
+
+        .badge-type {
+            background-color: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: monospace;
+        }
+
+        /* Table */
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Lift Colors */
+        .positive-lift {
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .negative-lift {
+            color: #f87171;
+            font-weight: 600;
+        }
+
+        /* Signficance Badges */
+        .sig-badge {
+            background-color: rgba(16, 185, 129, 0.25);
+            color: #34d399;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .neutral-badge {
+            background-color: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .smd-success {
+            color: #34d399;
+            font-weight: bold;
+        }
+
+        .smd-fail {
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        /* Preformatted containers */
+        pre {
+            background-color: #0b0f19;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            color: #38bdf8;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+
+        .row {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Q2 Premium Revenue Growth Test (CUPED)</h1>
+                <div class="meta-tag">Generated by xpyrment on standard execution pipeline</div>
+            </div>
+            <div class="meta-tag">Nominal Alpha: <strong>0.05</strong></div>
+        </header>
+
+        <!-- KPI Summary row -->
+        <div class="grid">
+            <div class="card">
+                <h3>Total Assigned Users</h3>
+                <div class="value">2,010</div>
+                <div class="sub">Control: 1,013 | Treatment: 997</div>
+            </div>
+            
+            <div class="card card-success-border">
+                <h3>SRM Safety Shield</h3>
+                <div class="value" style="color: #34d399">
+                    PASSED
+                </div>
+                <div class="sub">Pearson Chi-Square p-value: 0.721182</div>
+            </div>
+
+            <div class="card">
+                <h3>Baseline Covariates</h3>
+                <div class="value">
+                    1
+                </div>
+                <div class="sub">
+                    Diagnostics fully evaluated
+                </div>
+            </div>
+        </div>
+
+        <!-- Main dashboard layouts -->
+        <div class="panel">
+            <div class="section-title">📊 Statistical Metric Performance Summary</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric Name</th>
+                        <th>Type</th>
+                        <th>Control Mean</th>
+                        <th>Treatment Mean</th>
+                        <th>Relative Lift</th>
+                        <th>P-Value</th>
+                        <th>Significance</th>
+                        <th>CUPED</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td><strong>revenue</strong></td>
+                <td><span class="badge-type">Mean</span></td>
+                <td>9.7043</td>
+                <td>10.2558</td>
+                <td><span class="positive-lift">+5.68%</span></td>
+                <td><code>0.00002</code></td>
+                <td><span class="sig-badge">SIGNIFICANT</span></td>
+                <td><span class="badge badge-success">CUPED Applied</span></td>
+            </tr>
+            
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="panel">
+                    <div class="section-title">⚖️ Baseline Covariate Balance Detail</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Covariate Name</th>
+                                <th>Mean (Ctrl)</th>
+                                <th>Mean (Trt)</th>
+                                <th>SMD</th>
+                                <th>Var Ratio</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                <tr>
+                    <td>pre_revenue</td>
+                    <td>9.4815</td>
+                    <td>9.7039</td>
+                    <td><code class="smd-success">+0.0223</code></td>
+                    <td><code>1.0491</code></td>
+                    <td><span class="badge badge-success">BALANCED</span></td>
+                </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="panel" style="height: 100%;">
+                    <div class="section-title">📉 Covariate Balance ASCII Love Plot</div>
+                    <pre>=================== COVARIATE BALANCE LOVE PLOT ===================
+Covariate Name            | SMD Balance                     | Value 
+-------------------------------------------------------------------
+pre_revenue               | [----------X----------] | +0.0223
+================---------------------------------================
+Legend: [Left: Treatment < Control] | [Center '|': Balanced] | [Right: Treatment > Control]</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

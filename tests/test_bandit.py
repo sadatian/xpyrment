@@ -252,3 +252,50 @@ def test_multi_objective_tuning():
     assert 0.0 <= best_candidate[0] <= 5.0
 
 
+def test_non_stationary_bandits():
+    """Validates the state transitions and sampling of Discounted and Sliding-Window Thompson Sampling bandits."""
+    from xpyrment.bandit.non_stationary import DiscountedThompsonSamplingBandit, SlidingWindowThompsonSamplingBandit
+
+    rng = np.random.default_rng(42)
+
+    # 1. Test Discounted Thompson Sampling
+    d_bandit = DiscountedThompsonSamplingBandit(arms=["A", "B"], gamma=0.8)
+    
+    # Update arm A with some successes
+    for _ in range(5):
+        d_bandit.update("A", 1.0)
+    # Update arm B with some failures
+    for _ in range(5):
+        d_bandit.update("B", 0.0)
+
+    posteriors = d_bandit.posteriors
+    assert "A" in posteriors
+    assert "B" in posteriors
+    # Parameters should be decayed and strictly positive
+    assert posteriors["A"][0] > 1.0
+    assert posteriors["B"][1] > 1.0
+
+    # Ensure arm selection operates without crashing
+    for _ in range(50):
+        selected = d_bandit.select_arm(rng)
+        assert selected in ["A", "B"]
+
+    # 2. Test Sliding-Window Thompson Sampling
+    sw_bandit = SlidingWindowThompsonSamplingBandit(arms=["A", "B"], window_size=5)
+
+    # Push a series of updates
+    for _ in range(10):
+        sw_bandit.update("A", 1.0)
+    for _ in range(10):
+        sw_bandit.update("B", 0.0)
+
+    # Within the window of size 5, only arm B should have updates (since we did B last)
+    # Uniform alpha, beta (initial 1.0) + window updates
+    selected_sw = [sw_bandit.select_arm(rng) for _ in range(100)]
+    # Arm A has 0 plays in the last 5 steps (so Beta(1, 1))
+    # Arm B has 5 plays with reward 0 in the last 5 steps (so Beta(1, 6))
+    # Since Beta(1, 1) sample is statistically much larger than Beta(1, 6), Arm A should dominate selections
+    assert selected_sw.count("A") > selected_sw.count("B")
+
+
+

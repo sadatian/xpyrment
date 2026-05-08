@@ -10,6 +10,7 @@ from xpyrment.network.spillover import NeighborhoodExposure
 from xpyrment.network.identity import IdentityRegistry
 from xpyrment.network.federated import PaillierCryptosystem, federated_averaging, federated_secure_covariance_pooling
 from xpyrment.network.partition import EntropyBalancedGraphPartitioner
+from xpyrment.network.privacy import DifferentialPrivacyEngine
 
 __all__ = [
     "ClusterRandomizer",
@@ -19,4 +20,5 @@ __all__ = [
     "federated_averaging",
     "federated_secure_covariance_pooling",
     "EntropyBalancedGraphPartitioner",
+    "DifferentialPrivacyEngine",
 ]

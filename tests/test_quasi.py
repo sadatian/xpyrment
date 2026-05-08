@@ -254,10 +254,70 @@ def test_snmm_causal_inference():
     assert beta_1[0] == pytest.approx(4.5, abs=0.25)
     assert beta_1[1] == pytest.approx(1.2, abs=0.25)
 
-    # Test blip down outcome logic
     # Removing stage 1 effects from y should leave only stage 0 effects + base trends
     y_blipped_1 = snmm.predict_blip_outcome([X0, X1], [A0, A1], y, stage=1)
     assert len(y_blipped_1) == n
+
+
+def test_panel_matrix_completion():
+    """Validates low-rank matrix recovery and singular value thresholding reconstruction."""
+    from xpyrment.quasi.matrix_completion import PanelMatrixCompletion
+
+    rng = np.random.default_rng(42)
+    # Generate low-rank (rank-2) matrix of size 15 x 8
+    U = rng.normal(size=(15, 2))
+    V = rng.normal(size=(2, 8))
+    Y_full = np.dot(U, V)
+
+    # Missing mask: 80% observed, 20% unobserved
+    mask = rng.binomial(1, 0.8, size=(15, 8))
+    Y_obs = Y_full * mask
+
+    completion = PanelMatrixCompletion(lambda_n=0.1, max_iters=100, tol=1e-5)
+    Y_completed = completion.fit_transform(Y_obs, mask)
+
+    assert Y_completed.shape == (15, 8)
+    # Check that reconstructed matrix has small error on unobserved entries
+    error = np.linalg.norm((Y_full - Y_completed) * (1.0 - mask), "fro") / max(1e-8, np.linalg.norm(Y_full * (1.0 - mask), "fro"))
+    assert error < 0.35
+
+
+def test_causal_sensitivity_analysis():
+    """Validates Rosenbaum bounds and Cinelli-Hazlett partial R^2 sensitivity metrics."""
+    from xpyrment.quasi.sensitivity import CausalSensitivityAnalyzer
+
+    # 1. Test Rosenbaum Bounds (Sign-Test)
+    # Out of 10 matched differences, 9 are positive (treatment superior)
+    differences = np.array([1.5, 2.0, 0.8, 3.4, 0.1, -0.5, 2.2, 1.9, 0.7, 1.2])
+    
+    analyzer = CausalSensitivityAnalyzer()
+    bounds = analyzer.rosenbaum_bounds(differences, gammas=[1.0, 1.5, 3.0])
+
+    assert 1.0 in bounds
+    assert 1.5 in bounds
+    assert 3.0 in bounds
+
+    # Upper bound p-value must increase as unobserved confounding Gamma increases
+    assert bounds[1.0]["upper_p_value"] < bounds[1.5]["upper_p_value"] < bounds[3.0]["upper_p_value"]
+
+    # 2. Test Cinelli & Hazlett Sensitivity (Partial R^2)
+    # A treatment effect of 2.5 with SE of 0.5 over 100 degrees of freedom (t-stat = 5.0)
+    metrics = analyzer.cinelli_hazlett_sensitivity(
+        treatment_effect=2.5,
+        standard_error=0.5,
+        df=100,
+        r2_d_u=0.10,
+        r2_y_u=0.15
+    )
+
+    assert metrics["original_effect"] == 2.5
+    assert metrics["t_statistic"] == 5.0
+    assert metrics["robustness_value"] > 0.0
+    assert metrics["bias_bound"] > 0.0
+    
+    # Adjusted effect must be smaller than original effect due to positive confounding bias
+    assert metrics["adjusted_effect"] < 2.5
+
 
 
 

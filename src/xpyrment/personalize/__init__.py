@@ -8,6 +8,9 @@ Submodules:
 from xpyrment.personalize.meta_learners import SLearner, TLearner, XLearner, ElasticNetRegressor
 from xpyrment.personalize.causal_forest import CausalTree, CausalForest
 from xpyrment.personalize.double_ml import DoubleMachineLearning
+from xpyrment.personalize.dtr import QFactorModel, DynamicTreatmentRegime
+from xpyrment.personalize.infinite_mixture import InfiniteDirichletClusterer
+from xpyrment.personalize.subgroup import SubgroupHeterogeneityDiscoverer
 
 __all__ = [
     "SLearner",
@@ -17,4 +20,8 @@ __all__ = [
     "CausalTree",
     "CausalForest",
     "DoubleMachineLearning",
+    "QFactorModel",
+    "DynamicTreatmentRegime",
+    "InfiniteDirichletClusterer",
+    "SubgroupHeterogeneityDiscoverer",
 ]

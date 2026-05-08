@@ -11,11 +11,13 @@ randomization schemes, and classical Design of Experiments (DoE) matrices:
 from xpyrment.design.randomization import hash_assign
 from xpyrment.design.stratification import stratified_randomization
 from xpyrment.design.splits import TrafficSplitter
+from xpyrment.design.power import AnalyticalPowerCalculator
 from xpyrment.design import doe
 
 __all__ = [
     "hash_assign",
     "stratified_randomization",
     "TrafficSplitter",
+    "AnalyticalPowerCalculator",
     "doe",
 ]

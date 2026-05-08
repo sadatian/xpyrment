@@ -176,3 +176,128 @@ def generate_ab_data(
     )
 
     return df
+
+
+class ExperimentSimulator:
+    """Runs extensive Monte Carlo simulations to validate experimental designs and algorithms.
+
+    TODO: Add synthetic panel non-compliance treatment estimation corrections using Instrumental Variables (LATE/CACE).
+    TODO: Support synthetic network topology configurations to simulate clustered graph-based interference spillovers.
+    """
+
+    def __init__(self, random_seed: int = 42) -> None:
+        """Initializes the experiment simulator with a pseudo-random seed."""
+        self.rng = np.random.default_rng(random_seed)
+
+    def generate_synthetic_panel(
+        self,
+        n_samples: int = 1000,
+        baseline_mean: float = 10.0,
+        treatment_effect: float = 1.0,
+        non_compliance_rate: float = 0.0,
+        spillover_effect: float = 0.0,
+    ) -> pd.DataFrame:
+        """Generates a synthetic panel with potential non-compliance and spillover.
+
+        Args:
+            n_samples (int): Number of experimental units.
+            baseline_mean (float): Baseline outcome intercept.
+            treatment_effect (float): Treatment causal impact (CATE).
+            non_compliance_rate (float): Probability of failing to comply with assignment.
+            spillover_effect (float): Causal impact spilled over onto control units from treatment.
+        """
+        # Baseline covariates
+        age = self.rng.normal(loc=35, scale=10, size=n_samples)
+        tenure = self.rng.exponential(scale=3, size=n_samples)
+
+        # Assigned variant (Intent to Treat)
+        assigned_treatment = self.rng.binomial(n=1, p=0.5, size=n_samples)
+
+        # Actual compliance decision
+        actual_treatment = assigned_treatment.copy()
+        if non_compliance_rate > 0.0:
+            # Randomly flip compliance based on compliance rate
+            flip_mask = self.rng.random(size=n_samples) < non_compliance_rate
+            actual_treatment[flip_mask] = 1 - actual_treatment[flip_mask]
+
+        # Outcomes under potential outcomes framework:
+        # Y_i = baseline_mean + 0.1 * age_i + 0.5 * tenure_i + treatment_effect * actual_treatment_i
+        #       + spillover_effect * (1 - actual_treatment_i) * (proportion of treated)
+        # Note: We simulate a simplified spillover model
+        prop_treated = float(np.mean(actual_treatment))
+        spillover_term = spillover_effect * prop_treated
+
+        y_base = baseline_mean + 0.1 * age + 0.5 * tenure + self.rng.normal(loc=0, scale=2.0, size=n_samples)
+        y = y_base + (treatment_effect * actual_treatment) + (spillover_term * (1 - actual_treatment))
+
+        return pd.DataFrame({
+            "unit_id": np.arange(1, n_samples + 1),
+            "covariate_age": age,
+            "covariate_tenure": tenure,
+            "assigned_treatment": assigned_treatment,
+            "actual_treatment": actual_treatment,
+            "outcome": y,
+        })
+
+    def run_monte_carlo(
+        self,
+        n_simulations: int = 50,
+        n_samples: int = 500,
+        baseline_mean: float = 10.0,
+        treatment_effect: float = 1.0,
+        non_compliance_rate: float = 0.0,
+        spillover_effect: float = 0.0,
+        alpha: float = 0.05,
+    ) -> Dict[str, Any]:
+        """Runs repeated Monte Carlo trials to compute empirical power, bias, and MSE of a standard T-test.
+
+        Returns:
+            Dict[str, Any]: Calculated statistical performance metrics.
+        """
+        from scipy.stats import ttest_ind
+
+        rejections = 0
+        estimates = []
+
+        for _ in range(n_simulations):
+            df = self.generate_synthetic_panel(
+                n_samples=n_samples,
+                baseline_mean=baseline_mean,
+                treatment_effect=treatment_effect,
+                non_compliance_rate=non_compliance_rate,
+                spillover_effect=spillover_effect,
+            )
+
+            # Analyze using actual compliance (As-Treated estimation)
+            y_trt = df.loc[df["actual_treatment"] == 1, "outcome"].values
+            y_ctrl = df.loc[df["actual_treatment"] == 0, "outcome"].values
+
+            if len(y_trt) < 2 or len(y_ctrl) < 2:
+                continue
+
+            stat, p_val = ttest_ind(y_trt, y_ctrl, equal_var=False)
+            
+            if p_val < alpha:
+                rejections += 1
+
+            est_effect = float(np.mean(y_trt) - np.mean(y_ctrl))
+            estimates.append(est_effect)
+
+        estimates = np.array(estimates)
+        avg_estimate = float(np.mean(estimates)) if len(estimates) > 0 else 0.0
+        
+        # Bias: E[beta_hat] - beta
+        bias = avg_estimate - treatment_effect
+        # MSE: E[(beta_hat - beta)^2]
+        mse = float(np.mean((estimates - treatment_effect) ** 2)) if len(estimates) > 0 else 0.0
+        # Empirical Power / Type I error (rejection rate)
+        rejection_rate = float(rejections / n_simulations) if n_simulations > 0 else 0.0
+
+        return {
+            "num_simulations_run": n_simulations,
+            "empirical_mean_estimate": avg_estimate,
+            "empirical_bias": bias,
+            "empirical_mean_squared_error": mse,
+            "empirical_rejection_rate": rejection_rate,
+        }
+
