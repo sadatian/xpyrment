@@ -69,13 +69,13 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.arithmatex:
       generic: true
+      smart_dollar: true
 
 extra_css:
   - stylesheets/extra.css
 
 extra_javascript:
-  - javascripts/mathjax.js
-  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 
 
 nav:

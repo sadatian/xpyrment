@@ -380,15 +380,14 @@ We investigated and resolved a subtle MathJax rendering issue within dynamically
 
 ## 🧮 Project-Wide MathJax Rendering & Greek Character Resolution (Completed)
 
-We resolved mathematical and LaTeX rendering defects throughout the entire documentation site by upgrading MathJax to v3, implementing SPA-compatible subscribers, and programmatically normalizing block-math and raw-docstring escape sequences, bumping the package version to `1.1.2.0`.
+We resolved mathematical and LaTeX rendering defects throughout the entire documentation site by fixing Python docstring escape-sequences and updating block-to-inline math notations, bumping the package version to `1.1.2.0`.
 
 ### a) What was accomplished:
-1. **Upgraded to MathJax 3**: Upgraded the documentation engine to utilize modern, performant **MathJax v3** using the Material for MkDocs recommended SPA/instant-navigation-compatible subscriber setup in [docs/javascripts/mathjax.js](file:///c:/Users/Dan/projects/xpyrment/docs/javascripts/mathjax.js) and configured it inside [mkdocs.yml](file:///c:/Users/Dan/projects/xpyrment/mkdocs.yml).
-2. **Normalized Block-Math Formulas**: Programmatically normalized all single-line block math delimiters (`$$formula$$`) to multi-line block math delimiters across all 50 Python files and Markdown files (including [README.md](file:///c:/Users/Dan/projects/xpyrment/README.md)). This forces the parser to render them as proper display equations on both GitHub and the documentation site, eliminating raw `$` prefixing and inline compression bugs.
-3. **Raw Prefix Resolution for Backslashes**: Programmatically identified and updated 50 Python source files in `src/xpyrment/` containing backslashed symbols (like Greek letters `\alpha`, `\beta`, `\theta`, etc.) where docstrings were missing the raw `r` prefix. This prevents the Python interpreter from parsing LaTeX symbols as control characters, resolving the `(lpha, eta)` rendering errors on `localhost:8000/api/core/registry/` and other API reference pages.
-4. **Fixed get_doe_designs in main.py**: Fixed a pre-existing NameError in `main.py` where `first_line` was accessed before definition, restoring the dynamic DoE listing in the documentation site.
-5. **Synced Package Version (`1.1.2.0`)**: Bumped package version from `1.1.1.0` to `1.1.2.0` in `pyproject.toml` and verified that automated build pipelines successfully cascade the update.
-6. **Verified Zero Regression**: Confirmed 100% test success (138/138 green) and successfully built warning-free documentation with `mkdocs build`.
+1. **Raw Prefix Resolution for Backslashes**: Programmatically identified and updated 49 Python source files in `src/xpyrment/` containing backslashed symbols (like Greek letters `\alpha`, `\beta`, `\theta`, etc.) where docstrings were missing the raw `r` prefix. This prevents the Python interpreter from parsing LaTeX symbols as control characters (e.g., `\alpha` as ASCII Bell, `\beta` as Backspace), resolving the `(lpha, eta)` rendering errors on `localhost:8000/api/core/registry/` and other API reference pages.
+2. **Converted Block Math delimiters inside Docstrings**: Replaced LaTeX block-math delimiters (`$$...$$`) with inline-math delimiters (`$...$`) across all codebase docstrings. This avoids display failures and raw-symbol exposure inside tables, lists, and boxed elements where MathJax has known rendering constraints.
+3. **Fixed get_doe_designs in main.py**: Fixed a pre-existing NameError in `main.py` where `first_line` was accessed before definition, restoring the dynamic DoE listing in the documentation site.
+4. **Synced Package Version (`1.1.2.0`)**: Bumped package version from `1.1.1.0` to `1.1.2.0` in `pyproject.toml` and verified that automated build pipelines successfully cascade the update.
+5. **Verified Zero Regression**: Confirmed 100% test success (138/138 green) and successfully built warning-free documentation with `mkdocs build`.
 
 ### b) What must be done next:
 1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
