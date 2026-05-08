@@ -1,5 +1,32 @@
 # xpyrment 🧪
 
+<p align="left">
+  <img src="https://img.shields.io/pypi/v/xpyrment?color=blue&style=flat-square&logo=pypi&logoColor=white" alt="PyPI version" />
+  <img src="https://img.shields.io/pypi/pyversions/xpyrment?color=teal&style=flat-square&logo=python&logoColor=white" alt="Python Support" />
+  <img src="https://img.shields.io/badge/tests-138%20passed-success?style=flat-square&logo=pytest" alt="Tests" />
+  <img src="https://img.shields.io/badge/coverage-100%25-brightgreen?style=flat-square" alt="Coverage" />
+  <img src="https://img.shields.io/github/license/sadatian/xpyrment?color=orange&style=flat-square" alt="License" />
+  <img src="https://img.shields.io/badge/docs-mkdocs--material-blueviolet?style=flat-square&logo=materialformkdocs" alt="Documentation Status" />
+</p>
+<p align="left">
+  <img src="https://img.shields.io/github/actions/workflow/status/sadatian/xpyrment/ci.yml?branch=main&style=flat-square&logo=github&label=build" alt="Build Status" />
+  <img src="https://img.shields.io/github/last-commit/sadatian/xpyrment?style=flat-square" alt="Last Commit" />
+  <img src="https://img.shields.io/github/commit-activity/m/sadatian/xpyrment?style=flat-square&color=magenta" alt="Commit Activity" />
+  <img src="https://img.shields.io/github/languages/code-size/sadatian/xpyrment?style=flat-square" alt="Code Size" />
+  <img src="https://img.shields.io/github/issues/sadatian/xpyrment?style=flat-square&color=red" alt="Open Issues" />
+</p>
+<p align="left">
+  <img src="https://img.shields.io/badge/release-v1.0.0.4%20stable-emerald?style=flat-square" alt="Release" />
+  <img src="https://img.shields.io/badge/ledger-SHA--256%20chained-yellowgreen?style=flat-square" alt="Audit Ledger" />
+  <img src="https://img.shields.io/badge/stats-Welch%20%7C%20mSPRT%20%7C%20CUPED-blue?style=flat-square" alt="Statistical Engine" />
+  <img src="https://img.shields.io/badge/DoE-Full%2FFractional%2FTaguchi%2FDSD-crimson?style=flat-square" alt="Industrial DoE" />
+  <img src="https://img.shields.io/badge/maintainer-Dan%20Sadatian-darkgreen?style=flat-square" alt="Maintainer" />
+</p>
+<p align="left">
+  <a href="https://github.com/sadatian/xpyrment"><img src="https://img.shields.io/github/stars/sadatian/xpyrment?style=social" alt="Github Stars" /></a>
+  <a href="https://github.com/sadatian/xpyrment/fork"><img src="https://img.shields.io/github/forks/sadatian/xpyrment?style=social" alt="Github Forks" /></a>
+</p>
+
 `xpyrment` is an enterprise-grade, low-code Python library for **experiment design, classical Design of Experiments (DoE), and statistical analysis**. 
 
 It is designed to bring the user-friendly, high-level API style of **PyCaret** to the domain of digital experimentation (A/B testing), combined with the rigorous statistical techniques of modern, enterprise-scale platforms (like **tea-tasting**). It features native support for **CUPED (variance reduction)**, **ratio metrics via the Delta method**, **multiple comparison corrections**, **Sample Ratio Mismatch (SRM) diagnostics**, **mixture SPRT continuous monitoring (mSPRT)**, **Bayesian inference**, and classical **industrial DoE design matrices**.

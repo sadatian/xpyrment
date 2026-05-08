@@ -1,4 +1,4 @@
-# Implementation Plan: xpyrment Python Package (v1.0.0.1)
+# Implementation Plan: xpyrment Python Package (v1.0.0.4)
 
 This is the active implementation plan for **`xpyrment`**—a highly modular, phase-gated library designed to support the entire lifecycle of industrial-scale digital experimentation and classical Design of Experiments (DoE).
 
@@ -141,6 +141,36 @@ We upgraded pip in the active virtual environment and compiled a comprehensive, 
 ### a) What was accomplished:
 1. **Upgraded pip**: Ran python pip upgrade to install the latest pip version (`26.1.1`) in the active `.venv` environment.
 2. **Created PyPI Master Guide**: Authored a detailed, secure, and modern guide in [add_to_pypi_guide.md](file:///C:/Users/Dan/.gemini/antigravity/brain/af0bb444-d791-4a8c-aab5-fc2c62b1052e/add_to_pypi_guide.md) detailing build compilation, TWINE checking, API Token setup, TestPyPI staging, and official live publishing.
+
+## ⚖️ PEP 639 SPDX License Compliance & Clean Build Resolution (Completed)
+
+We updated the project's build and metadata declarations to conform to PEP 639 packaging standards, eliminating the build warning about deprecated classifiers.
+
+### a) What was accomplished:
+1. **Resolved Deprecated Classifiers**: Removed `"License :: OSI Approved :: MIT License"` from `classifiers` in `pyproject.toml`.
+2. **Added SPDX Expression**: Added `license = "MIT"` and `license-files = ["LICENSE"]` properties under the `[project]` section of `pyproject.toml`.
+3. **Upgraded Build System Constraints**: Incremented build system setuptools requirement to `>=77.0.0` in `pyproject.toml` to guarantee native, robust support for SPDX expressions.
+4. **Enforced Revision Incrementing**: Bumped package version by `+0.0.0.1` (to `1.0.0.2`) across both `pyproject.toml` and `_version.py` files.
+5. **Verified Warning-Free Build**: Successfully compiled packaging distribution files with `python -m build`, verifying a clean execution with **zero warnings**.
+
+## 📝 Mirroring Status Badges & Stamps to README.md (Completed)
+
+We mirrored the comprehensive array of status badges, shields, and metadata stamps to the root `README.md` file so they populate successfully on the live PyPI project landing page.
+
+### a) What was accomplished:
+1. **Mirrored Status Badges**: Added the exact same professional, three-row status badges structure (PyPI details, tests passing, coverage, last commit activity, issue tracking, and custom xpyrment engine badges) to the top of [README.md](file:///c:/Users/Dan/projects/xpyrment/README.md).
+2. **Enforced Revision Incrementing**: Bumped package version by `+0.0.0.1` (to `1.0.0.3`) across both `pyproject.toml` and `_version.py` files to prepare for a clean, brand-new release.
+3. **Verified Local Build**: Ran `python -m build` successfully to generate the new distribution archives (`1.0.0.3`).
+
+## 🌐 Enrichment of PyPI Package Metadata & Discovery Links (Completed)
+
+We added robust project URLs, key searchable keywords, maintainer details, and enterprise-grade classifiers inside the package configuration to maximize PyPI index discoverability.
+
+### a) What was accomplished:
+1. **Added Comprehensive Project Links**: Added `Homepage`, `Documentation`, `Repository`, `Bug Tracker`, and `Changelog` URL mappings inside the `[project.urls]` table.
+2. **Added Discovery Keywords**: Injected a comprehensive array of 11 searchable search keywords covering digital experiments, causal inference, and Design of Experiments (DoE).
+3. **Upgraded Classifiers**: Expanded development classifiers to declare Production/Stable state and explicit Python 3.8-3.14 support.
+4. **Synced Revision Versions**: Incremented package version to `1.0.0.4` across `pyproject.toml`, `_version.py`, `README.md`, and `docs/index.md` files.
 
 ### b) What must be done next:
 1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
