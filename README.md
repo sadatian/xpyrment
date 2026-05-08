@@ -369,4 +369,4 @@ We use `pytest` for unit testing. To set up your local environment:
 
 ## 📄 License
 
-Distributed under the AI Slop License. See `LICENSE` for more information.
+Distributed under the [AI Slop License](https://github.com/sadatian/xpyrment?tab=License-1-ov-file#readme).
