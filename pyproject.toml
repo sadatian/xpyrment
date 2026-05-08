@@ -14,7 +14,7 @@ maintainers = [
 description = "A low-code Python library for enterprise-grade experiment design, classical DoE, and statistical analysis."
 readme = "README.md"
 requires-python = ">=3.8"
-license = "AI Slop"
+license = "LicenseRef-AISlop"
 license-files = ["LICENSE"]
 keywords = [
     "experimentation",
