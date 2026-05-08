@@ -87,6 +87,7 @@ We conducted a comprehensive, production-level audit of the repository to identi
 2. **Added CHANGELOG.md**: Created a polished, standard-compliant changelog documenting our version history and complete progression from initial beta releases up to v1.0.0.
 3. **Packaging & Wheel Validation**: Installed the standard Python `build` package and executed compilation; successfully generated `.tar.gz` and `.whl` files with zero packaging anomalies or metadata errors.
 4. **Imports & Test Verification**: Verified silent importing of `xpyrment` namespace and complete coverage (all 138/138 tests passing 100% green).
+5. **Adjusted Agent Rules for Maintenance Era**: Re-authored all `.agents/rules/` files to shift the focus from greenfield construction to systematic debugging sequences, backwards compatibility guarantees, and non-breaking, additive Phase 2 increments.
 
 ### b) What must be done next:
 1. Start Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System) to support automated mitigation hooks on active production runs.

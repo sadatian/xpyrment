@@ -1,28 +1,40 @@
 ---
 trigger: model_decision
-description: On any feature addition, regression debugging, or testing updates.
+description: Activated on any bug debugging, regression investigation, testing update, or safe feature addition.
 ---
 
-# 🧪 Rule: Continuous Rigorous Testing
+# 🧪 Rule: Continuous Verification & Regression Debugging (v1 Era)
 
 ## ⚡ Model Decision Activation
-This rule is **activated** whenever a model makes a decision to edit existing tests, write new features, or implement statistical code under `src/`.
+This rule is **activated** whenever an AI agent makes a decision to debug a bug, write a regression test, or implement a safe new feature.
 
-When activated, the model MUST explicitly document its test architecture in a **"Model Decision"** block, explaining how the implementation is verified.
+When activated, the agent MUST explicitly outline its test architecture and reproduction hypothesis in a **"Model Decision"** block in its output.
 
 ---
 
-## 1. Test-First Paradigm (TDD)
-* **Test Creation Sequence**: Write the corresponding test files under `tests/` *before* editing the target files in `src/`.
-* **Behavior Assertions**: Test suites must assert:
-  1. **Perfect Inputs**: Expected behavior with realistic data.
-  2. **Boundary Inputs**: Empty series, single-element arrays, extreme outliers, zero-variance arrays.
-  3. **Mismatched Inputs**: Array length mismatches, incompatible types, incorrect indexes.
+## 1. Gold-Standard Regression Debugging Flow
+When resolving a bug, regression, or calculation issue, do NOT edit production code immediately. Follow this strict verification loop:
+1. **Write Reproduction Test First**: Before applying any fix under `src/`, write a reproducing unit test in the corresponding test suite (e.g., prefixing with `test_reproduce_issue_...`).
+2. **Verify Failure**: Execute the test runner on the new test only to confirm that it fails under the current implementation.
+3. **Implement the Fix**: Modify the target file in `src/` to resolve the bug.
+4. **Assert Success**: Execute the reproduction test to confirm that it now passes successfully.
+5. **Full Suite Regression Check**: Execute the complete test suite (`pytest`) to confirm that zero existing tests or downstream modules are broken.
 
-## 2. Random Seed Deterministism
-* **Reproducibility**: All simulation, bootstrap, and random assignment routines (such as Latin Hypercube Sampling, bootstrapping, or synthetic data generators) must allow passing a fixed integer seed to ensure perfect test reproducibility.
-* **Seed Isolation**: Tests must use isolated `np.random.Generator` objects instead of global `np.random.seed()` to prevent side-effects on other tests.
+---
 
-## 3. Strict Verification & Regression Gate
-* **Local Test Execution**: Proactively run `pytest` via `.venv\Scripts\python.exe -m pytest` to verify the modified code path and any downstream modules.
-* **Documentation Compiles**: Verify that new docstrings do not introduce mkdocstrings parsing failures.
+## 2. Test Architecture for New Features
+When adding safe, backward-compatible new features:
+* **Exhaustive Input Coverage**: Test suites must assert:
+  - **Ideal Data**: Standard expected data matrices.
+  - **Boundary/Extreme Values**: Constant columns, null series, infs/NaNs, collinear inputs, single-element arrays, extreme scales.
+  - **Structural Mismatches**: Unaligned series indexes, shape mismatches, invalid types.
+* **Random Seed Isolation**:
+  - All stochastic operations (bootstrap, simulations, randomized partitions, bandits) must use local, isolated `np.random.Generator` objects initialized by a configurable integer seed.
+  - Never call global `np.random.seed()` as it creates state leakage across test modules.
+
+---
+
+## 3. Deployment & Release Readiness Checks
+Before completing any task, execute:
+* **Unit Verification**: Run `.venv\Scripts\python.exe -m pytest` to verify 100% test success across all 140+ test cases.
+* **Documentation Health**: Run `.venv\Scripts\python.exe -m mkdocs build` to confirm that any docstring changes do not trigger mkdocstrings errors.

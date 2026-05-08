@@ -1,16 +1,27 @@
 ---
 trigger: model_decision
-description: When working on files within `src` and `tests` folders, specifically with implementing algorithms and functionality within the primary project.
+description: When debugging existing issues, adding new backward-compatible features, or updating tests and functionality within the stable v1 project.
 ---
 
-# 🧭 xpyrment Implementation & AI Agent Rules Guide
+# 🧭 xpyrment Implementation & AI Agent Rules Guide (v1 Stable Era)
 
-This document defines the strict architectural rules, module structures, and mathematical anchors for the **`xpyrment`** Python package. Any agent modifying this repository must strictly adhere to these guidelines to maintain design integrity and prevent regression.
+This document defines the strict rules, workflows, and guidelines for maintaining, debugging, and incrementally extending the stable **`xpyrment`** Python package. Any AI agent modifying this repository must strictly adhere to these guidelines to preserve the integrity of our v1.0.0 release.
 
 ---
 
-## 1. Architectural & Dependency Rules
-To prevent circular dependencies and spaghetti architecture, imports must follow a strict, one-way phase hierarchy. Downstream phases may import from upstream dependencies, but upstream components must remain completely ignorant of downstream implementations.
+## 1. Core Principles of the v1 Era
+
+With the release of v1.0.0, our development philosophy shifts from rapid greenfield execution to **production stability, predictability, and safety**.
+
+1. **Absolute Backward Compatibility**: The public API surface (specifically `setup`, `run_analysis`, `Experiment`, `MeanMetric`, `ProportionMetric`, `RatioMetric`, `design_experiment`, `check_srm`, and CLI commands) is locked. Do NOT introduce breaking changes to signatures, expected types, or public return structures without explicit approval.
+2. **Safe Feature Increments**: All new capabilities (such as those scheduled in Phase 2) must be designed as additive or opt-in components (e.g., via configuration flags, additive keyword arguments, or new submodules) to avoid disrupting existing workflows.
+3. **Structured Debugging over Hot-patching**: Do not randomly mutate code to fix issues. Follow the systematic **Differential Diagnosis Sequence** detailed in Section 5.
+
+---
+
+## 2. Architectural & Dependency Rules
+
+To prevent circular dependencies and spaghetti architecture, imports must follow our strict, one-way phase hierarchy. Downstream phases may import from upstream dependencies, but upstream components must remain completely ignorant of downstream implementations.
 
 **Chain of Hierarchy**:
 `metrics/` (leaf) $\rightarrow$ `core/` $\rightarrow$ `plan/` $\rightarrow$ `design/` $\rightarrow$ `validate/` $\rightarrow$ `run/` $\rightarrow$ `analyze/` $\rightarrow$ `interactions/` $\rightarrow$ `interpret/` $\rightarrow$ `report/` (terminal)
@@ -31,7 +42,8 @@ To prevent circular dependencies and spaghetti architecture, imports must follow
 
 ---
 
-## 2. Experiment State Machine & Gating Rules
+## 3. Experiment State Machine & Gating Rules
+
 The central orchestrator `Experiment` (`core/experiment.py`) enforces strict state transitions via `ExperimentState` (`core/state.py`):
 `CREATED` $\rightarrow$ `PLANNED` $\rightarrow$ `DESIGNED` $\rightarrow$ `RUNNING` $\rightarrow$ `ANALYZED` $\rightarrow$ `REPORTED`
 
@@ -42,91 +54,49 @@ The central orchestrator `Experiment` (`core/experiment.py`) enforces strict sta
 
 ---
 
-## 3. Codebase Map & Functionality Index
+## 4. Codebase Map & Functionality Index
+
 Refer to `docstring_reference.md` for complete API signatures, parameters, and return types.
 
-- **`core/`** (State Machine & Registry)
+- **`core/`** (State Machine, Registry & Serialization)
   - `experiment.py` $\rightarrow$ `Experiment` class (the user-facing entrypoint and orchestrator).
   - `state.py` $\rightarrow$ `ExperimentState` (Enum: CREATED, PLANNED, DESIGNED, RUNNING, ANALYZED, REPORTED).
   - `exceptions.py` $\rightarrow$ `PhaseOrderError`, `SRMError`, `AliasError` (custom domain exceptions).
   - `registry.py` $\rightarrow$ `ExperimentRegistry` (SHA-256 config checksum hashing).
-  - `types.py` $\rightarrow$ Shared TypedDicts and structural dataclasses.
+  - `serialization.py` $\rightarrow$ `to_dict` and `to_json` serialization wrappers.
+  - `telemetry.py` $\rightarrow$ `ExecutionProfiler` and JSON telemetry logging.
 - **`metrics/`** (Taxonomy & Normalization)
   - `taxonomy.py` $\rightarrow$ `BaseMetric`, `MeanMetric`, `ProportionMetric`, `RatioMetric` (implements CUPED logic inside `.calculate()`).
-  - `guardrails.py` $\rightarrow$ `GuardrailMetric` (monitors boundary violations and handles abort rules).
-  - `transformations.py` $\rightarrow$ log-normalizations and delta approximations.
 - **`plan/`** (Hypothesis & Power)
-  - `hypothesis.py` $\rightarrow$ `HypothesisSpec` (directional hypotheses, alpha/beta levels, metric bindings).
   - `power.py` $\rightarrow$ `PowerAnalysis` (computes MDE, power curves, required sample sizes).
-  - `duration.py` $\rightarrow$ Estimators for traffic requirements and run times.
-  - `preregistration.py` $\rightarrow$ Serializes plans into immutable registration cards.
 - **`design/`** (Randomization & Design of Experiments)
-  - `doe/` (DoE sub-package):
-    - `base.py` $\rightarrow$ Abstract `DesignMatrix` class.
-    - `full_factorial.py` / `fractional_factorial.py` $\rightarrow$ Matrix generation & resolution checks.
-    - `taguchi.py` / `dsd.py` $\rightarrow$ Orthogonal arrays & Definitive Screening.
-    - `ccd.py` / `box_behnken.py` $\rightarrow$ Response Surface Methodology.
-    - `d_optimal.py` $\rightarrow$ Coordinate exchange determinant optimization.
-    - `lhs.py` / `mixture.py` / `switchback.py` / `evop.py` $\rightarrow$ Specialized designs.
-  - `splits.py` $\rightarrow$ `SplitDefinition` (handles traffic allocations, ramp-ups, and holdouts).
-  - `randomization.py` $\rightarrow$ Cryptographic salt/hash assignment mapping.
-  - `stratification.py` $\rightarrow$ Stratified and cluster randomized partitioning.
-- **`validate/`** (Pre-analysis Diagnostics)
+  - `doe/` (DoE sub-package): full/fractional, definative (DSD), Taguchi, response surface, D-optimal exchange.
+- **`validate/`** (Pre-analysis Diagnostics & Input Cleaning)
+  - `clean.py` $\rightarrow$ Array validators, collinearity SVD checks, and size checks.
   - `srm.py` $\rightarrow$ Chi-square Sample Ratio Mismatch validation.
-  - `aa_test.py` $\rightarrow$ Validates null hypothesis distributions.
-  - `balance.py` $\rightarrow$ Covariate baseline symmetry checks.
-  - `novelty.py` $\rightarrow$ Detects and flags novelty/primacy effects.
-- **`run/`** (Data Collection & Stopping Boundaries)
-  - `ingestion.py` $\rightarrow$ Data adapters (SQL, streaming, CSV).
-  - `assignment.py` $\rightarrow$ Assignment deduplication and logging.
-  - `monitor.py` $\rightarrow$ Real-time peek boundaries.
-  - `stopping.py` $\rightarrow$ Implements sequential stopping checks.
 - **`analyze/`** (Statistical Inference Engine)
   - `orchestrator.py` $\rightarrow$ `AnalysisResult` (compiles summaries, generates forest plots).
-  - `variance_reduction.py` $\rightarrow$ CUPED/CUPAC regression adjustment utilities.
-  - `corrections.py` $\rightarrow$ `apply_multiple_testing_correction` (Bonferroni, Holm, False Discovery Rate Benjamini-Hochberg).
-  - `inference/router.py` $\rightarrow$ Maps metric types and design selections to computational engines.
-  - `inference/frequentist.py` $\rightarrow$ Welch's t-test and Mann-Whitney U tests.
-  - `inference/bayesian.py` $\rightarrow$ `BayesianInference` (Beta-Binomial, Normal-Normal posteriors, Expected Loss, ROPE).
-  - `inference/sequential.py` $\rightarrow$ `SequentialInference` (mSPRT martingale limits, Always-Valid CI boundaries).
-  - `inference/bootstrap.py` $\rightarrow$ Bias-Corrected and Accelerated (BCa) bootstrap.
-- **`interactions/`** $\rightarrow$ `detector.py`, `anova.py`, `regression.py`, `shap.py` (models treatment-covariate interactions).
-- **`interpret/`** $\rightarrow$ `effect_size.py`, `hte.py` (subgroup scanners), `decision.py` (economic advice).
-- **`report/`** $\rightarrow$ `card.py` (`ExperimentCard`), `audit.py` (cryptographic logging), `export.py` (serialization).
+- **`report/`** $\rightarrow$ `generator.py` (standalone HTML/Markdown reports), `audit.py` (cryptographic trails).
 
 ---
 
-## 4. Mathematical & Algorithmic Anchors
-To verify math or implement enhancements, refer to the LaTeX formulas in the corresponding sections of `docstring_reference.md`:
+## 5. Strict AI Agent Debugging & Maintenance Rules
 
-1. **Sample Ratio Mismatch (SRM) Chi-Square**: Implemented in `xpyrment.validate.srm`. Ref: [srm.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/validate/srm.py).
-2. **Welch's T-Test & Satterthwaite Degrees of Freedom**: Implemented in `xpyrment.analyze.inference.frequentist`. Ref: [frequentist.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/analyze/inference/frequentist.py).
-3. **CUPED Variance Reduction**:
-   - $Y_i^{\text{CUPED}} = Y_i - \theta(X_i - \bar{X})$, where $\theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}$
-   - Implemented in `xpyrment.metrics.taxonomy` (inside `MeanMetric.calculate` and `RatioMetric.calculate`).
-4. **Bayesian Conjugate Updating & Expected Loss**:
-   - Beta-Binomial: $\text{Beta}(\alpha_0 + k, \beta_0 + n - k)$
-   - Normal-Normal: Mean/variance updates.
-   - Expected Loss: $L(T) = \mathbb{E}[\max(\theta_C - \theta_T, 0)]$ via Monte Carlo posteriors.
-   - Implemented in `xpyrment.analyze.inference.bayesian`.
-5. **mSPRT & Always-Valid Confidence Intervals (AVCI)**:
-   - Margin $W_n = \sqrt{\frac{2\sigma^2(\sigma^2 + n\tau^2)}{n^2\tau^2} \ln\left( \frac{1}{\alpha} \sqrt{\frac{\sigma^2 + n\tau^2}{\sigma^2}} \right)}$
-   - Implemented in `xpyrment.analyze.inference.sequential`.
-6. **Multiple Comparison Corrections**:
-   - Holm-Bonferroni step-down, FDR Benjamini-Hochberg step-up.
-   - Implemented in `xpyrment.analyze.corrections`.
-7. **BCa Bootstrap Resampling**:
-   - Corrects percentile bounds for median bias $z_0$ and skewness acceleration $a$.
-   - Implemented in `xpyrment.analyze.inference.bootstrap`.
-
----
-
-## 5. Strict AI Agent Coding Rules
-1. **Never Introduce Circular Imports**: Every import statement must strictly conform to the hierarchy in Section 1. Never add imports from a downstream package into an upstream file.
-2. **Maintain State Invariant Checkers**: Always invoke state assertion helpers at key execution gates to enforce transition discipline.
-3. **Preserve LaTeX in Docstrings**: Keep all standard mathematical notations (standard LaTeX formatted in `$$` or `$`) in docstrings. Do not alter existing docstrings unless correcting math bugs.
-4. **No Placeholders**: Never write TODOs or pass blocks in production modules; implement complete, production-ready logic (unless implicitly prompted or you have confirmed its necessity).
-5. **Strict Test-Driven Development (TDD)**: Test files should be created first before implementing algorithms within production files. Always sketch out expected behaviors and edge cases in the corresponding test suite before coding.
-6. **Verify Project Health Regularly**:
-   - Run the test suite: `python -m pytest` or `& .venv\Scripts\python.exe -m pytest`.
-   - Ensure zero errors or warnings from the MkDocs build system when making changes that alter docstrings.
+1. **Systematic Bug Diagnosis Sequence**:
+   When debugging a regression or mathematical failure, do NOT edit production files immediately. Follow these exact steps:
+   - **Step A: Capture State**: Collect and inspect input values, dimensions, variances, and state variables using our profiling logs.
+   - **Step B: Isolate in Test**: Write a minimal failing unit test under `tests/` reproducing the exact bug (e.g., passing singular arrays or extreme values). Confirm that the test fails.
+   - **Step C: Safely Correct**: Apply the correction in the target `src/` file.
+   - **Step D: Regression Run**: Run the entire test suite to guarantee the fix did not break downstream dependencies.
+2. **Additive-First Feature Integration**:
+   When adding a new feature (e.g., from Phase 2):
+   - Do not replace existing methods or change signatures.
+   - Inject new features cleanly via opt-in parameters, separate utility functions, or isolated submodules.
+3. **Preserve LaTeX & docstrings**:
+   - Maintain all LaTeX mathematical notations in docstrings.
+   - Ensure code edits do not introduce docstring format violations that break MkDocs builds.
+4. **Semantic Versioning Compliance**:
+   - For bug fixes (patches), increment the patch number in `_version.py` (e.g., `1.0.0` $\rightarrow$ `1.0.1`).
+   - For new backward-compatible features, increment the minor version (e.g., `1.0.0` $\rightarrow$ `1.1.0`).
+5. **No Broken Skeletons**:
+   - All newly added files, helpers, or hooks must be fully implemented, documented, and covered with unit tests before declaring the task finished.
