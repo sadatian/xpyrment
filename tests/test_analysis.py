@@ -10,7 +10,7 @@ from xpyrment.simulation import generate_ab_data
 
 
 def test_end_to_end_setup_and_analysis():
-    """Validates the complete PyCaret-style setup, run_analysis, and summary workflow."""
+    """Validates the complete unified setup, run_analysis, and summary workflow."""
     df = generate_ab_data(n_samples=500, random_seed=42)
 
     # 1. Initialize experiment setup

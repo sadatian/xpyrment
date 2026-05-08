@@ -2,7 +2,7 @@ site_name: xpyrment
 site_url: https://xpyrment.example.com
 site_description: A low-code Python library for enterprise-grade experiment design, classical DoE, and statistical analysis.
 site_author: Dan Sadatian
-repo_name: sadatian/xpyrment
+repo_name: xpyrment v1.0.0.9
 repo_url: https://github.com/sadatian/xpyrment
 
 theme:

@@ -1,4 +1,4 @@
-# Implementation Plan: xpyrment Python Package (v1.0.0.4)
+# Implementation Plan: xpyrment Python Package (v1.0.0.9)
 
 This is the active implementation plan for **`xpyrment`**—a highly modular, phase-gated library designed to support the entire lifecycle of industrial-scale digital experimentation and classical Design of Experiments (DoE).
 
@@ -171,6 +171,67 @@ We added robust project URLs, key searchable keywords, maintainer details, and e
 2. **Added Discovery Keywords**: Injected a comprehensive array of 11 searchable search keywords covering digital experiments, causal inference, and Design of Experiments (DoE).
 3. **Upgraded Classifiers**: Expanded development classifiers to declare Production/Stable state and explicit Python 3.8-3.14 support.
 4. **Synced Revision Versions**: Incremented package version to `1.0.0.4` across `pyproject.toml`, `_version.py`, `README.md`, and `docs/index.md` files.
+
+## 🎛️ Header Install Button & Core Installation Sections (Completed)
+
+We integrated an elegant, highly accessible "Install xpyrment" CTA button directly in the main documentation header and established official installation guides across the codebase.
+
+### a) What was accomplished:
+1. **Created Custom Header Override**: Overrode Material theme partial by creating [docs/overrides/partials/header.html](file:///c:/Users/Dan/projects/xpyrment/docs/overrides/partials/header.html) to inject a custom border-styled "Install xpyrment" button to the left of the search bar.
+2. **Linked Page Anchors**: Targeted the button's reference to the main `#installation` index anchor (`{{ '/' | url }}#installation`) to support seamless redirection from any subdirectory.
+3. **Established Installation Sections**: Drafted beautiful installation instruction headers in both [docs/index.md](file:///c:/Users/Dan/projects/xpyrment/docs/index.md) and [README.md](file:///c:/Users/Dan/projects/xpyrment/README.md) showing stable PyPI and development-mode editable setups.
+4. **Synced Revision Versions**: Upgraded global package versioning to `1.0.0.5` across all project modules.
+
+### b) What must be done next:
+1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
+
+## 📖 Comprehensive Overhaul of README & Docs for Stable v1 Release (Completed)
+
+We conducted a thorough overhaul of `README.md` and `docs/index.md` to align with the production stable release of v1, removing external package comparisons, documenting all newly shipped v1 features (including standalone reports, CLI features, and mathematical foundations), and bumping our revision version.
+
+### a) What was accomplished:
+1. **Removed Restricted Comparison References**: Completely eliminated any references or comparison mentions to external frameworks ("PyCaret" and "tea-tasting") across `README.md`, `docs/index.md`, and test docstrings (`tests/test_analysis.py`).
+2. **Overhauled README.md**: Re-authored the entire `README.md` to provide a premium, modern overview. Fully documented newly added stable v1 features including the fluent orchestrator API, standalone HTML dashboards via `ExperimentReportGenerator`, command-line utility tools (`xpyrment power`, `xpyrment balance`, `xpyrment regress`), and comprehensive latex-notated mathematical frameworks.
+3. **Synchronized Documentation Index**: Overwrote `docs/index.md` to mirror the updated feature matrix and quickstart layout of `README.md`.
+4. **Synced Revision Versions**: Bumped global package version to `1.0.0.6` across `pyproject.toml`, `src/xpyrment/_version.py`, `Gemini_Implementation_Plan.md`, and the landing page release shields.
+5. **Testing & Build Verification**: Executed local unit tests ensuring 100% test success (138/138 green) and verified clean local documentation rendering using `mkdocs build`.
+
+### b) What must be done next:
+1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
+
+## 🛑 Termination of Background MkDocs Serve & Agent Rule Adaptation (Completed)
+
+We discovered and terminated an active background `mkdocs serve` process listening on port 8000 and formalized a strict rule in our maintenance guidelines to prevent future automated background serving conflicts.
+
+### a) What was accomplished:
+1. **Identified & Stopped Port 8000 Process**: Checked local network connections and identified a python process (PID `42384`) listening on port 8000 running the background `mkdocs serve` server. Successfully terminated the process using PowerShell `Stop-Process` commands.
+2. **Added Agent Rule**: Added rule `6. No Automated Documentation Serving` to [implenmentation-guide.md](file:///c:/Users/Dan/projects/xpyrment/.agents/rules/implenmentation-guide.md). This rule mandates that we must avoid executing the `serve` command directly on behalf of the user, and instead prompt the user to run it separately.
+3. **Synced Revision Versions**: Incremented package version to `1.0.0.7` across `pyproject.toml`, `src/xpyrment/_version.py`, `Gemini_Implementation_Plan.md`, and the documentation homepage release badges.
+
+### b) What must be done next:
+1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
+
+## 💡 Conversion of Docs Callouts to Native Admonition Syntax (Completed)
+
+We converted custom callout/alert blocks to the native MkDocs `admonition` syntax to resolve rendering issues on the compiled documentation site and bumped the revision version to `1.0.0.8`.
+
+### a) What was accomplished:
+1. **Investigated Rendering Defect**: Confirmed that GFM blockquote alerts (like `> [!TIP]`) are not supported natively by Python-Markdown, causing them to render as plain blockquotes on MkDocs.
+2. **Applied Native Admonition Syntax**: Replaced GFM callouts in [docs/index.md](file:///c:/Users/Dan/projects/xpyrment/docs/index.md) with native MkDocs `!!! tip` admonition styling.
+3. **Verified Beautiful Compile**: Re-ran the build script, confirming 100% clean, warning-free compilation and validating that the tip renders as a gorgeous, styled callout panel.
+4. **Synced Revision Versions**: Bumped global package versioning to `1.0.0.8` across the codebase metadata.
+
+### b) What must be done next:
+1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
+
+## 📊 Streamlining Badges & Top Header Version Branding (Completed)
+
+We streamlined the project landing page design by removing the standard forks and stars counters, and replaced them with prominent version branding directly inside the top navigation header's GitHub link, bumping the revision version to `1.0.0.9`.
+
+### a) What was accomplished:
+1. **Removed Stars & Forks Counters**: Pruned the standard GitHub social counters for forks and stars from both [README.md](file:///c:/Users/Dan/projects/xpyrment/README.md) and the documentation homepage [docs/index.md](file:///c:/Users/Dan/projects/xpyrment/docs/index.md).
+2. **Branded Navigation Header**: Configured the top bar repository display name `repo_name` in [mkdocs.yml](file:///c:/Users/Dan/projects/xpyrment/mkdocs.yml) to display `xpyrment v1.0.0.9` instead of raw repository subpaths, providing direct, professional visibility of the package version.
+3. **Synced Revision Versions**: Incremented package version to `1.0.0.9` globally across Python package config metadata, version files, landing pages, and badges.
 
 ### b) What must be done next:
 1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).

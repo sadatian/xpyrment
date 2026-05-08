@@ -16,38 +16,51 @@
   <img src="https://img.shields.io/github/issues/sadatian/xpyrment?style=flat-square&color=red" alt="Open Issues" />
 </p>
 <p align="left">
-  <img src="https://img.shields.io/badge/release-v1.0.0.4%20stable-emerald?style=flat-square" alt="Release" />
+  <img src="https://img.shields.io/badge/release-v1.0.0.9%20stable-emerald?style=flat-square" alt="Release" />
   <img src="https://img.shields.io/badge/ledger-SHA--256%20chained-yellowgreen?style=flat-square" alt="Audit Ledger" />
   <img src="https://img.shields.io/badge/stats-Welch%20%7C%20mSPRT%20%7C%20CUPED-blue?style=flat-square" alt="Statistical Engine" />
   <img src="https://img.shields.io/badge/DoE-Full%2FFractional%2FTaguchi%2FDSD-crimson?style=flat-square" alt="Industrial DoE" />
   <img src="https://img.shields.io/badge/maintainer-Dan%20Sadatian-darkgreen?style=flat-square" alt="Maintainer" />
 </p>
-<p align="left">
-  <a href="https://github.com/sadatian/xpyrment"><img src="https://img.shields.io/github/stars/sadatian/xpyrment?style=social" alt="Github Stars" /></a>
-  <a href="https://github.com/sadatian/xpyrment/fork"><img src="https://img.shields.io/github/forks/sadatian/xpyrment?style=social" alt="Github Forks" /></a>
-</p>
 
-`xpyrment` is an enterprise-grade, low-code Python library for **experiment design, classical Design of Experiments (DoE), and statistical analysis**. 
+`xpyrment` is an enterprise-grade, low-code Python library designed for **experiment design, classical Design of Experiments (DoE), and statistical causal inference**. 
 
-It is designed to bring the user-friendly, high-level API style of **PyCaret** to the domain of digital experimentation (A/B testing), combined with the rigorous statistical techniques of modern, enterprise-scale platforms (like **tea-tasting**). It features native support for **CUPED (variance reduction)**, **ratio metrics via the Delta method**, **multiple comparison corrections**, **Sample Ratio Mismatch (SRM) diagnostics**, **mixture SPRT continuous monitoring (mSPRT)**, **Bayesian inference**, and classical **industrial DoE design matrices**.
+It provides an elegant, object-oriented fluent API to orchestrate the entire lifecycle of digital experimentation (A/B testing) alongside the rigorous mathematical techniques of modern, enterprise-scale platforms. It features native support for **CUPED (variance reduction)**, **ratio metrics via the Delta method**, **multiple comparison corrections**, **Sample Ratio Mismatch (SRM) diagnostics**, **mixture SPRT continuous monitoring (mSPRT)**, **Bayesian inference**, and classical **industrial DoE design matrices**.
 
 ---
 
 ## 🌟 Key Features
 
-* **Low-Code PyCaret-Style API**: Set up your experiment, define your metrics, run your analysis, and print beautiful summaries or plot results in just a few lines of code.
-* **Rigorous Variance Reduction (CUPED)**: Native support for standard CUPED (continuous metrics) and **Ratio CUPED** (numerator and denominator adjustment). Reduces sample size requirements by up to 80%.
-* **Ratio Metric Precision**: First-order Taylor expansion (**Delta method**) for precise variance estimation of ratio metrics (e.g., CTR, revenue per click) where both numerator and denominator are stochastic.
-* **Classical Design of Experiments (DoE)**: Full and Fractional Factorial, Plackett-Burman, Taguchi, Definitive Screening Designs (DSD), Response Surface Methodologies (CCD & Box-Behnken), and D-Optimal algorithms.
-* **Experimental Diagnostics**: Built-in automated Chi-square tests to detect **Sample Ratio Mismatch (SRM)**, pre-experiment covariate balance validation, and time-series novelty/primacy effect detectors.
-* **Sequential Monitoring & Early Stopping**: Sequential monitoring bounds and always-valid confidence intervals via **mixture SPRT (mSPRT)** and Pocock/O'Brien-Fleming alpha-spending functions.
-* **Multi-Testing Correction**: Avoid "p-hacking" by automatically adjusting p-values for multiple metric runs using Holm-Bonferroni, Bonferroni, or Benjamini-Hochberg (FDR).
-* **Multi-Armed Bandits & Adaptive Traffic**: Optimize real-time traffic splits with Beta-Binomial / Normal-Normal **Thompson Sampling**, standard/decaying **$\varepsilon$-Greedy**, and classical **UCB1** optimistic exploration.
+* **Unified Fluent Orchestrator API**: Initialize experiments, define metric structures, run statistical evaluations, and compile publication-ready summaries or plots in a clean, state-gated object-oriented pipeline.
+* **Rigorous Variance Reduction (CUPED)**: Built-in support for standard CUPED (continuous metrics) and **Ratio CUPED** (numerator and denominator adjustment). Reduces variance and sample size requirements by up to 88%+.
+* **Ratio Metric Precision**: Precise variance estimation of ratio metrics (e.g., CTR, revenue per click) where both numerator and denominator are stochastic, using first-order Taylor expansion (**Delta method**).
+* **Classical Design of Experiments (DoE)**: Full and Fractional Factorial, Plackett-Burman, Taguchi Orthogonal Arrays, Definitive Screening Designs (DSD), Response Surface Methodologies (CCD & Box-Behnken), and D-Optimal coordinate exchange.
+* **Continuous Monitoring & Early Stopping**: Always-valid confidence intervals and sequential monitoring boundaries via **mixture SPRT (mSPRT)** and Pocock/O'Brien-Fleming alpha-spending functions.
+* **Experimental Diagnostics**: Built-in automated Chi-square tests to detect **Sample Ratio Mismatch (SRM)**, pre-experiment covariate balance validation with Standardized Mean Differences (SMD), and time-series novelty/primacy effect detectors.
+* **Multi-Testing Correction**: Guard against Type I error inflation by automatically adjusting p-values for multiple metrics using Holm-Bonferroni, Bonferroni, or Benjamini-Hochberg (FDR).
+* **Multi-Armed Bandits & Adaptive Traffic**: Dynamically allocate traffic using Beta-Binomial / Normal-Normal **Thompson Sampling**, standard/decaying **$\varepsilon$-Greedy**, and classical **UCB1** optimistic exploration. Supports sliding-window and discounted Thompson Sampling for drifting baselines.
 * **Heterogeneous Treatment Effects (HTE)**: Personalize variant targeting using CATE estimators (**S-Learner**, **T-Learner**, and propensity-weighted **X-Learner**) alongside custom bootstrapped **Causal Forests**.
-* **Synthetic Controls & Quasi-Experiments**: Analyze unrandomized policy deployments using Abadie SLSQP-constrained **Synthetic Controls** and multi-variable **Difference-in-Differences (DiD)** regressions.
-* **Network Effects & Cluster Randomization**: Group treatment nodes over graph partitions via $O(E)$ **Label Propagation**, and compute spillover leakages via **Neighborhood Exposure** models.
-* **Meta-Analysis & Governance Checks**: Pool historic experiment point estimates using **DerSimonian-Laird Random-Effects** models and detect system-wide reporting bias with Simonsohn binomial **P-Curve** audits.
-* **Premium Visualizations**: Publication-ready, color-coded forest plots (confidence intervals) and power curves built with `matplotlib` and `seaborn`.
+* **Synthetic Controls & Quasi-Experiments**: Analyze unrandomized policy deployments using Abadie SLSQP-constrained **Synthetic Controls**, multi-variable **Difference-in-Differences (DiD)** regressions, and Synthetic DiD (SDID).
+* **Premium Standalone Reports**: Instantly export summaries into beautiful, portable, responsive CSS-styled HTML dashboards and GitHub-compatible Markdown summary tables.
+* **Audit Trail Security**: Cryptographically chain and sign state updates via a SHA-256 tamper-evident ledger, ensuring experiment metadata and configuration parameters remain auditable.
+
+---
+
+## ⚙️ Installation
+
+To install the stable release of `xpyrment` from PyPI, simply run:
+
+```bash
+pip install xpyrment
+```
+
+For development and contributor setups (including `pytest`, `black`, and `mypy`), clone the repository and install in editable mode:
+
+```bash
+git clone https://github.com/sadatian/xpyrment.git
+cd xpyrment
+pip install -e .[dev]
+```
 
 ---
 
@@ -145,12 +158,12 @@ print(df.head())
 
 ---
 
-### 3. Setup and Run Analysis (PyCaret Style!)
+### 3. Setup and Run Analysis
 
 Initialize the experiment environment using the `setup` function, define your metrics (with pre-period specifications for automatic CUPED), and run your analysis!
 
 ```python
-# 1. Initialize PyCaret style setup
+# 1. Initialize experiment setup
 exp = xp.setup(
     data=df, 
     treatment_col="variant", 
@@ -220,11 +233,36 @@ Call `.plot()` to render a gorgeous forest plot representing confidence interval
 results.plot()
 ```
 
+#### Covariate Balance Verification (Love Plot)
+```python
+# Print an ASCII love plot directly in the console
+print(results.love_plot())
+```
+
 ---
 
-## 🔬 Redesigned Subpackage Taxonomy & Dependency Flow
+### 5. Generate Standalone HTML Reports
 
-To support industrial-scale digital tests and classical DoE, the package has been fully restructured under `src/xpyrment` following a one-way dependency gating layout:
+With the v1 release, you can export beautiful standalone HTML dashboards or Markdown cards representing your experimental results, complete with embedded modern styling, KPI metrics, and covariate balance logs.
+
+```python
+from xpyrment.report.generator import ExperimentReportGenerator
+
+# Initialize the report generator with the analysis results
+reporter = ExperimentReportGenerator(results, experiment_name="Mobile Landing Page Redesign")
+
+# Save a premium responsive HTML dashboard (fully styled, self-contained)
+reporter.save_html("reports/ab_experiment_dashboard.html")
+
+# Save a GitHub-compatible Markdown summary card
+reporter.save_markdown("reports/ab_experiment_summary.md")
+```
+
+---
+
+## 🔬 Subpackage Taxonomy & Dependency Flow
+
+To support industrial-scale digital tests and classical DoE, the package has been structured under `src/xpyrment` following a one-way dependency gating layout to avoid circular references:
 
 ```text
 metrics/     ← Houses core metric taxonomy and guardrail thresholds.
@@ -236,12 +274,31 @@ run/         ← Handles ingestion & mSPRT monitors.
 analyze/     ← Orchestrates frequentist/Bayesian engines.
 interactions/← Decomposes multi-factor ANOVA interaction terms.
 interpret/   ← Infers ship/no-ship decisions.
-bandit/      ← Multi-armed adaptive traffic allocation algorithms.
-personalize/ ← Heterogeneous treatment effects & personalized CATE forests.
-quasi/       ← Observational policy evaluation (DiD & Synthetic Controls).
-network/     ← Cluster randomization & neighborhood spillover models.
-governance/  ← Large-scale experimental pooling & p-curve reporting bias checks.
 report/      ← Terminal consumer of all phases. Compiles audit trails & exportable reports.
+```
+
+---
+
+## 💻 Command Line Interface (CLI)
+
+`xpyrment` includes a robust command line tool to perform quick analytical checks directly from your terminal.
+
+### 1. Analytical Power Calculator
+Calculate required sample sizes for a Z-test:
+```bash
+xpyrment power --mde 2.5 --std 15.0 --power 0.80 --alpha 0.05 --ratio 1.0
+```
+
+### 2. CSV Covariate Balance Checker
+Verify Standardized Mean Differences (SMD) on a CSV dataset before or after assignment:
+```bash
+xpyrment balance --csv data.csv --group-col variant --covariates pre_revenue,age,device_type
+```
+
+### 3. OLS Regression
+Fit a rapid Ordinary Least Squares (OLS) solver to arbitrary tabular variables:
+```bash
+xpyrment regress --csv data.csv --y-col revenue --x-cols variant,pre_revenue,age
 ```
 
 ---
@@ -249,12 +306,12 @@ report/      ← Terminal consumer of all phases. Compiles audit trails & export
 ## 📖 Mathematical Framework
 
 ### Welch's t-test
-For simple continuous metrics without a pre-period covariate, we calculate the standard error of the mean difference as:
+For continuous metrics without a pre-period covariate, the standard error of the mean difference is:
 $$SE = \sqrt{\frac{s_C^2}{n_C} + \frac{s_T^2}{n_T}}$$
 Degrees of freedom are computed via the Welch-Satterthwaite equation to handle unequal sample sizes and variances.
 
 ### Delta Method (Ratio Metrics)
-Because user click-through-rates or revenue-per-order ratios are calculated as:
+Because click-through-rates or revenue ratios are calculated as:
 $$R = \frac{\sum_i X_i}{\sum_i Y_i} = \frac{\bar{X}}{\bar{Y}}$$
 the variance of the ratio cannot be computed using standard methods because the denominator $Y$ is a random variable. We employ a first-order Taylor expansion (Delta method) to estimate variance:
 $$Var(R) \approx \frac{1}{\mu_Y^2} Var(X) + \frac{\mu_X^2}{\mu_Y^4} Var(Y) - 2\frac{\mu_X}{\mu_Y^3} Cov(X, Y)$$

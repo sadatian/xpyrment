@@ -104,3 +104,6 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
    - *Rule of Reset*: Any increment of a higher-order digit **must** reset (zero out) all digits downstream of it.
 5. **No Broken Skeletons**:
    - All newly added files, helpers, or hooks must be fully implemented, documented, and covered with unit tests before declaring the task finished.
+6. **No Automated Documentation Serving**:
+   - Do NOT run the `mkdocs serve` command directly on behalf of the user.
+   - If a live-served documentation preview is required, only compile the documentation locally via `mkdocs build` to check for compilation issues, and ask the user to run `mkdocs serve` separately in their own terminal.
