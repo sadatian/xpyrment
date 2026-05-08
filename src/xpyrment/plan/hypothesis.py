@@ -23,15 +23,20 @@ class HypothesisSpec:
 
     1. **`"two-sided"`** (Default):
        Tests for any difference between arms, representing the standard industrial default.
-       $$H_0: \theta_T = \theta_C \quad \text{vs.} \quad H_1: \theta_T \neq \theta_C$$
+       $$
+       H_0: \theta_T = \theta_C \quad \text{vs.} \quad H_1: \theta_T \neq \theta_C
+       $$
     2. **`"greater"`** (One-sided upper-tailed):
        Tests whether treatment is strictly better than control.
-       $$H_0: \theta_T \le \theta_C \quad \text{vs.} \quad H_1: \theta_T > \theta_C$$
+       $$
+       H_0: \theta_T \le \theta_C \quad \text{vs.} \quad H_1: \theta_T > \theta_C
+       $$
     3. **`"less"`** (One-sided lower-tailed):
        Tests whether treatment is strictly worse than control (typically used for testing negative
        side effects or latency increases).
-       $$H_0: \theta_T \ge \theta_C \quad \text{vs.} \quad H_1: \theta_T < \theta_C$$
-
+       $$
+       H_0: \theta_T \ge \theta_C \quad \text{vs.} \quad H_1: \theta_T < \theta_C
+       $$
     Attributes:
         primary_metric (BaseMetric): The registered metric used as the primary outcome variable
             for evaluating this hypothesis.

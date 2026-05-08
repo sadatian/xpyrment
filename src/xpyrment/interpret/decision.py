@@ -6,7 +6,7 @@ statistical significance with business economics (deployment costs, margins) to 
 
 
 def generate_launch_recommendation(p_value: float, relative_lift: float, cost_threshold: float = 0.0) -> str:
-    """Generates automated ship, no-ship, or inconclusive launch recommendations based on statistical and economic bounds.
+    r"""Generates automated ship, no-ship, or inconclusive launch recommendations based on statistical and economic bounds.
 
     Translates statistical estimates and uncertainty intervals into actionable product decisions.
     Importantly, a statistically significant positive effect is not always sufficient to justify a product launch.
@@ -21,15 +21,21 @@ def generate_launch_recommendation(p_value: float, relative_lift: float, cost_th
         The recommendation engine maps these boundaries to four distinct decision states:
         1. **SHIP**:
            The treatment effect is statistically significant ($p < \\alpha$), and the estimated lift exceeds the cost threshold:
-           $$\\hat{\\theta} > C \\quad \\text{and} \\quad p < \\alpha$$
+           $$
+           \\hat{\\theta} > C \\quad \\text{and} \\quad p < \\alpha
+           $$
            (For a highly conservative strategy, we can assert that the worst-case benefit exceeds costs: $\\theta_{\\text{lower}} \\ge C$).
         2. **NO-SHIP (Uneconomic)**:
            The treatment effect is statistically significant ($p < \\alpha$), but the benefit is too small to justify the
            operational overhead:
-           $$\\hat{\\theta} \\le C \\quad \\text{and} \\quad p < \\alpha$$
+           $$
+           \\hat{\\theta} \\le C \\quad \\text{and} \\quad p < \\alpha
+           $$
         3. **INCONCLUSIVE (Underpowered)**:
            There is insufficient statistical evidence to reject the null hypothesis of no effect:
-           $$p \\ge \\alpha$$
+           $$
+           p \\ge \\alpha
+           $$
            This occurs when the sample size was too small to resolve the treatment effect, or if the true treatment effect
            is actually zero.
 

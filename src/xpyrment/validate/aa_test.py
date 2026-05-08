@@ -1,4 +1,4 @@
-"""A/A test simulations and false-positive rate validation.
+r"""A/A test simulations and false-positive rate validation.
 
 This module provides validation systems for checking the empirical Type I error rate ($\alpha$)
 of the experimental pipeline by performing statistical A/A test evaluations on historical or control data.

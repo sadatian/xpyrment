@@ -1,4 +1,4 @@
-"""Experiment diagnostics, sanity checks, and validation engines.
+r"""Experiment diagnostics, sanity checks, and validation engines.
 
 This package houses the diagnostic layer of `xpyrment`. It provides automated safeguards to
 validate experiment execution, ensuring that results are not corrupted by assignment imbalances,

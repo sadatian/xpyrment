@@ -33,12 +33,16 @@ def stratified_randomization(
         1. **Strata Construction**:
            We partition $D$ into $K$ disjoint subsets (strata), $\{D_1, D_2, \dots, D_K\}$, such that within each
            subset $D_j$, all units share identical values for all stratification columns $C$:
-           $$D = \bigcup_{j=1}^{K} D_j \quad \text{where} \quad D_a \cap D_b = \emptyset \ \ \forall \ a \neq b$$
+           $$
+           D = \bigcup_{j=1}^{K} D_j \quad \text{where} \quad D_a \cap D_b = \emptyset \ \ \forall \ a \neq b
+           $$
         2. **Intra-Stratum Randomization**:
            For each stratum $D_j$, units are randomly permuted and assigned to treatment arms. This guarantees that
            if treatment arm proportions are $\{w_1, w_2, \dots, w_k\}$, then within every stratum $D_j$, the assignment
            counts follow:
-           $$n_{j, \text{arm } i} \approx w_i \times |D_j|$$
+           $$
+           n_{j, \text{arm } i} \approx w_i \times |D_j|
+           $$
            This reduces the variance of the treatment effect estimator by removing the variance contribution of the
            stratification covariates.
 

@@ -1,12 +1,12 @@
 # xpyrment 🧪
 
 <p align="left">
-  <img src="https://img.shields.io/badge/pypi-v1.1.1.0-800020?style=flat&logo=pypi&logoColor=black&labelColor=e1dae3" alt="PyPI version" />
+  <img src="https://img.shields.io/badge/pypi-v1.1.2.0-800020?style=flat&logo=pypi&logoColor=black&labelColor=e1dae3" alt="PyPI version" />
   <img src="https://img.shields.io/badge/python-3.11%20%7C%20...%20%7C%203.14-4a0e4e?style=flat&logo=python&logoColor=black&labelColor=e1dae3" alt="Python Support" />
   <img src="https://img.shields.io/badge/tests-138%20passed-6a0dad?style=flat&logo=pytest&logoColor=black&labelColor=e1dae3" alt="Tests" />
   <img src="https://img.shields.io/badge/coverage-100%25-e0115f?style=flat&logo=codecov&logoColor=black&labelColor=e1dae3" alt="Coverage" />
   <img src="https://img.shields.io/badge/license-AI%20Slop-c70039?style=flat&logo=creative-commons&logoColor=black&labelColor=e1dae3" alt="License" />
-  <img src="https://img.shields.io/badge/release-v1.1.1.0%20stable-5c0632?style=flat&logo=git&logoColor=black&labelColor=e1dae3" alt="Release" />
+  <img src="https://img.shields.io/badge/release-v1.1.2.0%20stable-5c0632?style=flat&logo=git&logoColor=black&labelColor=e1dae3" alt="Release" />
   <img src="https://img.shields.io/badge/stats-Welch%20%7C%20mSPRT%20%7C%20CUPED-da70d6?style=flat&logo=googleanalytics&logoColor=black&labelColor=e1dae3" alt="Statistical Engine" />
   <img src="https://img.shields.io/badge/DoE-Full%2FFractional%2FTaguchi%2FDSD-900c3f?style=flat&logo=sympy&logoColor=black&labelColor=e1dae3" alt="Industrial DoE" />
   <img src="https://img.shields.io/badge/maintainer-Dan%20Sadatian-ff69b4?style=flat&logo=github&logoColor=black&labelColor=e1dae3" alt="Maintainer" />
@@ -296,42 +296,58 @@ xpyrment regress --csv data.csv --y-col revenue --x-cols variant,pre_revenue,age
 
 ### Welch's t-test
 For continuous metrics without a pre-period covariate, the standard error of the mean difference is:
-$$SE = \sqrt{\frac{s_C^2}{n_C} + \frac{s_T^2}{n_T}}$$
+$$
+SE = \sqrt{\frac{s_C^2}{n_C} + \frac{s_T^2}{n_T}}
+$$
 Degrees of freedom are computed via the Welch-Satterthwaite equation to handle unequal sample sizes and variances.
 
 ### Delta Method (Ratio Metrics)
 Because click-through-rates or revenue ratios are calculated as:
-$$R = \frac{\sum_i X_i}{\sum_i Y_i} = \frac{\bar{X}}{\bar{Y}}$$
+$$
+R = \frac{\sum_i X_i}{\sum_i Y_i} = \frac{\bar{X}}{\bar{Y}}
+$$
 the variance of the ratio cannot be computed using standard methods because the denominator $Y$ is a random variable. We employ a first-order Taylor expansion (Delta method) to estimate variance:
-$$Var(R) \approx \frac{1}{\mu_Y^2} Var(X) + \frac{\mu_X^2}{\mu_Y^4} Var(Y) - 2\frac{\mu_X}{\mu_Y^3} Cov(X, Y)$$
-
+$$
+Var(R) \approx \frac{1}{\mu_Y^2} Var(X) + \frac{\mu_X^2}{\mu_Y^4} Var(Y) - 2\frac{\mu_X}{\mu_Y^3} Cov(X, Y)
+$$
 ### CUPED (Controlled-experiments Using Pre-Experiment Data)
 CUPED adjusts post-period metrics by subtracting the portion of variance explained by pre-period performance:
-$$Y_i^* = Y_i - \theta (X_i - \mu_{X, global})$$
+$$
+Y_i^* = Y_i - \theta (X_i - \mu_{X, global})
+$$
 where $\theta = \frac{Cov(Y, X)}{Var(X)}$ is computed across the pooled data.
 The variance of the CUPED-adjusted metric is reduced by a factor of $1 - \rho^2$ (where $\rho$ is the correlation coefficient):
-$$Var(Y^*) = Var(Y) (1 - \rho^2)$$
-
+$$
+Var(Y^*) = Var(Y) (1 - \rho^2)
+$$
 For ratio metrics, `xpyrment` applies CUPED adjustment separately to the numerator and denominator before applying the Delta method on adjusted vectors—a technique pioneered by Netflix and Uber.
 
 ### Sample Ratio Mismatch (SRM) Goodness-of-Fit
 A Pearson Chi-square test is calculated on the observed sample counts against the expected design weights to flag assignment bugs early:
-$$\chi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i}$$
+$$
+\chi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i}
+$$
 If the test p-value $< 0.001$, an `SRMError` is raised.
 
 ### DerSimonian-Laird Random-Effects Meta-Analysis
 To pool historical experiment estimates $\hat{\theta}_j$ with study variances $v_j$ across $k$ independent studies, the DerSimonian-Laird random-effects model accounts for between-study variance $\tau^2$:
-$$\tau^2 = \max\left(0, \ \frac{Q - (k - 1)}{\sum w_j - \frac{\sum w_j^2}{\sum w_j}}\right)$$
+$$
+\tau^2 = \max\left(0, \ \frac{Q - (k - 1)}{\sum w_j - \frac{\sum w_j^2}{\sum w_j}}\right)
+$$
 where $w_j = \frac{1}{v_j}$ are inverse-variance fixed weights, and $Q = \sum w_j (\hat{\theta}_j - \bar{\theta}_F)^2$ is Cochran's $Q$ heterogeneity statistic. Random weights $w_j^* = \frac{1}{v_j + \tau^2}$ are then applied to yield the pooled Random Effect estimate:
-$$\bar{\theta}_R = \frac{\sum w_j^* \hat{\theta}_j}{\sum w_j^*}$$
-
+$$
+\bar{\theta}_R = \frac{\sum w_j^* \hat{\theta}_j}{\sum w_j^*}
+$$
 ### Simonsohn P-Curve Distribution Audits
 To detect p-hacking, early peeking, or selective publication bias across independent experiments, the p-curve binomial test calculates the proportion of significant p-values ($p < 0.05$) lying in the low half ($p \le 0.025$):
 * **True Evidential Power (Right-Skewed)**:
-  $$p_{right\_skew} = 1 - F_{binom}(N_{low} - 1; N_{total}, 0.5)$$
+  $$
+  p_{right\_skew} = 1 - F_{binom}(N_{low} - 1; N_{total}, 0.5)
+  $$
 * **Reporting Bias / Selective Stopping (Left-Skewed)**:
-  $$p_{left\_skew} = F_{binom}(N_{low}; N_{total}, 0.5)$$
-
+  $$
+  p_{left\_skew} = F_{binom}(N_{low}; N_{total}, 0.5)
+  $$
 ---
 
 ## 🛠️ Local Development & Testing

@@ -17,7 +17,7 @@ def run_bootstrap_ci(
     method: str = "bca",
     random_seed: Optional[int] = None,
 ) -> tuple:
-    """Computes non-parametric bootstrap confidence intervals for arbitrary complex metrics.
+    r"""Computes non-parametric bootstrap confidence intervals for arbitrary complex metrics.
 
     Bootstrap resampling (Efron, 1979) is a non-parametric method used to estimate the standard error and confidence
     intervals of an estimator (such as means, medians, ratios, or quantiles). It is particularly valuable when the
@@ -40,16 +40,21 @@ def run_bootstrap_ci(
            Sorts the bootstrap replicates in ascending order: \\hat{\\theta}^{*(1)} \\le \\hat{\\theta}^{*(2)} \\le \\dots \\le \\hat{\\theta}^{*(B)}.
            For a confidence level of $1 - \\alpha$ (e.g., $0.95$ with $\\alpha = 0.05$), the interval endpoints are the
            $\\alpha/2$ and $1 - \\alpha/2$ percentiles of the empirical bootstrap distribution:
-           $$\\left[ \\hat{\\theta}^{*(\\lfloor B \\cdot \\alpha/2 \\rfloor)}, \\ \\hat{\\theta}^{*(\\lfloor B \\cdot (1 - \\alpha/2) \\rfloor)} \\right]$$
-           
+           $$
+           \\left[ \\hat{\\theta}^{*(\\lfloor B \\cdot \\alpha/2 \\rfloor)}, \\ \\hat{\\theta}^{*(\\lfloor B \\cdot (1 - \\alpha/2) \\rfloor)} \\right]
+           $$
         2. **Bias-Corrected and Accelerated (BCa) Bootstrap** (Robust and accurate):
            Adjusts the percentile endpoints to correct for both median bias (displacement of the bootstrap distribution
            from the point estimate) and skewness (non-constant variance, represented by acceleration $a$).
            - The bias-correction factor $z_0$ is:
-             $$z_0 = \\Phi^{-1} \\left( \\frac{\\#\\{\\hat{\\theta}^{*b} < \\hat{\\theta}\\}}{B} \\right)$$
+             $$
+             z_0 = \\Phi^{-1} \\left( \\frac{\\#\\{\\hat{\\theta}^{*b} < \\hat{\\theta}\\}}{B} \\right)
+             $$
              where $\\Phi^{-1}$ is the inverse cumulative distribution function of the standard normal distribution.
            - The acceleration parameter $a$ is computed using jackknife (leave-one-out) estimators:
-             $$a = \\frac{\\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^3}{6 \\left[ \\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^2 \\right]^{3/2}}$$
+             $$
+             a = \\frac{\\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^3}{6 \\left[ \\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^2 \\right]^{3/2}}
+             $$
              where $\\theta_{(i)}$ is the estimate of $\\theta$ calculated by omitting the $i$-th observation, and
              $\\bar{\\theta}_{(\\cdot)}$ is the average of these jackknife estimates.
            - Transformed confidence percentiles are then mapped back to the sorted replicates to construct the interval.

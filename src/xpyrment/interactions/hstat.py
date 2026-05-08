@@ -9,7 +9,7 @@ from typing import Any
 
 
 def compute_friedman_h_statistic(model: Any, X_data: Any, feature_i: str, feature_j: str) -> float:
-    """Computes model-agnostic Friedman's H-statistic representing the degree of interaction between two features.
+    r"""Computes model-agnostic Friedman's H-statistic representing the degree of interaction between two features.
 
     Friedman's H-statistic (Friedman and Popescu, 2008) measures the strength of interaction between features
     by evaluating how much of the model's prediction variation is due to joint, non-additive behavior.
@@ -19,18 +19,23 @@ def compute_friedman_h_statistic(model: Any, X_data: Any, feature_i: str, featur
     Mathematical Formulation and Partial Dependence:
         Let $x_i$ and $x_j$ be two features. Let $PD_i(x_i)$ and $PD_j(x_j)$ be the 1-way Partial Dependence (PD) functions,
         which represent the average prediction of the model when fixing the respective feature value:
-        $$PD_i(x_i) = \\frac{1}{N} \\sum_{k=1}^N f(x_i, \\ x_{k, \\setminus i})$$
+        $$
+        PD_i(x_i) = \\frac{1}{N} \\sum_{k=1}^N f(x_i, \\ x_{k, \\setminus i})
+        $$
         Let $PD_{ij}(x_i, \\ x_j)$ be the 2-way joint Partial Dependence function:
-        $$PD_{ij}(x_i, \\ x_j) = \\frac{1}{N} \\sum_{k=1}^N f(x_i, \\ x_j, \\ x_{k, \\setminus \\{i, j\\}})$$
-        
+        $$
+        PD_{ij}(x_i, \\ x_j) = \\frac{1}{N} \\sum_{k=1}^N f(x_i, \\ x_j, \\ x_{k, \\setminus \\{i, j\\}})
+        $$
         If there is no interaction between $x_i$ and $x_j$ (meaning their combined effect on the prediction is perfectly additive),
         then the joint PD can be decomposed exactly as the sum of their individual PD functions:
-        $$PD_{ij}(x_i, \\ x_j) = PD_i(x_i) + PD_j(x_j)$$
-        
+        $$
+        PD_{ij}(x_i, \\ x_j) = PD_i(x_i) + PD_j(x_j)
+        $$
         Friedman's $H^2_{ij}$ statistic measures the normalized squared deviation from this additive null hypothesis
         over the empirical distribution of the dataset:
-        $$H^2_{ij} = \\frac{\\sum_{k=1}^N \\left[ PD_{ij}(x_{k,i}, \\ x_{k,j}) - PD_i(x_{k,i}) - PD_j(x_{k,j}) \\right]^2}{\\sum_{k=1}^N \\left[ PD_{ij}(x_{k,i}, \\ x_{k,j}) \\right]^2}$$
-        
+        $$
+        H^2_{ij} = \\frac{\\sum_{k=1}^N \\left[ PD_{ij}(x_{k,i}, \\ x_{k,j}) - PD_i(x_{k,i}) - PD_j(x_{k,j}) \\right]^2}{\\sum_{k=1}^N \\left[ PD_{ij}(x_{k,i}, \\ x_{k,j}) \\right]^2}
+        $$
     Interpretation of the H-Statistic:
         - $H^2_{ij} = 0$: No interaction whatsoever. The features affect the response in a perfectly additive manner.
         - $H^2_{ij} = 1.0$: The combined prediction depends entirely on their interaction; the individual main effects explain

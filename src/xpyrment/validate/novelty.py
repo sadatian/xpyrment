@@ -21,8 +21,9 @@ def check_novelty_effects(df: pd.DataFrame, treatment_col: str, metric_col: str,
 
     We fit an ordinary least squares (OLS) regression model with an interaction term
     between treatment $T_i \in \{0, 1\}$ and elapsed time $t_i$:
-    $$Y_i = \beta_0 + \beta_1 T_i + \beta_2 t_i + \beta_3 (T_i \times t_i) + \varepsilon_i$$
-
+    $$
+    Y_i = \beta_0 + \beta_1 T_i + \beta_2 t_i + \beta_3 (T_i \times t_i) + \varepsilon_i
+    $$
     Args:
         df (pd.DataFrame): The experimental dataset.
         treatment_col (str): Column name identifying experimental groups/arms.

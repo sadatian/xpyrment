@@ -19,24 +19,31 @@ class MixtureDesign(DesignMatrix):
         Let $k$ be the number of components in the mixture, and let $x_i$ be the proportion of component $i$
         ($i \in \{1, 2, \dots, k\}$).
         The design space is subject to the following strict constraints:
-        $$\sum_{i=1}^{k} x_i = 1.0 \quad \text{and} \quad 0 \le x_i \le 1.0 \ \ \forall \ i$$
+        $$
+        \sum_{i=1}^{k} x_i = 1.0 \quad \text{and} \quad 0 \le x_i \le 1.0 \ \ \forall \ i
+        $$
         This constraint restricts the geometric region of interest to a $(k-1)$-dimensional simplex (e.g.,
         an equilateral triangle for $k=3$, or a regular tetrahedron for $k=4$).
 
     Standard Classical Designs:
         1. **Simplex Lattice Design** (denoted $\{k, m\}$):
            Each component takes $m + 1$ equally spaced values between $0$ and $1$:
-           $$x_i \in \left\{ 0, \frac{1}{m}, \frac{2}{m}, \dots, 1 \right\}$$
+           $$
+           x_i \in \left\{ 0, \frac{1}{m}, \frac{2}{m}, \dots, 1 \right\}
+           $$
            The runs consist of all possible combinations of these levels that sum to exactly $1.0$.
            The total number of runs $N$ is:
-           $$N = \frac{(k + m - 1)!}{m!(k - 1)!}$$
+           $$
+           N = \frac{(k + m - 1)!}{m!(k - 1)!}
+           $$
         2. **Simplex Centroid Design**:
            Consists of runs at pure components (one factor is $1.0$, others $0$), binary blends (two factors
            at $0.5$, others $0$), ternary blends (three factors at $1/3$, others $0$), and so on, up to
            the overall centroid blend where all $k$ factors are equal to $1/k$.
            The total number of runs $N$ is:
-           $$N = 2^k - 1$$
-
+           $$
+           N = 2^k - 1
+           $$
     Pseudocode for Simplex Lattice Algorithm:
         ```text
         function generate_simplex_lattice(k, m):

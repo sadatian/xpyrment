@@ -42,21 +42,31 @@ class MetricResult(TypedDict):
         control_n (int): The total count of unique units in the control group ($N_C$).
         treatment_n (int): The total count of unique units in the treatment group ($N_T$).
         absolute_difference (float): The point estimate of the absolute treatment effect:
-            $$\Delta = \bar{Y}_T - \bar{Y}_C$$
+            $$
+            \Delta = \bar{Y}_T - \bar{Y}_C
+            $$
         relative_lift (float): The percentage increase or decrease of the treatment mean relative to the control mean:
-            $$\text{Lift} = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}$$
+            $$
+            \text{Lift} = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}
+            $$
         cuped_applied (bool): True if Controlled-comparison Using Pre-Existing Data (CUPED) was applied
             to adjust the variance of this metric. False otherwise.
         variance_reduction (float): The percentage reduction in variance achieved by CUPED, bounded in $[0, 1)$:
-            $$\text{Reduction} = 1 - \frac{\text{Var}(Y_{\text{CUPED}})}{\text{Var}(Y_{\text{original}})}$$
+            $$
+            \text{Reduction} = 1 - \frac{\text{Var}(Y_{\text{CUPED}})}{\text{Var}(Y_{\text{original}})}
+            $$
         p_value (float): The statistical p-value associated with the hypothesis test. For frequentist, this represents the
             probability of observing a test statistic at least as extreme as the one computed, under the null hypothesis ($H_0$).
         ci_lower (float): The lower bound of the absolute confidence/credible interval at the $(1 - \alpha)$ confidence level.
         ci_upper (float): The upper bound of the absolute confidence/credible interval at the $(1 - \alpha)$ confidence level.
         rel_ci_lower (float): The lower bound of the relative confidence/credible interval, scaled relative to the control mean:
-            $$\text{Rel CI Lower} = \frac{\text{CI Lower}}{\bar{Y}_C}$$
+            $$
+            \text{Rel CI Lower} = \frac{\text{CI Lower}}{\bar{Y}_C}
+            $$
         rel_ci_upper (float): The upper bound of the relative confidence/credible interval, scaled relative to the control mean:
-            $$\text{Rel CI Upper} = \frac{\text{CI Upper}}{\bar{Y}_C}$$
+            $$
+            \text{Rel CI Upper} = \frac{\text{CI Upper}}{\bar{Y}_C}
+            $$
         power (float): The statistical power ($1 - \beta$) achieved by the sample size, denoting the probability of
             correctly rejecting the null hypothesis when the true treatment effect equals the observed difference.
     """

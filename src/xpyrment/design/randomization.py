@@ -21,12 +21,18 @@ def hash_assign(unit_id: Union[str, int], salt: str, variants: List[str]) -> str
         Let $u$ be the unit identifier, $S$ be the unique experiment salt, and $V = (v_1, v_2, \dots, v_k)$
         be the ordered array of $k$ variants.
         The assignment key is formed by concatenation:
-        $$K = S \mathbin{\Vert} \text{str}(u)$$
+        $$
+        K = S \mathbin{\Vert} \text{str}(u)
+        $$
         We compute the MD5 digest of $K$ (yielding a 128-bit hex string) and extract the first 8 characters,
         representing a 32-bit integer $H$:
-        $$H = \text{hex\_to\_int}(\text{MD5}(K)[0:8])$$
+        $$
+        H = \text{hex\_to\_int}(\text{MD5}(K)[0:8])
+        $$
         The target variant index $i$ is calculated using the modulo operator:
-        $$i = H \pmod{k}$$
+        $$
+        i = H \pmod{k}
+        $$
         The assigned variant is $V_i$.
 
     Properties of Hash-based Assignment:

@@ -20,14 +20,17 @@ class SwitchbackDesign(DesignMatrix):
     Temporal Crossover and Balance:
         The marketplace switches back and forth between control and treatment configurations over a series
         of discrete time blocks of length $W$ (e.g., 2 hours).
-        $$\text{Schedule}: W_1 \to \text{Control}, \ W_2 \to \text{Treatment}, \ W_3 \to \text{Treatment}, \ \dots$$
+        $$
+        \text{Schedule}: W_1 \to \text{Control}, \ W_2 \to \text{Treatment}, \ W_3 \to \text{Treatment}, \ \dots
+        $$
         To prevent systematic time-of-day or day-of-week biases (e.g., treatment always running during rush hour),
         the assignments are structured using balanced crossover patterns:
         - **Markovian Transitions**: Ensuring equal transition probabilities between states ($C \to T$, $T \to C$,
           $C \to C$, $T \to T$) to model and subtract temporal carryover.
         - **Multi-region Crossover**: If multiple geographic markets are available, we cross them over simultaneously:
-          $$\text{Region A}: C \to T \quad \text{vs.} \quad \text{Region B}: T \to C$$
-
+          $$
+          \text{Region A}: C \to T \quad \text{vs.} \quad \text{Region B}: T \to C
+          $$
     Carryover and Washout Periods:
         A major challenge in switchbacks is the **carryover effect** — supply/demand states from a treatment period
         spilling over into the subsequent control period. To solve this, the algorithm configures a "washout" parameter

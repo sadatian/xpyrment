@@ -21,22 +21,31 @@ class BayesianInference:
            - Prior: $p \sim \text{Beta}(\alpha_0, \beta_0)$ (e.g., $\text{Beta}(1, 1)$ for a flat, uniform prior).
            - Likelihood: Binomial ($k$ conversions out of $n$ trials).
            - Posterior:
-             $$p|k, n \sim \text{Beta}(\alpha_0 + k, \ \beta_0 + n - k)$$
+             $$
+             p|k, n \sim \text{Beta}(\alpha_0 + k, \ \beta_0 + n - k)
+             $$
         2. **Normal-Normal Model** (for continuous averages, $\mu \in \mathbb{R}$, with known variance $\sigma^2$):
            - Prior: $\mu \sim \mathcal{N}(\mu_0, \sigma_0^2)$.
            - Likelihood: Normal ($N$ observations with sample mean $\bar{Y}$ and variance $\sigma^2$).
            - Posterior:
-             $$\mu| \bar{Y} \sim \mathcal{N}(\mu_N, \sigma_N^2)$$
+             $$
+             \mu| \bar{Y} \sim \mathcal{N}(\mu_N, \sigma_N^2)
+             $$
              where the posterior precision ($1/\sigma_N^2$) and posterior mean ($\mu_N$) are calculated as:
-             $$\frac{1}{\sigma_N^2} = \frac{1}{\sigma_0^2} + \frac{N}{\sigma^2} \quad \text{and} \quad \mu_N = \sigma_N^2 \left( \frac{\mu_0}{\sigma_0^2} + \frac{N\bar{Y}}{\sigma^2} \right)$$
-
+             $$
+             \frac{1}{\sigma_N^2} = \frac{1}{\sigma_0^2} + \frac{N}{\sigma^2} \quad \text{and} \quad \mu_N = \sigma_N^2 \left( \frac{\mu_0}{\sigma_0^2} + \frac{N\bar{Y}}{\sigma^2} \right)
+             $$
     Decision-Making Criteria and Analytics:
         - **Probability of Being Best (PBB)**: The probability that the treatment parameter $\theta_T$ is strictly greater
           than the control parameter $\theta_C$:
-          $$\text{PBB} = P(\theta_T > \theta_C) = \int_{-\infty}^{\infty} \int_{\theta_C}^{\infty} f_T(\theta_T) f_C(\theta_C) \, d\theta_T \, d\theta_C$$
+          $$
+          \text{PBB} = P(\theta_T > \theta_C) = \int_{-\infty}^{\infty} \int_{\theta_C}^{\infty} f_T(\theta_T) f_C(\theta_C) \, d\theta_T \, d\theta_C
+          $$
           (Typically estimated via Monte Carlo sampling: drawing 100k random samples from each posterior and calculating the fraction where sample $t > c$).
         - **Expected Loss ($L$)**: The expected metric drop if the treatment is shipped but is actually inferior:
-          $$L(T) = \mathbb{E}[\max(\theta_C - \theta_T, 0)]$$
+          $$
+          L(T) = \mathbb{E}[\max(\theta_C - \theta_T, 0)]
+          $$
           If the expected loss is below a certain threshold $\epsilon$ (the "acceptable risk level"), the treatment can be
           safely deployed.
         - **Region of Practical Equivalence (ROPE)**: Establishes a range $[-\delta, \delta]$ representing differences so small

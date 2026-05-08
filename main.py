@@ -84,9 +84,9 @@ def get_doe_designs():
                     if (obj.__module__ == mod.__name__ and 
                         ("Design" in name or name.endswith("Factorial") or name.endswith("Composite") or name == "EVOP")):
                         doc = inspect.getdoc(obj) or ""
+                        # Clean LaTeX from first line for cleaner rendering in table and escape vertical bars
                         first_line = doc.split("\n")[0] if doc else "No description available."
-                        # Clean LaTeX from first line for cleaner rendering in table
-                        first_line = first_line.replace("$", "")
+                        first_line = first_line.replace("$", "").replace("|", "\\|")
                         designs.append({
                             "name": name,
                             "module": f"xpyrment.design.doe.{module_name}",
@@ -114,6 +114,7 @@ def get_metrics():
             if obj.__module__ == tax_mod.__name__ and not name.startswith("Base"):
                 doc = inspect.getdoc(obj) or ""
                 first_line = doc.split("\n")[0] if doc else "No description available."
+                first_line = first_line.replace("|", "\\|")
                 metrics.append({
                     "name": name,
                     "description": first_line

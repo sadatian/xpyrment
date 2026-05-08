@@ -35,10 +35,13 @@ def generate_ab_data(
            - Under the Control variant, the mean vector is $\boldsymbol{\mu}_C = [\mu_{\text{baseline}}, \mu_{\text{baseline}}]^T$.
            - Under the Treatment variant, the mean vector is $\boldsymbol{\mu}_T = [\mu_{\text{baseline}}, \mu_{\text{baseline}} + \delta_{\text{rev}}]^T$.
            - The covariance matrix $\boldsymbol{\Sigma}$ is configured using standard deviation $\sigma$ and target correlation $\rho$:
-             $$\boldsymbol{\Sigma} = \begin{bmatrix} \sigma^2 & \rho \sigma^2 \\ \rho \sigma^2 & \sigma^2 \end{bmatrix}$$
+             $$
+             \boldsymbol{\Sigma} = \begin{bmatrix} \sigma^2 & \rho \sigma^2 \\ \rho \sigma^2 & \sigma^2 \end{bmatrix}
+             $$
            - We sample $Y_i \sim \mathcal{N}_2(\boldsymbol{\mu}_k, \boldsymbol{\Sigma})$ and apply a non-negative floor:
-             $$Y_{i} \leftarrow \max(Y_i, 0)$$
-
+             $$
+             Y_{i} \leftarrow \max(Y_i, 0)
+             $$
         2. **Binary Rate Metric (Conversions)**:
            Conversions are modeled as independent Bernoulli trials:
            - For Control: $Converted_i \sim \text{Bernoulli}(p_C)$ where $p_C = p_{\text{baseline}}$.
@@ -47,15 +50,22 @@ def generate_ab_data(
         3. **Ratio Metric (Clicks and Impressions for Click-Through Rate)**:
            Simulates CTR stochastically, introducing user-level heterogeneity and a positive skew:
            - Post-period impressions follow a Poisson distribution:
-             $$Impressions_i \sim \text{Poisson}(\lambda_{\text{baseline\_impressions}})$$
+             $$
+             Impressions_i \sim \text{Poisson}(\lambda_{\text{baseline\_impressions}})
+             $$
              with a minimum threshold of $1$ to prevent divisions by zero.
            - Click probabilities for each user follow a Beta distribution to model user variance (Beta-Binomial stochastics):
-             $$p_{i, \text{CTR}} \sim \text{Beta}(a_k, b_k)$$
+             $$
+             p_{i, \text{CTR}} \sim \text{Beta}(a_k, b_k)
+             $$
              where the shape parameters $a_k, b_k$ are derived to match the expected CTR of the respective group:
-             $$a_k = \text{CTR}_k \times 10, \quad b_k = (1 - \text{CTR}_k) \times 10$$
+             $$
+             a_k = \text{CTR}_k \times 10, \quad b_k = (1 - \text{CTR}_k) \times 10
+             $$
            - Finally, individual clicks are simulated using Binomial trials:
-             $$Clicks_i \sim \text{Binomial}(Impressions_i, \ p_{i, \text{CTR}})$$
-
+             $$
+             Clicks_i \sim \text{Binomial}(Impressions_i, \ p_{i, \text{CTR}})
+             $$
     Args:
         n_samples (int): The total number of experimental units (users) to simulate. Defaults to 10000.
         treatment_fraction (float): The probability of assignment to the Treatment group. Defaults to 0.5.

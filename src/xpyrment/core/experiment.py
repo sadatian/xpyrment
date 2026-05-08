@@ -96,9 +96,13 @@ class Experiment:
 
         Mathematical/Logical Representation:
             Let $S$ be the ordered tuple of states:
-            $$S = (\text{CREATED}, \text{PLANNED}, \text{DESIGNED}, \text{RUNNING}, \text{ANALYZED}, \text{REPORTED})$$
+            $$
+            S = (\text{CREATED}, \text{PLANNED}, \text{DESIGNED}, \text{RUNNING}, \text{ANALYZED}, \text{REPORTED})
+            $$
             A state transition from state $s_1$ to state $s_2$ is valid if and only if:
-            $$\text{Index}(s_2) \ge \text{Index}(s_1)$$
+            $$
+            \text{Index}(s_2) \ge \text{Index}(s_1)
+            $$
             with a special exemption permitting $s_1 = \text{ANALYZED} \rightarrow s_2 = \text{ANALYZED}$ to support
             re-running statistical engines on the locked design data.
 

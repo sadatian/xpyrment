@@ -9,7 +9,7 @@ import json
 
 
 class ExperimentCard:
-    """Consumes metadata, planning state, and calculations to compile a unified report card.
+    r"""Consumes metadata, planning state, and calculations to compile a unified report card.
 
     An Experiment Card (inspired by Model Cards, Mitchell et al. 2019) is the definitive, unified record
     and metadata registry of an experiment. It acts as a standardized document that records the design, execution,

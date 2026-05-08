@@ -12,7 +12,7 @@ from statsmodels.stats.multitest import multipletests
 def apply_multiple_testing_correction(
     p_values: List[float], alpha: float = 0.05, method: str = "fdr_bh"
 ) -> List[float]:
-    """Applies multiple testing corrections on p-values using statsmodels.
+    r"""Applies multiple testing corrections on p-values using statsmodels.
 
     TODO: Implement step-down Dunnett's correction procedure for multi-arm comparisons against a common control.
     TODO: Support family-wise bootstrap-based resampling corrections to account for non-normal dependency structures.
@@ -23,7 +23,9 @@ def apply_multiple_testing_correction(
 
     Mathematical Background of FWER Inflation:
         For $m$ independent tests, each run at nominal significance level $\\alpha$:
-        $$\\text{FWER} = P(\\text{at least one false positive}) = 1 - (1 - \\alpha)^m$$
+        $$
+        \\text{FWER} = P(\\text{at least one false positive}) = 1 - (1 - \\alpha)^m
+        $$
         - If $m = 1$ and $\\alpha = 0.05$, $\\text{FWER} = 0.05$.
         - If $m = 10$ and $\\alpha = 0.05$, $\\text{FWER} = 1 - (0.95)^{10} \\approx 0.40$ ($40\\%$ false positive probability).
         - If $m = 50$ and $\\alpha = 0.05$, $\\text{FWER} \\approx 0.92$ (near-certainty of committing a false positive).
@@ -32,13 +34,17 @@ def apply_multiple_testing_correction(
         1. **Bonferroni Correction** (`"bonferroni"`):
            Controls the Family-Wise Error Rate (FWER) in the strong sense. It adjusts each p-value by multiplying
            it by the total number of tests $m$:
-           $$p^{\\text{adj}}_i = \\min(p_i \\times m, \\ 1.0)$$
+           $$
+           p^{\\text{adj}}_i = \\min(p_i \\times m, \\ 1.0)
+           $$
            Highly conservative; has low statistical power when $m$ is large or when tests are highly correlated.
         2. **Holm-Bonferroni Procedure** (`"holm"`):
            A step-down FWER control method that is uniformly more powerful than the standard Bonferroni correction.
            It orders the raw p-values: $p_{(1)} \\le p_{(2)} \\le \\dots \\le p_{(m)}$.
            The adjusted p-values are computed sequentially as:
-           $$p^{\\text{adj}}_{(i)} = \\max \\left( (m - i + 1) \\times p_{(i)}, \\ p^{\\text{adj}}_{(i-1)} \\right) \\quad \\text{for } i \\ge 1$$
+           $$
+           p^{\\text{adj}}_{(i)} = \\max \\left( (m - i + 1) \\times p_{(i)}, \\ p^{\\text{adj}}_{(i-1)} \\right) \\quad \\text{for } i \\ge 1
+           $$
            (with $p^{\\text{adj}}_{(0)} = 0$, bounded above by $1.0$).
         3. **Benjamini-Hochberg (BH) Procedure** (`"fdr_bh"`):
            Controls the **False Discovery Rate (FDR)**, which is the expected proportion of false positives among all
@@ -46,12 +52,16 @@ def apply_multiple_testing_correction(
            as it provides vastly superior statistical power compared to FWER controllers.
            It orders raw p-values: $p_{(1)} \\le p_{(2)} \\le \\dots \\le p_{(m)}$.
            The adjusted p-values are calculated as:
-           $$p^{\\text{adj}}_{(i)} = \\min \\left( \\frac{m}{i} \\times p_{(i)}, \\ p^{\\text{adj}}_{(i+1)} \\right) \\quad \\text{for } i \\le m - 1$$
+           $$
+           p^{\\text{adj}}_{(i)} = \\min \\left( \\frac{m}{i} \\times p_{(i)}, \\ p^{\\text{adj}}_{(i+1)} \\right) \\quad \\text{for } i \\le m - 1
+           $$
            (with $p^{\\text{adj}}_{(m)} = p_{(m)}$, bounded above by $1.0$).
         4. **Benjamini-Yekutieli (BY) Procedure** (`"fdr_by"`):
            Controls the False Discovery Rate under arbitrary dependency structures (i.e. positive regression dependency or negative correlation)
            among test statistics. BY applies an additional harmonic penalty:
-           $$P_{(i)} \\le \\frac{i}{m \\sum_{j=1}^m \\frac{1}{j}} \\alpha$$
+           $$
+           P_{(i)} \\le \\frac{i}{m \\sum_{j=1}^m \\frac{1}{j}} \\alpha
+           $$
         5. **Hochberg Step-up Procedure** (`"hochberg"`):
            A step-up FWER controlling procedure that is uniformly more powerful than Holm-Bonferroni, but requires the test statistics
            to be independent or satisfy Simes' inequality. It starts from the largest p-value down to the smallest.

@@ -9,7 +9,9 @@ runtimes.
 ### Mathematical Specifications
 
 The required sample size per variant $n$ for a two-sample t-test is given by:
-$$n = \frac{2 \sigma^2 \left(Z_{1 - \alpha/2} + Z_{1 - \beta}\right)^2}{\delta^2}$$
+$$
+n = \frac{2 \sigma^2 \left(Z_{1 - \alpha/2} + Z_{1 - \beta}\right)^2}{\delta^2}
+$$
 where:
 - $\sigma^2$: Population variance. For binary proportions ($p$), $\sigma^2 = p(1 - p)$.
 - $Z_{1 - \alpha/2}$: Standard normal critical value for a two-sided test at significance level $\alpha$.
@@ -17,7 +19,9 @@ where:
 - $\delta$: The target absolute Minimum Detectable Effect (MDE).
 
 If pre-period baseline covariates are available, the CUPED variance-adjusted sample size is:
-$$n_{\text{CUPED}} = n \left(1 - \rho^2\right)$$
+$$
+n_{\text{CUPED}} = n \left(1 - \rho^2\right)
+$$
 where $\rho$ is the correlation between pre-period and experiment-period values.
 """
 
@@ -131,7 +135,7 @@ def design_experiment(
     pre_post_correlation: Optional[float] = None,
     daily_traffic: Optional[int] = None,
 ) -> ExperimentDesignResult:
-    """Computes the required sample size and duration for an experiment based on design constraints.
+    r"""Computes the required sample size and duration for an experiment based on design constraints.
 
     This function performs rigorous a priori power analysis to determine required sample sizes.
     It supports continuous means, proportions, and ratio metrics, integrates pre-post correlation

@@ -17,7 +17,9 @@ class StoppingRules:
         Under the null hypothesis $H_0$ (no effect), the mixture likelihood ratio sequence $\Lambda_n$ is a martingale
         with expected value $E[\Lambda_n] = 1$. By **Doob's Martingale Inequality**, the probability that the likelihood
         ratio ever exceeds a critical threshold $1/\alpha$ at *any* point in the infinite sequence is strictly bounded by $\alpha$:
-        $$P\left( \sup_{n \ge 1} \Lambda_n \ge \frac{1}{\alpha} \right) \le \alpha$$
+        $$
+        P\left( \sup_{n \ge 1} \Lambda_n \ge \frac{1}{\alpha} \right) \le \alpha
+        $$
         This properties allows experimenters to continuously monitor ("peek at") the data in real-time. If the likelihood
         ratio crosses the boundary, they can stop the experiment immediately with a mathematically guaranteed Type I error
         rate controlled at $\alpha$.
@@ -26,7 +28,9 @@ class StoppingRules:
         For a continuous metric with cumulative sample variance $\sigma^2$ and a normal mixing distribution
         $H(\theta) = \mathcal{N}(0, \tau^2)$ over the expected effect size $\theta$, the mixture likelihood ratio
         at accumulated sample size $n$ is calculated as:
-        $$\Lambda_n = \sqrt{\frac{\sigma^2}{\sigma^2 + n\tau^2}} \exp \left( \frac{n^2 \bar{Y}_n^2 \tau^2}{2\sigma^2(\sigma^2 + n\tau^2)} \right)$$
+        $$
+        \Lambda_n = \sqrt{\frac{\sigma^2}{\sigma^2 + n\tau^2}} \exp \left( \frac{n^2 \bar{Y}_n^2 \tau^2}{2\sigma^2(\sigma^2 + n\tau^2)} \right)
+        $$
         where:
         - $\bar{Y}_n$: The observed sample mean difference between treatment and control at step $n$.
         - $\sigma^2$: The estimated daily/unit baseline variance of the metric.
@@ -80,8 +84,9 @@ class StoppingRules:
         r"""Calculates the mixture Sequential Probability Ratio Test (mSPRT) likelihood ratio (Lambda_n).
 
         Mathematical Formulation:
-            $$\Lambda_n = \sqrt{\frac{\sigma^2}{\sigma^2 + n\tau^2}} \exp \left( \frac{n^2 \bar{Y}_n^2 \tau^2}{2\sigma^2(\sigma^2 + n\tau^2)} \right)$$
-
+            $$
+            \Lambda_n = \sqrt{\frac{\sigma^2}{\sigma^2 + n\tau^2}} \exp \left( \frac{n^2 \bar{Y}_n^2 \tau^2}{2\sigma^2(\sigma^2 + n\tau^2)} \right)
+            $$
         Args:
             n (int): Sample size at the current peeking interval.
             mean_diff (float): The observed sample mean difference between treatment and control (Y_bar_n).

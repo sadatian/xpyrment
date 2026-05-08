@@ -22,9 +22,13 @@ class LatinHypercubeDesign(DesignMatrix):
         1. Projection of the $N$ sample points onto any single factor dimension yields exactly one sample in each of
            $N$ equally probable intervals.
         2. Specifically, the range of each factor is divided into $N$ non-overlapping intervals of equal probability:
-           $$I_j = \left[ \frac{j-1}{N}, \frac{j}{N} \right] \quad \text{for } j \in \{1, 2, \dots, N\}$$
+           $$
+           I_j = \left[ \frac{j-1}{N}, \frac{j}{N} \right] \quad \text{for } j \in \{1, 2, \dots, N\}
+           $$
         3. Within each interval $I_j$, a point is sampled (either at the midpoint or randomly):
-           $$x_j = \frac{j-1 + U_j}{N}$$
+           $$
+           x_j = \frac{j-1 + U_j}{N}
+           $$
            where $U_j \sim \text{Uniform}(0, 1)$ is a random noise variable.
         4. The sampled values for the $k$ dimensions are paired using independent, random permutations of the set
            $\{1, 2, \dots, N\}$ for each column.
@@ -33,7 +37,9 @@ class LatinHypercubeDesign(DesignMatrix):
         Standard random LHS can still yield sample points clustered close together in multidimensional space. To prevent
         this, **Maximin LHS** optimizes the permutations to maximize the minimum Euclidean distance between any two
         sample points:
-        $$\max_{\Pi} \min_{a \neq b} \lVert x_a - x_b \rVert_2$$
+        $$
+        \max_{\Pi} \min_{a \neq b} \lVert x_a - x_b \rVert_2
+        $$
         This forces the points to spread out as far as possible, filling the multidimensional space uniformly.
 
     Pseudocode for the Algorithm:

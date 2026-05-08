@@ -17,7 +17,9 @@ class AssignmentLogger:
     First-Touch Attribution and Causal Ordering:
         To establish a valid causal relationship, any metric event $Y$ must occur *after* the initial exposure
         to the treatment $T$:
-        $$t_{\text{metric}} \ge t_{\text{initial\_exposure}}$$
+        $$
+        t_{\text{metric}} \ge t_{\text{initial\_exposure}}
+        $$
         If we attribute a user's metric events to their assignment using a later exposure timestamp, we violate this
         temporal sequence, potentially including pre-treatment behavior in our post-treatment metric calculations,
         introducing severe selection bias.

@@ -11,7 +11,7 @@ import pandas as pd
 
 
 class DesignMatrix(ABC):
-    """Abstract base class representing a Design Matrix in Classical Design of Experiments (DoE).
+    r"""Abstract base class representing a Design Matrix in Classical Design of Experiments (DoE).
 
     A Design Matrix is a structured layout of factor combinations designed to evaluate treatment
     effects, screening active factors, or modeling multi-factor non-linear responses with the
@@ -27,7 +27,9 @@ class DesignMatrix(ABC):
         
         The primary goal of classical DoE is to construct $X$ such that the parameter estimation variance
         of the linear model:
-        $$Y = X\beta + \varepsilon$$
+        $$
+        Y = X\beta + \varepsilon
+        $$
         is minimized, which is equivalent to maximizing the information matrix $X^T X$.
 
     Attributes:

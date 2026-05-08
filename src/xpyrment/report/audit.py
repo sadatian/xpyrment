@@ -9,7 +9,7 @@ from typing import List, Dict
 
 
 class AuditTrail:
-    """Maintains an immutable, compliance-ready audit trail of experiment phase transition events.
+    r"""Maintains an immutable, compliance-ready audit trail of experiment phase transition events.
 
     In enterprise, financial, and clinical environments, maintaining a rigorous record of an experiment's history
     is critical for governance, auditing, and scientific reproducibility. An audit trail acts as a tamper-evident,
@@ -23,7 +23,9 @@ class AuditTrail:
           - $d_k$: Detailed parameter changes (e.g., altering treatment allocation from $10\\%$ to $50\\%$).
           - $h_{k-1}$: The SHA-256 cryptographic hash of the *preceding* block $B_{k-1}$.
         - The hash of the current block $h_k$ is computed as:
-          $$h_k = H(t_k \\parallel a_k \\parallel d_k \\parallel h_{k-1})$$
+          $$
+          h_k = H(t_k \\parallel a_k \\parallel d_k \\parallel h_{k-1})
+          $$
           where $\\parallel$ denotes string concatenation, and $H$ is the SHA-256 secure hash function.
         - Because of this chaining, any retroactive modification of historical logs immediately breaks the hash chain,
           making the log highly secure and tamper-evident.

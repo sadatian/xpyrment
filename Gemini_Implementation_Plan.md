@@ -178,7 +178,7 @@ We integrated an elegant, highly accessible "Install xpyrment" CTA button direct
 
 ### a) What was accomplished:
 1. **Created Custom Header Override**: Overrode Material theme partial by creating [docs/overrides/partials/header.html](file:///c:/Users/Dan/projects/xpyrment/docs/overrides/partials/header.html) to inject a custom border-styled "Install xpyrment" button to the left of the search bar.
-2. **Linked Page Anchors**: Targeted the button's reference to the main `#installation` index anchor (`{{ '/' | url }}#installation`) to support seamless redirection from any subdirectory.
+2. **Linked Page Anchors**: Targeted the button's reference to the main `#installation` index anchor (`{{ '/' | url }}xpyrment#installation`) to support seamless redirection from any subdirectory.
 3. **Established Installation Sections**: Drafted beautiful installation instruction headers in both [docs/index.md](file:///c:/Users/Dan/projects/xpyrment/docs/index.md) and [README.md](file:///c:/Users/Dan/projects/xpyrment/README.md) showing stable PyPI and development-mode editable setups.
 4. **Synced Revision Versions**: Upgraded global package versioning to `1.0.0.5` across all project modules.
 
@@ -368,6 +368,27 @@ We addressed setuptools build validation errors regarding deprecated non-SPDX id
    - `src/xpyrment.egg-info/`
 3. **Distribution Compilation**: Successfully ran `python -m build` to generate standardized source archives (`.tar.gz`) and platform wheels (`.whl`) matching package version `1.1.1.0`.
 4. **Metadata Integrity Check**: Verified compiled archives using `twine check dist/*`, which passed validation successfully with zero warnings or formatting errors.
+
+## 📐 Markdown Table Math Rendering & Pipe-Escaping Enhancements (Completed)
+
+We investigated and resolved a subtle MathJax rendering issue within dynamically generated and mkdocstrings-compiled tables, ensuring 100% beautiful typography across all build interfaces.
+
+### a) What was accomplished:
+1. **Types.py Table Cell Math Alignment**: Discovered 5 instances in `src/xpyrment/core/types.py` within the `Attributes:` section of the `MetricResult` docstring where block math (`$$...$$`) was used. Because mkdocstrings parses this section as a table, block math failed to compile inside table cells. Migrated them to inline math (`$...$`), resolving rendering failures.
+2. **Pipes Escaping in Main.py macros**: Escaped vertical bar characters (`|`) in dynamic first-line docstring summaries (such as the D-efficiency definition `|X'X|`) processed by `list_doe_designs()` and `list_metrics()` inside `main.py`. This prevents Markdown table column mismatches during macro evaluation.
+3. **Verified Zero Regression**: Confirmed that all 138 unit tests run and pass cleanly, and completed a warning-free `mkdocs build` compilation.
+
+## 🧮 Project-Wide MathJax Rendering & Greek Character Resolution (Completed)
+
+We resolved mathematical and LaTeX rendering defects throughout the entire documentation site by upgrading MathJax to v3, implementing SPA-compatible subscribers, and programmatically normalizing block-math and raw-docstring escape sequences, bumping the package version to `1.1.2.0`.
+
+### a) What was accomplished:
+1. **Upgraded to MathJax 3**: Upgraded the documentation engine to utilize modern, performant **MathJax v3** using the Material for MkDocs recommended SPA/instant-navigation-compatible subscriber setup in [docs/javascripts/mathjax.js](file:///c:/Users/Dan/projects/xpyrment/docs/javascripts/mathjax.js) and configured it inside [mkdocs.yml](file:///c:/Users/Dan/projects/xpyrment/mkdocs.yml).
+2. **Normalized Block-Math Formulas**: Programmatically normalized all single-line block math delimiters (`$$formula$$`) to multi-line block math delimiters across all 50 Python files and Markdown files (including [README.md](file:///c:/Users/Dan/projects/xpyrment/README.md)). This forces the parser to render them as proper display equations on both GitHub and the documentation site, eliminating raw `$` prefixing and inline compression bugs.
+3. **Raw Prefix Resolution for Backslashes**: Programmatically identified and updated 50 Python source files in `src/xpyrment/` containing backslashed symbols (like Greek letters `\alpha`, `\beta`, `\theta`, etc.) where docstrings were missing the raw `r` prefix. This prevents the Python interpreter from parsing LaTeX symbols as control characters, resolving the `(lpha, eta)` rendering errors on `localhost:8000/api/core/registry/` and other API reference pages.
+4. **Fixed get_doe_designs in main.py**: Fixed a pre-existing NameError in `main.py` where `first_line` was accessed before definition, restoring the dynamic DoE listing in the documentation site.
+5. **Synced Package Version (`1.1.2.0`)**: Bumped package version from `1.1.1.0` to `1.1.2.0` in `pyproject.toml` and verified that automated build pipelines successfully cascade the update.
+6. **Verified Zero Regression**: Confirmed 100% test success (138/138 green) and successfully built warning-free documentation with `mkdocs build`.
 
 ### b) What must be done next:
 1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).

@@ -49,7 +49,9 @@ class SRMError(Exception):
 
     Mathematical Background:
         A Pearson Chi-Square Goodness-of-Fit test is performed to evaluate the discrepancy:
-        $$\chi^2 = \sum_{i=1}^{k} \frac{(O_i - E_i)^2}{E_i}$$
+        $$
+        \chi^2 = \sum_{i=1}^{k} \frac{(O_i - E_i)^2}{E_i}
+        $$
         where $O_i$ is the observed count in arm $i$ and $E_i$ is the expected count under
         the planned split. The degrees of freedom is $k - 1$.
         This exception is raised if the resulting p-value is extremely small (typically
@@ -90,7 +92,9 @@ class AliasError(Exception):
         leading to a rank-deficient matrix where unique solutions for all factors and
         interactions do not exist. The alias relation matrix $A$ defines which terms are
         confounded:
-        $$E[\hat{\beta}_1] = \beta_1 + A \beta_2$$
+        $$
+        E[\hat{\beta}_1] = \beta_1 + A \beta_2
+        $$
         An AliasError prevents the system from proceeding with invalid or unresolvable
         confounding structures.
 

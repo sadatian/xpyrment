@@ -7,14 +7,16 @@ calendar time (days) using observed traffic rates and ramp-up schedules.
 
 
 def estimate_duration_days(required_sample_size: int, daily_traffic: int) -> float:
-    """Estimates the required experiment run duration in days.
+    r"""Estimates the required experiment run duration in days.
 
     Translates the calculated target sample size ($N_{\text{required}}$) into the estimated calendar days
     needed to accumulate that sample volume based on active daily traffic ($T_{\text{daily}}$).
 
     Mathematical Model:
         The duration in days ($D$) is computed as:
-        $$D = \frac{N_{\text{required}}}{T_{\text{daily}}}$$
+        $$
+        D = \frac{N_{\text{required}}}{T_{\text{daily}}}
+        $$
         where $N_{\text{required}}$ represents the combined total sample size across all active arms
         (control + treatment arms) or the single-arm requirement multiplied by the number of arms.
 

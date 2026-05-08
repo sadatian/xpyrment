@@ -8,7 +8,7 @@ import numpy as np
 
 
 def compute_cohens_d(group_a: np.ndarray, group_b: np.ndarray) -> float:
-    """Computes standard standardized effect size using Cohen's d formula.
+    r"""Computes standard standardized effect size using Cohen's d formula.
 
     Cohen's d (Cohen, 1988) is a standardized, scale-free effect size measure representing the difference
     between two group means in terms of standard deviation units. While p-values measure the statistical
@@ -20,11 +20,13 @@ def compute_cohens_d(group_a: np.ndarray, group_b: np.ndarray) -> float:
         unbiased sample variances of the two experimental groups (Control A and Treatment B respectively).
 
         The pooled sample standard deviation $s_{\\text{pooled}}$ is defined as:
-        $$s_{\\text{pooled}} = \\sqrt{\\frac{(N_A - 1)s_A^2 + (N_B - 1)s_B^2}{N_A + N_B - 2}}$$
-        
+        $$
+        s_{\\text{pooled}} = \\sqrt{\\frac{(N_A - 1)s_A^2 + (N_B - 1)s_B^2}{N_A + N_B - 2}}
+        $$
         The Cohen's d statistic is computed as:
-        $$d = \\frac{\\bar{X}_B - \\bar{X}_A}{s_{\\text{pooled}}}$$
-
+        $$
+        d = \\frac{\\bar{X}_B - \\bar{X}_A}{s_{\\text{pooled}}}
+        $$
     Standard Classification Heuristics:
         - $|d| < 0.2$: Negligible effect size.
         - $0.2 \\le |d| < 0.5$: Small effect size (e.g., most successful digital A/B tests).

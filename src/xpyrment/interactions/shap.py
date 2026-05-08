@@ -9,7 +9,7 @@ from typing import Any
 
 
 def calculate_shap_interactions(model: Any, X_data: Any) -> list:
-    """Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).
+    r"""Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).
 
     SHAP (SHapley Additive exPlanations) interaction values (Lundberg et al., 2018) are based on the coalitional game-theoretic
     Shapley Interaction Index (Grabisch and Roubens, 1999). While standard Shapley values partition a model's prediction
@@ -19,17 +19,24 @@ def calculate_shap_interactions(model: Any, X_data: Any) -> list:
     Mathematical Formulation and Coalition Deficits:
         Let $M$ be the complete set of all features. The SHAP interaction value $\\Phi_{i,j}$ between feature $i$ and feature $j$
         (where $i \\neq j$) measures the pure interaction effect after accounting for all other subsets of features:
-        $$\\Phi_{i,j} = \\sum_{S \\subseteq M \\setminus \\{i, j\\}} \\frac{|S|! (|M| - |S| - 2)!}{2 (|M| - 1)!} \\Delta_{i,j}(S)$$
+        $$
+        \\Phi_{i,j} = \\sum_{S \\subseteq M \\setminus \\{i, j\\}} \\frac{|S|! (|M| - |S| - 2)!}{2 (|M| - 1)!} \\Delta_{i,j}(S)
+        $$
         where the second-order marginal contribution difference $\\Delta_{i,j}(S)$ is defined as:
-        $$\\Delta_{i,j}(S) = f(S \\cup \\{i, j\\}) - f(S \\cup \\{i\\}) - f(S \\cup \\{j\\}) + f(S)$$
-        
+        $$
+        \\Delta_{i,j}(S) = f(S \\cup \\{i, j\\}) - f(S \\cup \\{i\\}) - f(S \\cup \\{j\\}) + f(S)
+        $$
         The diagonal elements $\\Phi_{i,i}$ capture the main effect of feature $i$ after removing all of its pairwise interactions
         with other features:
-        $$\\Phi_{i,i} = \\phi_i - \\sum_{j \\neq i} \\Phi_{i,j}$$
+        $$
+        \\Phi_{i,i} = \\phi_i - \\sum_{j \\neq i} \\Phi_{i,j}
+        $$
         where $\\phi_i$ is the standard Shapley value for feature $i$.
         
         The complete set of main effects and interaction values decomposes the model prediction $f(x)$ exactly:
-        $$f(x) = \\Phi_0 + \\sum_{i=1}^{|M|} \\Phi_{i,i} + \\sum_{i \\neq j} \\Phi_{i,j}$$
+        $$
+        f(x) = \\Phi_0 + \\sum_{i=1}^{|M|} \\Phi_{i,i} + \\sum_{i \\neq j} \\Phi_{i,j}
+        $$
         where $\\Phi_0 = E[f(x)]$ is the base value (expected prediction of the model across the background training distribution).
 
     Computational Complexity:

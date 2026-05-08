@@ -6,7 +6,7 @@ sufficient physical or economic magnitude to be considered of practical business
 
 
 def check_practical_significance(relative_lift: float, min_valuable_effect: float) -> bool:
-    """Verifies if the measured lift satisfies the minimal valuable business effect (MVE).
+    r"""Verifies if the measured lift satisfies the minimal valuable business effect (MVE).
 
     Online experimentation platforms often have massive sample sizes, which makes them highly powered.
     As a result, extremely microscopic differences (e.g., a $0.05\\%$ lift in page load times) can yield highly
@@ -21,11 +21,15 @@ def check_practical_significance(relative_lift: float, min_valuable_effect: floa
         Three scenarios can occur when evaluating significance:
         1. **Statistically Significant and Practically Significant**:
            The null hypothesis is rejected ($p < \\alpha$), and the estimated lift exceeds the MVE:
-           $$\\hat{\\theta} \\ge \\delta_{\\text{MVE}} \\quad \\text{and} \\quad p < \\alpha$$
+           $$
+           \\hat{\\theta} \\ge \\delta_{\\text{MVE}} \\quad \\text{and} \\quad p < \\alpha
+           $$
            (Ideally, to be highly confident, we require the entire confidence interval to exceed the threshold: $\\theta_{\\text{lower}} \\ge \\delta_{\\text{MVE}}$).
         2. **Statistically Significant but NOT Practically Significant**:
            The null hypothesis is rejected ($p < \\alpha$), but the magnitude is trivial:
-           $$\\hat{\\theta} < \\delta_{\\text{MVE}} \\quad \\text{and} \\quad p < \\alpha$$
+           $$
+           \\hat{\\theta} < \\delta_{\\text{MVE}} \\quad \\text{and} \\quad p < \\alpha
+           $$
            In this case, the feature should generally be rejected despite its "significant" p-value.
         3. **Practically Significant but NOT Statistically Significant**:
            The estimated point estimate is large ($\\hat{\\theta} \\ge \\delta_{\\text{MVE}}$), but we fail to reject the null hypothesis ($p \\ge \\alpha$).

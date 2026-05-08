@@ -11,25 +11,35 @@ CUPED (Controlled-comparison Using Pre-Existing Data) for variance reduction.
 1. **Welch's t-test**:
    Unlike Student's t-test, Welch's t-test does not assume equal variances between control and
    treatment groups. The test statistic is:
-   $$t = \frac{\bar{Y}_T - \bar{Y}_C}{\sqrt{\frac{s_C^2}{N_C} + \frac{s_T^2}{N_T}}}$$
+   $$
+   t = \frac{\bar{Y}_T - \bar{Y}_C}{\sqrt{\frac{s_C^2}{N_C} + \frac{s_T^2}{N_T}}}
+   $$
    And degrees of freedom $\nu$ are approximated using the Welch-Satterthwaite equation:
-   $$\nu \approx \frac{\left(\frac{s_C^2}{N_C} + \frac{s_T^2}{N_T}\right)^2}{\frac{\left(s_C^2 / N_C\right)^2}{N_C - 1} + \frac{\left(s_T^2 / N_T\right)^2}{N_T - 1}}$$
-
+   $$
+   \nu \approx \frac{\left(\frac{s_C^2}{N_C} + \frac{s_T^2}{N_T}\right)^2}{\frac{\left(s_C^2 / N_C\right)^2}{N_C - 1} + \frac{\left(s_T^2 / N_T\right)^2}{N_T - 1}}
+   $$
 2. **CUPED (Controlled-comparison Using Pre-Existing Data)**:
    CUPED utilizes pre-experiment covariate data ($X$) to explain away pre-existing variance in
    the experiment period metric ($Y$), thereby increasing statistical power.
-   $$Y_{\text{CUPED}} = Y - \theta (X - E[X])$$
+   $$
+   Y_{\text{CUPED}} = Y - \theta (X - E[X])
+   $$
    where $\theta$ is the optimal scaling factor computed as:
-   $$\theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}$$
+   $$
+   \theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}
+   $$
    The variance of the CUPED-adjusted metric is:
-   $$\text{Var}(Y_{\text{CUPED}}) = \text{Var}(Y)(1 - \rho^2)$$
+   $$
+   \text{Var}(Y_{\text{CUPED}}) = \text{Var}(Y)(1 - \rho^2)
+   $$
    where $\rho$ is the Pearson correlation coefficient between $Y$ and $X$.
 
 3. **Delta Method for Ratios**:
    For a ratio metric $R = U / V$ (e.g., clicks/impressions), the sample variance is approximated
    using a first-order Taylor expansion:
-   $$\text{Var}(R) \approx \frac{1}{\mu_V^2} \text{Var}(U) + \frac{\mu_U^2}{\mu_V^4} \text{Var}(V) - 2 \frac{\mu_U}{\mu_V^3} \text{Cov}(U, V)$$
-"""
+   $$
+   \text{Var}(R) \approx \frac{1}{\mu_V^2} \text{Var}(U) + \frac{\mu_U^2}{\mu_V^4} \text{Var}(V) - 2 \frac{\mu_U}{\mu_V^3} \text{Cov}(U, V)
+   $$"""
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
@@ -92,14 +102,21 @@ class BaseMetric(ABC):
         ### Mathematical Representation
 
         Degrees of freedom ($\nu$) approximation:
-        $$\nu = \frac{\left(\frac{\sigma_C^2}{N_C} + \frac{\sigma_T^2}{N_T}\right)^2}{\frac{\left(\sigma_C^2 / N_C\right)^2}{N_C - 1} + \frac{\left(\sigma_T^2 / N_T\right)^2}{N_T - 1}}$$
+        $$
+        \nu = \frac{\left(\frac{\sigma_C^2}{N_C} + \frac{\sigma_T^2}{N_T}\right)^2}{\frac{\left(\sigma_C^2 / N_C\right)^2}{N_C - 1} + \frac{\left(\sigma_T^2 / N_T\right)^2}{N_T - 1}}
+        $$
         Standard error of difference:
-        $$\text{SE}_{\text{diff}} = \sqrt{\frac{\sigma_C^2}{N_C} + \frac{\sigma_T^2}{N_T}}$$
+        $$
+        \text{SE}_{\text{diff}} = \sqrt{\frac{\sigma_C^2}{N_C} + \frac{\sigma_T^2}{N_T}}
+        $$
         Confidence Interval:
-        $$\text{CI} = (\bar{Y}_T - \bar{Y}_C) \pm t_{\text{crit}, 1-\alpha/2, \nu} \times \text{SE}_{\text{diff}}$$
+        $$
+        \text{CI} = (\bar{Y}_T - \bar{Y}_C) \pm t_{\text{crit}, 1-\alpha/2, \nu} \times \text{SE}_{\text{diff}}
+        $$
         Power ($1-\beta$) is calculated using the Non-Central Parameter (NCP):
-        $$\text{NCP} = \frac{|\bar{Y}_T - \bar{Y}_C|}{\text{SE}_{\text{diff}}}$$
-
+        $$
+        \text{NCP} = \frac{|\bar{Y}_T - \bar{Y}_C|}{\text{SE}_{\text{diff}}}
+        $$
         Args:
             mean_c (float): Control group mean ($\bar{Y}_C$).
             mean_t (float): Treatment group mean ($\bar{Y}_T$).
@@ -188,12 +205,13 @@ class MeanMetric(BaseMetric):
         treatment: str,
         alpha: float = 0.05,
     ) -> Dict[str, Any]:
-        """Calculates descriptive and Welch's t-test statistics for the mean metric.
+        r"""Calculates descriptive and Welch's t-test statistics for the mean metric.
 
         Drops missing values on the value column. If `pre_period_col` is provided,
         performs joint missing drop and executes a standard linear CUPED adjustment:
-        $$Y_i^{\text{CUPED}} = Y_i - \theta (X_i - \bar{X})$$
-
+        $$
+        Y_i^{\text{CUPED}} = Y_i - \theta (X_i - \bar{X})
+        $$
         Args:
             df (pd.DataFrame): The experimental dataset.
             treatment_col (str): Column identifying treatment assignments.
@@ -382,11 +400,16 @@ class RatioMetric(BaseMetric):
 
         Cleans missing values and non-positive denominators. If double-covariates are present,
         separately fits linear CUPED adjustments to the numerator and denominator series:
-        $$U_i^{\text{CUPED}} = U_i - \theta_U (U_{i,\text{pre}} - \bar{U}_{\text{pre}})$$
-        $$V_i^{\text{CUPED}} = V_i - \theta_V (V_{i,\text{pre}} - \bar{V}_{\text{pre}})$$
+        $$
+        U_i^{\text{CUPED}} = U_i - \theta_U (U_{i,\text{pre}} - \bar{U}_{\text{pre}})
+        $$
+        $$
+        V_i^{\text{CUPED}} = V_i - \theta_V (V_{i,\text{pre}} - \bar{V}_{\text{pre}})
+        $$
         The ratio variance is then estimated using the Delta Method formulation:
-        $$\text{Var}\left(\frac{U}{V}\right) \approx \frac{1}{\bar{V}^2} \left[ \text{Var}(U) + R^2 \text{Var}(V) - 2 R \text{Cov}(U, V) \right]$$
-
+        $$
+        \text{Var}\left(\frac{U}{V}\right) \approx \frac{1}{\bar{V}^2} \left[ \text{Var}(U) + R^2 \text{Var}(V) - 2 R \text{Cov}(U, V) \right]
+        $$
         Args:
             df (pd.DataFrame): The experimental dataset.
             treatment_col (str): Column identifying treatment assignments.

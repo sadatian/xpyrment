@@ -6,7 +6,7 @@ sequential monitoring boundaries to allow safe, continuous visual exploration of
 
 
 class SequentialInference:
-    """Computes sequential monitoring bounds and always-valid confidence intervals (AVCIs).
+    r"""Computes sequential monitoring bounds and always-valid confidence intervals (AVCIs).
 
     In traditional experimentation, looking at confidence intervals before the test finishes (peeking) is statistically
     hazardous. Always-Valid Confidence Intervals (AVCIs) solve this by providing a sequence of intervals that cover the
@@ -14,7 +14,9 @@ class SequentialInference:
 
     Mathematical Definition and Boundary Formulas:
         Let $C_n$ be the confidence interval calculated at sample size $n$. For any nominal error rate $\\alpha \\in (0, 1)$:
-        $$\\mathbb{P} \\left( \\forall n \\ge 1, \\ \\theta \\in C_n \\right) \\ge 1 - \\alpha$$
+        $$
+        \\mathbb{P} \\left( \\forall n \\ge 1, \\ \\theta \\in C_n \\right) \\ge 1 - \\alpha
+        $$
         This is an incredibly powerful property: it allows the experimenter to continuously plot the confidence interval
         over time, and if the interval does not contain zero at any point, the experiment can be stopped immediately
         with a guaranteed Type I error rate controlled at $\\alpha$.
@@ -23,10 +25,13 @@ class SequentialInference:
         By inverting the mixture Sequential Probability Ratio Test (mSPRT) statistic for a normally distributed metric with
         unit baseline variance $\\sigma^2$ and mixing tuning parameter $\\tau^2$ (representing prior effect variance), the
         always-valid confidence interval at step $n$ is:
-        $$C_n = \\left[ \\bar{Y}_n - W_n, \\ \\bar{Y}_n + W_n \\right]$$
+        $$
+        C_n = \\left[ \\bar{Y}_n - W_n, \\ \\bar{Y}_n + W_n \\right]
+        $$
         where $\\bar{Y}_n$ is the observed sample mean difference, and the sequential margin of error $W_n$ is:
-        $$W_n = \\sqrt{\\frac{2\\sigma^2(\\sigma^2 + n\\tau^2)}{n^2\\tau^2} \\ln\\left( \\frac{1}{\\alpha} \\sqrt{\\frac{\\sigma^2 + n\\tau^2}{\\sigma^2}} \\right)}$$
-        
+        $$
+        W_n = \\sqrt{\\frac{2\\sigma^2(\\sigma^2 + n\\tau^2)}{n^2\\tau^2} \\ln\\left( \\frac{1}{\\alpha} \\sqrt{\\frac{\\sigma^2 + n\\tau^2}{\\sigma^2}} \\right)}
+        $$
         Properties of $W_n$:
         - For very small $n$, $W_n$ is wider than the traditional fixed-sample Wald margin of error ($z_{1-\\alpha/2} \\sigma / \\sqrt{n}$),
           which mathematically penalizes and compensates for the continuous peeking.
@@ -35,7 +40,7 @@ class SequentialInference:
     """
 
     def calculate_always_valid_ci(self, sample_size: int, alpha: float) -> tuple:
-        """Computes continuous monitoring boundaries to prevent alpha inflation from peeking.
+        r"""Computes continuous monitoring boundaries to prevent alpha inflation from peeking.
 
         Calculates the exact sequential margin of error ($W_n$) at a given sample size, yielding
         always-valid confidence bounds around the observed effect size.

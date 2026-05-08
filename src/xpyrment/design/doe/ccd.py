@@ -25,8 +25,9 @@ class CentralCompositeDesign(DesignMatrix):
            error and stabilizes prediction variance at the center of the design space. (Size: $n_c$ runs).
         
         The total number of runs $N$ is:
-        $$N = 2^{k-p} + 2k + n_c$$
-
+        $$
+        N = 2^{k-p} + 2k + n_c
+        $$
     Alpha ($\alpha$) Parameter Configuration:
         The distance $\alpha$ of the axial points determines the geometric shape and properties of the design:
         - **Rotatable**: $\alpha = (N_f)^{1/4}$ (e.g., $\alpha = 1.414$ for $k=2$, $\alpha = 1.682$ for $k=3$). Rotatability

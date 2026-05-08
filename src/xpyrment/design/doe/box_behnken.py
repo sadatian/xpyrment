@@ -25,7 +25,9 @@ class BoxBehnkenDesign(DesignMatrix):
 
     Mathematical Sizing and Properties:
         The total number of required experimental runs $N$ is:
-        $$N = 2k(k - 1) + n_c$$
+        $$
+        N = 2k(k - 1) + n_c
+        $$
         where $k$ is the number of factors and $n_c$ is the number of replicated center points (typically $3$ to $5$).
         For example:
         - $k = 3$: $N = 12 + n_c$ runs (usually $15$ runs with $3$ center points, compared to $15$ for face-centered CCD).

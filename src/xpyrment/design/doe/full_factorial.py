@@ -23,9 +23,13 @@ class FullFactorialDesign(DesignMatrix):
         Let $k$ be the number of independent factors, and let $l_i$ be the number of levels for factor $i$
         ($i \in \{1, 2, \dots, k\}$).
         The total number of required experimental runs $N$ is:
-        $$N = \prod_{i=1}^{k} l_i$$
+        $$
+        N = \prod_{i=1}^{k} l_i
+        $$
         For symmetric $2^k$ designs (where every factor has exactly 2 levels: e.g., low and high):
-        $$N = 2^k$$
+        $$
+        N = 2^k
+        $$
         While extremely thorough, full factorial designs suffer from the "curse of dimensionality",
         where $N$ grows exponentially as more factors are added, making them economically or temporally
         unfeasible for large numbers of factors (where fractional designs are preferred).
@@ -50,7 +54,7 @@ class FullFactorialDesign(DesignMatrix):
     """
 
     def generate(self) -> pd.DataFrame:
-        """Generates the full factorial design matrix.
+        r"""Generates the full factorial design matrix.
 
         Utilizes `itertools.product` to compute the Cartesian product of all factor levels,
         creating an $N \times k$ DataFrame.

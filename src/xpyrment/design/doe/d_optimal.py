@@ -28,11 +28,14 @@ class DOptimalDesign(DesignMatrix):
         Let $X$ be the $N \times p$ model design matrix (where columns include main effects, interactions, and
         quadratic terms). The information matrix is $M = X^T X$.
         D-optimality maximizes the determinant of the information matrix:
-        $$\max_{X} \left| X^T X \right|$$
+        $$
+        \max_{X} \left| X^T X \right|
+        $$
         Maximizing this determinant is mathematically equivalent to minimizing the volume of the joint confidence
         ellipsoid for the estimated model parameters $\beta$. The D-efficiency of a design is:
-        $$D_{\text{eff}} = 100 \times \left( \frac{\left| X^T X \right|^{1/p}}{N} \right)$$
-
+        $$
+        D_{\text{eff}} = 100 \times \left( \frac{\left| X^T X \right|^{1/p}}{N} \right)
+        $$
     Coordinate Exchange Algorithm (Meyer & Nachtsheim, 1995):
         To find the optimal design without evaluating all combinations (which is NP-hard):
         1. Create an initial design matrix $X^{(0)}$ of size $N \times k$ by randomly sampling from candidate levels.

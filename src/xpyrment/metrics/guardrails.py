@@ -54,10 +54,13 @@ class GuardrailMetric:
         ### Mathematical Representation
 
         Let $L$ be the relative lift calculated for the wrapped metric:
-        $$L = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}$$
+        $$
+        L = \frac{\bar{Y}_T - \bar{Y}_C}{\bar{Y}_C}
+        $$
         A breach is detected if the magnitude of the relative lift exceeds the maximum allowed change:
-        $$\text{Breach} = |L| > \text{max\_allowed\_change}$$
-
+        $$
+        \text{Breach} = |L| > \text{max\_allowed\_change}
+        $$
         Args:
             calculation_result (Dict[str, Any]): Output dictionary produced by calling
                 `metric.calculate()` on experimental data.

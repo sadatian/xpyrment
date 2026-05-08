@@ -45,7 +45,7 @@ class ExperimentRegistry:
         self._registry: Dict[str, Dict[str, Any]] = {}
 
     def register_spec(self, experiment_id: str, spec_dict: Dict[str, Any]) -> str:
-        """Serializes the experiment specification, hashes it, and stores it in the registry.
+        r"""Serializes the experiment specification, hashes it, and stores it in the registry.
 
         Ensures that dictionaries are serialized with sorted keys to maintain deterministic
         hashing across systems, irrespective of key-insertion order.
@@ -53,8 +53,9 @@ class ExperimentRegistry:
         Mathematical Representation:
             Let $S$ be the key-sorted, compact JSON serialization of `spec_dict` encoded in UTF-8.
             The registered hash $H$ is:
-            $$H = \text{SHA256}(S)$$
-
+            $$
+            H = \text{SHA256}(S)
+            $$
         Args:
             experiment_id (str): Unique identifier of the experiment.
             spec_dict (Dict[str, Any]): Structural parameters representing the experiment plan,

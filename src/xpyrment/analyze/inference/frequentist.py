@@ -8,7 +8,7 @@ import numpy as np
 
 
 def run_welch_t_test(group_a: np.ndarray, group_b: np.ndarray) -> dict:
-    """Performs Welch's t-test for difference of means with unequal variances.
+    r"""Performs Welch's t-test for difference of means with unequal variances.
 
     Welch's t-test is a two-sample location test used to test the hypothesis that two populations have equal means
     ($H_0: \\mu_A = \\mu_B$). Unlike Student's t-test, Welch's t-test does not assume equal variances,

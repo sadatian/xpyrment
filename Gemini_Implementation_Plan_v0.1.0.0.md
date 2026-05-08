@@ -224,14 +224,18 @@ xpyrment/
 			### D. Run-Time & Stopping Logic (`run/`)
 			Monitors data collection with strict control over Type I error rate inflation from peeking.
 			* **mSPRT (mixture Sequential Probability Ratio Test)**: Computes always-valid p-values and confidence intervals.
-			  $$\Lambda_n = \int \prod_{i=1}^n \frac{f(Y_i; \theta)}{f(Y_i; 0)} dH(\theta)$$
+			  $$
+			  \Lambda_n = \int \prod_{i=1}^n \frac{f(Y_i; \theta)}{f(Y_i; 0)} dH(\theta)
+			  $$
 			  Where $H(\theta)$ is a mixture distribution (typically normal). This allows continuous monitoring of results with strict control over alpha.
 			* **Alpha-spending functions**: Implements O'Brien-Fleming and Pocock boundaries to support classical group-sequential stopping.
 
 			### E. Validation (`validate/`)
 			Before and during run diagnostics.
 			* **Sample Ratio Mismatch (SRM)**: Computes a Pearson chi-square goodness-of-fit test on sample allocations:
-			  $$\chi^2 = \sum \frac{(O_i - E_i)^2}{E_i}$$
+			  $$
+			  \chi^2 = \sum \frac{(O_i - E_i)^2}{E_i}
+			  $$
 			  Raises an `SRMError` if the observed allocations differ from expected splits with a p-value $< 0.001$.
 			* **Covariate Balance**: Assesses normalized differences in pre-period properties across arms.
 
@@ -325,7 +329,9 @@ xpyrment/
 			  * Built Welch's t-test, Mann-Whitney non-parametric Wilcoxon test, conjugate Beta-Binomial / Normal-Normal Bayesian models (drawing 20,000 draws for posterior decision metrics), and optimal CUPED variance multipliers.
 			* **Block 5: Compliance Reporting & Presentation**
 			  * Implemented unified `ExperimentCard` serialization, Horizontal relative lift forest plots, MDE power curve graphs, and a cryptographically chained tamper-evident `AuditTrail` ledger tracking state blocks using a SHA-256 chain:
-			    $$h_k = H(t_k \parallel a_k \parallel d_k \parallel h_{k-1})$$
+			    $$
+			    h_k = H(t_k \parallel a_k \parallel d_k \parallel h_{k-1})
+			    $$
 			* **Block 6: Multi-Armed Bandits & Adaptive Allocations**
 			  * Fully implemented adaptive exploration-exploitation using EpsilonGreedyBandit, UCB1Bandit (Upper Confidence Bound), and ThompsonSamplingBandit with Beta-Binomial / Normal-Normal conjugate Bayesian updating.
 			* **Block 7: Heterogeneous Treatment Effects & Personalization**
@@ -343,7 +349,9 @@ xpyrment/
 			* **Block 12: Auto-Tuned Hyperparameter Optimization for Adaptive Bandits** (formerly Block 21)
 			  * Fully implemented a Radial Basis Function (RBF) Gaussian Process Regressor (`GaussianProcessRegressor`) from scratch inside [tuning.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/bandit/tuning.py).
 			  * Developed a Bayesian Optimization framework (`BanditHyperparameterTuner`) maximizing the Expected Improvement (EI) metric:
-			    $$\text{EI}(\mathbf{x}) = (\mu(\mathbf{x}) - f(\mathbf{x}^+))\Phi(Z) + \sigma(\mathbf{x})\phi(Z)$$
+			    $$
+			    \text{EI}(\mathbf{x}) = (\mu(\mathbf{x}) - f(\mathbf{x}^+))\Phi(Z) + \sigma(\mathbf{x})\phi(Z)
+			    $$
 			  * Implemented an evaluation simulation engine (`simulate_bandit_run`) supporting Bernoulli and Gaussian multi-armed bandit simulation runs to automate hyperparameter tuning.
 			* **Block 13: Low-Latency Streaming OLS via Woodbury Inverse Updates**
 			  * Implements low-latency recursive least squares (RLS) tracking with $O(P^2)$ rank-1 updates using the Sherman-Morrison/Woodbury identity in [streaming.py](file:///c:/Users/Dan/projects/xpyrment/src/xpyrment/analyze/streaming.py).

@@ -6,7 +6,7 @@ covariate-treatment, and non-linear response surface interactions using linear m
 
 
 class InteractionDetector:
-    """Dispatches multi-factor, covariate-treatment, and non-linear interactions.
+    r"""Dispatches multi-factor, covariate-treatment, and non-linear interactions.
 
     In complex online and physical experiments, interventions rarely operate in a vacuum. The treatment effect of
     one change may depend heavily on the status of other features (multi-factor interaction) or the characteristics
@@ -17,19 +17,25 @@ class InteractionDetector:
         1. **Multi-Factor Synergy or Interference** (Factor-Factor Interaction):
            Evaluates whether combining Treatment 1 ($T_1$) and Treatment 2 ($T_2$) yields a response that differs
            from the sum of their individual effects:
-           $$Y = \\beta_0 + \\beta_1 T_1 + \\beta_2 T_2 + \\beta_3 (T_1 \\times T_2) + \\varepsilon$$
+           $$
+           Y = \\beta_0 + \\beta_1 T_1 + \\beta_2 T_2 + \\beta_3 (T_1 \\times T_2) + \\varepsilon
+           $$
            - If $\\beta_3 > 0$, the factors are synergistic.
            - If $\\beta_3 < 0$, the factors interfere with each other (redundancy or collision).
 
         2. **Covariate-Treatment Interaction** (Heterogeneous Treatment Effects - HTE):
            Evaluates whether the treatment effect varies systematically across pre-experiment characteristics $C$
            (e.g., country, browser, mobile vs. desktop, or historical spending):
-           $$Y = \\beta_0 + \\beta_1 T + \\beta_2 C + \\beta_3 (T \\times C) + \\varepsilon$$
+           $$
+           Y = \\beta_0 + \\beta_1 T + \\beta_2 C + \\beta_3 (T \\times C) + \\varepsilon
+           $$
            A significant $\\beta_3$ ($p < 0.05$) indicates that the treatment effect varies across subpopulations.
 
         3. **Response Surface Curvature** (Non-linear Interaction):
            In continuous Design of Experiments (DoE), evaluates quadratic curvatures and continuous interaction slopes:
-           $$Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\beta_3 X_1^2 + \\beta_4 X_2^2 + \\beta_5 (X_1 \\times X_2) + \\varepsilon$$
+           $$
+           Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\beta_3 X_1^2 + \\beta_4 X_2^2 + \\beta_5 (X_1 \\times X_2) + \\varepsilon
+           $$
            where $\\beta_5$ captures the continuous twisting of the response landscape, and $\\beta_3, \\beta_4$ capture curvature.
 
     Algorithmic Screening Workflow:

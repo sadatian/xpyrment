@@ -18,7 +18,7 @@ def plot_forest(
     title: str = "A/B Test Results - Relative Lift & 95% CIs",
     figsize: tuple = (10, 5),
 ) -> tuple:
-    """Generates a horizontal forest plot visualizing relative lift and confidence intervals.
+    r"""Generates a horizontal forest plot visualizing relative lift and confidence intervals.
 
     A Forest Plot is the industrial standard for reviewing multiple metrics simultaneously. It displays
     each metric's estimated treatment lift along with its surrounding confidence bounds. This allows rapid,
@@ -118,12 +118,14 @@ def plot_power_curve(
     title: str = "A/B Test Design - Required Sample Size vs. MDE",
     figsize: tuple = (10, 6),
 ) -> tuple:
-    """Plots required sample size per variant across a range of Minimum Detectable Effects (MDE).
+    r"""Plots required sample size per variant across a range of Minimum Detectable Effects (MDE).
 
     This plotting function illustrates the fundamental trade-off in experimental planning between the
     Minimum Detectable Effect ($\\delta$, MDE) and the required sample size per variant ($N$).
     Because sample size scales quadratically with the inverse of the MDE:
-    $$N \\propto \\frac{1}{\\delta^2}$$
+    $$
+    N \\propto \\frac{1}{\\delta^2}
+    $$
     small increases in the precision requirements (smaller MDE) trigger massive increases in the required sample size.
 
     Demonstrating CUPED Sample Size Savings:
@@ -131,7 +133,9 @@ def plot_power_curve(
         when applying CUPED variance reduction.
         - Let $\\rho$ be the correlation coefficient between the pre-period covariate and the post-period outcome.
         - The required sample size under CUPED ($N_{\\text{CUPED}}$) is deflated by a factor of $(1 - \\rho^2)$:
-          $$N_{\\text{CUPED}} = N_{\\text{standard}} \\times (1 - \\rho^2)$$
+          $$
+          N_{\\text{CUPED}} = N_{\\text{standard}} \\times (1 - \\rho^2)
+          $$
         - The visual shaded gap between the standard curve and the CUPED curve demonstrates the direct **sample size savings**
           (and consequently, the timeline savings) gained by utilizing pre-period covariate adjustment.
 

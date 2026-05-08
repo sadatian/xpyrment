@@ -20,9 +20,13 @@ def log_transform(df: pd.DataFrame, col: str) -> pd.Series:
     ### Mathematical Representation
 
     The transformation is defined as:
-    $$y_{\text{transformed}} = \ln(y + 1)$$
+    $$
+    y_{\text{transformed}} = \ln(y + 1)
+    $$
     This is mathematically equivalent to:
-    $$\log1p(y)$$
+    $$
+    \log1p(y)
+    $$
     which maintains numerical precision for extremely small values of $y \approx 0$.
 
     Args:
@@ -61,13 +65,18 @@ def delta_normalization(df: pd.DataFrame, col: str) -> pd.Series:
 
     Let $g(X)$ be a differentiable function of a random variable $X$ with mean $\mu$ and variance $\sigma^2$.
     The first-order Taylor expansion of $g(X)$ about $\mu$ is:
-    $$g(X) \approx g(\mu) + g'(\mu)(X - \mu)$$
+    $$
+    g(X) \approx g(\mu) + g'(\mu)(X - \mu)
+    $$
     Taking the variance of this linear approximation yields:
-    $$\text{Var}(g(X)) \approx [g'(\mu)]^2 \sigma^2$$
+    $$
+    \text{Var}(g(X)) \approx [g'(\mu)]^2 \sigma^2
+    $$
     For multidimensional vectors, such as ratio estimates of the form $g(X, Y) = X / Y$, the Taylor expansion
     incorporates the covariance between numerator and denominator:
-    $$\text{Var}\left(\frac{X}{Y}\right) \approx \frac{1}{\mu_Y^2} \text{Var}(X) + \frac{\mu_X^2}{\mu_Y^4} \text{Var}(Y) - 2 \frac{\mu_X}{\mu_Y^3} \text{Cov}(X, Y)$$
-
+    $$
+    \text{Var}\left(\frac{X}{Y}\right) \approx \frac{1}{\mu_Y^2} \text{Var}(X) + \frac{\mu_X^2}{\mu_Y^4} \text{Var}(Y) - 2 \frac{\mu_X}{\mu_Y^3} \text{Cov}(X, Y)
+    $$
     Args:
         df (pd.DataFrame): The source DataFrame containing the metric columns.
         col (str): The name of the column representing the metric to normalize.

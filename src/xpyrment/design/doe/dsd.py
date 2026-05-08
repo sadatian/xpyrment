@@ -34,14 +34,20 @@ class DefinitiveScreeningDesign(DesignMatrix):
         The core of a DSD is constructed using mathematical **Conference Matrices** ($C$).
         A conference matrix $C_m$ of order $m$ is an $m \times m$ matrix with diagonal entries equal to $0$
         and off-diagonal entries equal to $\pm 1$, satisfying:
-        $$C_m^T C_m = (m - 1) I_m$$
+        $$
+        C_m^T C_m = (m - 1) I_m
+        $$
         To generate a DSD for $k$ factors:
         1. Generate a conference matrix of appropriate size.
         2. For each row $r_i$ in the conference matrix, create a "folded-over" pair of rows:
-           $$r_i \quad \text{and} \quad -r_i$$
+           $$
+           r_i \quad \text{and} \quad -r_i
+           $$
            This guarantees that the columns have an average value of exactly zero, centering the design.
         3. Append a final "center point" run consisting entirely of zeros:
-           $$[0, 0, \dots, 0]$$
+           $$
+           [0, 0, \dots, 0]
+           $$
         4. This results in $2k + 1$ (or $2k + 3$) runs in coded $[-1, 0, +1]$ space.
         5. Map these levels back to physical levels (low, medium, high) in `factors`.
 

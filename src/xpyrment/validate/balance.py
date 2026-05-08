@@ -21,7 +21,9 @@ def check_covariate_balance(df: pd.DataFrame, treatment_col: str, covariate_cols
     1. **Standardized Mean Difference (SMD)** for continuous covariates:
        Let $\bar{X}_T$ and $\bar{X}_C$ be the sample means of a covariate $X$ in the treatment and control groups,
        and let $s_T^2$ and $s_C^2$ be their sample variances.
-       $$\text{SMD} = \frac{\bar{X}_T - \bar{X}_C}{\sqrt{\frac{s_T^2 + s_C^2}{2}}}$$
+       $$
+       \text{SMD} = \frac{\bar{X}_T - \bar{X}_C}{\sqrt{\frac{s_T^2 + s_C^2}{2}}}
+       $$
     2. **Pearson Chi-Square Test for Independence** for categorical covariates:
        Evaluates whether the proportion of units in each category is independent of treatment.
 

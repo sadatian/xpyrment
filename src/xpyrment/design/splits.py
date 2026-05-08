@@ -99,7 +99,9 @@ class TrafficSplitter:
 
         Mathematical Representation:
             Let $R$ be the ramp-up schedule array:
-            $$R = [r_1, r_2, \dots, r_m]$$
+            $$
+            R = [r_1, r_2, \dots, r_m]
+            $$
             where $r_j \in [0, 1]$ represents the fraction of total traffic exposed to the experiment during step $j$,
             such that $r_j \le r_{j+1}$.
 
