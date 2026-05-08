@@ -95,8 +95,12 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
 3. **Preserve LaTeX & docstrings**:
    - Maintain all LaTeX mathematical notations in docstrings.
    - Ensure code edits do not introduce docstring format violations that break MkDocs builds.
-4. **Semantic Versioning Compliance**:
-   - For bug fixes (patches), increment the patch number in `_version.py` (e.g., `1.0.0` $\rightarrow$ `1.0.1`).
-   - For new backward-compatible features, increment the minor version (e.g., `1.0.0` $\rightarrow$ `1.1.0`).
+4. **Strict Four-Digit Versioning & Compliance Rule**:
+   All source code and visual changes must strictly adhere to the following 4-digit versioning schema (`Major.Minor.Patch.Revision`):
+   - **Extremely small changes and recommits**: Increment revision by `+0.0.0.1` (e.g., `1.0.0.0` $\rightarrow$ `1.0.0.1`).
+   - **Bug fixes**: Increment patch by `+0.0.1.0` and zero out any downstream digits (e.g., `1.0.0.1` $\rightarrow$ `1.0.1.0`).
+   - **Features added**: Increment minor version by `+0.1.0.0` and zero out any downstream digits (e.g., `1.0.1.5` $\rightarrow$ `1.1.0.0`).
+   - **Major releases**: Increment major version by `+1.0.0.0` and zero out any downstream digits (e.g., `1.1.2.3` $\rightarrow$ `2.0.0.0`).
+   - *Rule of Reset*: Any increment of a higher-order digit **must** reset (zero out) all digits downstream of it.
 5. **No Broken Skeletons**:
    - All newly added files, helpers, or hooks must be fully implemented, documented, and covered with unit tests before declaring the task finished.

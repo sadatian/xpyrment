@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xpyrment"
-version = "1.0.0"
+version = "1.0.0.1"
 authors = [
     { name = "Dan Sadatian", email = "dan.sadatian@example.com" }
 ]
@@ -42,6 +42,9 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["xpyrment*"]
+
+[tool.setuptools.package-data]
+xpyrment = ["assets/icons/*"]
 
 [tool.black]
 line-length = 88

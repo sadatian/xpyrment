@@ -143,6 +143,11 @@ def test_experiment_report_generator(tmp_path):
     assert "Harden Growth Experiment" in html_report
     assert "revenue" in html_report.lower()
     assert "smd-success" in html_report.lower()  # balanced covariate styles
+    assert "header-logo-container" in html_report
+    assert "sizes=\"16x16\"" in html_report
+    assert "sizes=\"32x32\"" in html_report
+    assert "sizes=\"64x64\"" in html_report
+    assert "sizes=\"any\"" in html_report
 
     # Test saving capabilities
     html_file = tmp_path / "report.html"
