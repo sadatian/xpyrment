@@ -417,6 +417,22 @@ We integrated support for premium, theme-matching pink collapsible blocks for al
 3. **Bumped Package Version (`1.1.2.2`)**: Incremented the package revision to `1.1.2.2` in `pyproject.toml`.
 4. **Verified warning-free compilation & test passes**: Built with `mkdocs build` with zero warnings or errors, and ran `pytest` with 100% test success.
 
+## 💻 Interactive Command Line Interface Reference Overhaul (Completed)
+
+We migrated the CLI documentation content from the root homepage (`README.md`) to a dedicated, high-quality reference page (`docs/cli.md`) and significantly expanded its structure with thorough theoretical, math-backed, and practical tutorials.
+
+### a) What was accomplished:
+1. **Cleaned Homepage**: Removed the legacy, basic `## 💻 Command Line Interface (CLI)` section from `README.md` and added a clean, modern bullet point under the main `## 🌟 Key Features` section describing terminal access.
+2. **Comprehensive CLI Reference Page (`docs/cli.md`)**:
+   - Designed a beautiful, structured layout introducing the CLI application, its zero-overhead design, and use cases.
+   - For each subcommand (`power`, `balance`, `regress`):
+     - Added rigorous mathematical/theoretical foundations (e.g., standard t-test power formulas, Standardized Mean Differences (SMD), OLS parameter models).
+     - Provided real-world invocation command examples with structured, descriptive list tabs detailing options.
+     - Kept full integration of the live `{{ cli_help(...) }}` macro, guaranteeing that help-screen options never get stale or out of sync with code modifications.
+3. **Advanced Integration Guide**: Authored a complete production-ready Shell script demonstrating how to integrate `xpyrment balance` checks into CI/CD pipelines as a pre-exposure gate, automatically blocking biased assignments.
+4. **Synced Package Version (`1.1.2.3`)**: Bumped package version from `1.1.2.2` to `1.1.2.3` in `pyproject.toml` and synchronized version badge shields in `README.md`.
+5. **Validated zero errors or warnings**: Verified success of `pytest` (138/138 green) and `mkdocs build`.
+
 ### b) What must be done next:
 1. Proceed with Phase 2 blocks, beginning with **Block 61** (Dynamic SRM Shutoff Webhooks & Alert System).
 
