@@ -68,6 +68,22 @@ Below is the active work backlog aimed at solidifying the package scope and veri
 
 ---
 
+## 🚀 Primary Future Goals & Performance Optimization
+
+### 1. Multithreading & Parallelization
+* **Objective**: Leverage concurrent execution models to speed up computationally expensive tasks.
+* **Focus Areas**: Parallelize long-running simulation loops, bootstrap resampling routines (e.g., BCa bootstrap), and Monte Carlo simulations in design engines and bandits.
+
+### 2. High-Performance Pre-built Methods (NumPy/SciPy First)
+* **Objective**: Replace slow, native Python loops and operations with highly optimized vector and matrix operations.
+* **Focus Areas**: Prioritize **NumPy** array broadcasting, vectorized linear algebra solvers, and optimized math library implementations over standard Python iterators and comprehension lists.
+
+### 3. Computation Profiling and Bottleneck Identification
+* **Objective**: Conduct systematic profiling of memory and CPU utilization.
+* **Focus Areas**: Identify hotspots in CUPED variance reduction, Gaussian Process tuning, and multi-dimensional covariate balancing routines.
+
+---
+
 ## 🛠️ Developer Workflow Guardrails
 
 All maintenance work must follow these strict guardrails:
@@ -86,3 +102,11 @@ All maintenance work must follow these strict guardrails:
   - Bumped the package revision to `1.1.2.4` in `pyproject.toml` and verified dynamic compilation.
 * **b) What must be done next**:
   - Proceed with systematically auditing and verifying project requirements (Block A), starting with identifying any potential requirement gaps in our statistical algorithms or CLI tools.
+
+### 2. Integration of Performance Optimization & Parallelization Future Goals (v1.1.2.4 $\rightarrow$ v1.1.2.5)
+* **a) What was accomplished**:
+  - Added "Primary Future Goals & Performance Optimization" section to the active implementation plan.
+  - Formulated goals for integrating multithreading, parallelization, and high-performance NumPy/SciPy operations across key computational bottlenecks.
+  - Bumped the package revision to `1.1.2.5` in `pyproject.toml` to track plan updates.
+* **b) What must be done next**:
+  - Proceed with systematically auditing and verifying project requirements (Block A), keeping performance optimization paths (such as vectorization and NumPy array broadcasting) in mind when refactoring statistical computations.
