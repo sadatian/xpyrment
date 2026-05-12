@@ -2,294 +2,294 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://xpyrment.example.com/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/cli/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/simulation/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/corrections/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/orchestrator/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/variance_reduction/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/inference/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/inference/bayesian/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/inference/bootstrap/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/inference/frequentist/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/inference/router/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/analyze/inference/sequential/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/core/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/core/exceptions/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/core/experiment/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/core/registry/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/core/state/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/core/types/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/randomization/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/splits/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/stratification/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/base/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/box_behnken/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/ccd/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/d_optimal/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/dsd/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/evop/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/fractional_factorial/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/full_factorial/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/lhs/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/mixture/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/plackett_burman/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/switchback/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/design/doe/taguchi/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interactions/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interactions/anova/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interactions/detector/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interactions/hstat/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interactions/plots/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interactions/regression/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interactions/shap/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interpret/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interpret/decision/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interpret/effect_size/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interpret/hte/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/interpret/significance/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/metrics/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/metrics/guardrails/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/metrics/taxonomy/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/metrics/transformations/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/plan/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/plan/duration/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/plan/hypothesis/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/plan/power/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/plan/preregistration/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/report/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/report/audit/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/report/card/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/report/export/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/run/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/run/assignment/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/run/ingestion/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/run/monitor/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/run/stopping/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/validate/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/validate/aa_test/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/validate/balance/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/validate/novelty/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://xpyrment.example.com/api/validate/srm/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
 </urlset>
