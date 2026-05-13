@@ -301,6 +301,21 @@ if __name__ == "__main__":
     
     root_dir = os.path.dirname(os.path.abspath(__file__))
     
+    # Load .env file variables into environment
+    env_path = os.path.join(root_dir, ".env")
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as env_f:
+                for line in env_f:
+                    if line.strip() and not line.startswith("#") and "=" in line:
+                        k, v = line.strip().split("=", 1)
+                        k_clean = k.strip()
+                        v_clean = v.strip().strip('"').strip("'")
+                        if k_clean not in os.environ:
+                            os.environ[k_clean] = v_clean
+        except Exception:
+            pass
+    
     # Check if any argument was passed, if not show help
     if not any(vars(args).values()):
         parser.print_help()
@@ -411,26 +426,12 @@ if __name__ == "__main__":
             subprocess.run(["git", "push", "origin", f":refs/tags/{tag_name}"], capture_output=True)  # Delete remote tag if any
             subprocess.run(["git", "push", "origin", tag_name], check=False)
             
-            # Check GITHUB_TOKEN or GH_TOKEN
+            # Check GITHUB_TOKEN or GH_TOKEN (automatically loaded globally from .env or system environment)
             token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
             if not token:
-                # Try fallback to local .env file
-                env_path = os.path.join(root_dir, ".env")
-                if os.path.exists(env_path):
-                    try:
-                        with open(env_path, "r", encoding="utf-8") as env_f:
-                            for line in env_f:
-                                if line.strip() and not line.startswith("#") and "=" in line:
-                                    k, v = line.strip().split("=", 1)
-                                    if k.strip() in ["GITHUB_TOKEN", "GH_TOKEN"]:
-                                        token = v.strip().strip('"').strip("'")
-                                        break
-                    except Exception:
-                        pass
-                        
-            if not token:
-                print("⚠️ GITHUB_TOKEN or GH_TOKEN env variables not found (and no token found in .env). Tag has been pushed, but skipping API release creation.")
+                print("⚠️ GITHUB_TOKEN or GH_TOKEN env variables not found. Tag has been pushed, but skipping API release creation.")
                 return
+
 
                 
             print("🚀 Creating formal GitHub Release via REST API...")
@@ -512,8 +513,14 @@ if __name__ == "__main__":
             update_pypi_badge(version)
             
             print("🚀 Uploading distribution files to TestPyPI...")
+            env_vars = os.environ.copy()
+            pypi_token = env_vars.get("TESTPYPI_TOKEN") or env_vars.get("PYPI_TOKEN")
+            if pypi_token:
+                env_vars["TWINE_USERNAME"] = "__token__"
+                env_vars["TWINE_PASSWORD"] = pypi_token
+            
             upload_cmd = [sys.executable, "-m", "twine", "upload", "--repository", "testpypi", dist_files]
-            result = subprocess.run(upload_cmd, cwd=root_dir)
+            result = subprocess.run(upload_cmd, cwd=root_dir, env=env_vars)
             
             if result.returncode != 0:
                 print("❌ Upload to TestPyPI failed! Reverting PyPI badge in README.md to latest available version...")
@@ -532,8 +539,14 @@ if __name__ == "__main__":
             update_pypi_badge(version)
             
             print("🚀 Uploading distribution files to actual PyPI...")
+            env_vars = os.environ.copy()
+            pypi_token = env_vars.get("PYPI_TOKEN")
+            if pypi_token:
+                env_vars["TWINE_USERNAME"] = "__token__"
+                env_vars["TWINE_PASSWORD"] = pypi_token
+                
             upload_cmd = [sys.executable, "-m", "twine", "upload", dist_files]
-            result = subprocess.run(upload_cmd, cwd=root_dir)
+            result = subprocess.run(upload_cmd, cwd=root_dir, env=env_vars)
             
             if result.returncode != 0:
                 print("❌ Upload to PyPI failed! Reverting PyPI badge in README.md to latest available version...")
