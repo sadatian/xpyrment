@@ -12,7 +12,7 @@ def sync_versions():
     Using pyproject.toml as the absolute single source of truth,
     automatically synchronize the version string across:
     1. src/xpyrment/_version.py
-    2. README.md
+    2. README.md (badges for pypi, release, tests, and coverage)
     """
     root_dir = os.path.dirname(__file__)
     
@@ -35,30 +35,66 @@ def sync_versions():
         with open(version_file_path, "w", encoding="utf-8") as f:
             f.write(expected_version_content)
             
-    # 3. Synchronize README.md release & PyPI badges
+    # 3. Synchronize README.md badges (pypi, release, tests, coverage)
     readme_path = os.path.join(root_dir, "README.md")
     if os.path.exists(readme_path):
         with open(readme_path, "r", encoding="utf-8") as f:
             readme_content = f.read()
             
-        # Replace release badge (e.g., release-v1.1.0.1%20stable)
+        # Replace release badge (supporting any digit format)
         updated_content = re.sub(
-            r"release-v\d+\.\d+\.\d+\.\d+%20stable",
+            r"release-v\d+(?:\.\d+)+(?:%20stable)?",
             f"release-v{version}%20stable",
             readme_content
         )
-        # Replace PyPI badge (e.g., pypi-v1.1.0.1)
+        # Replace PyPI badge (supporting any digit format)
         updated_content = re.sub(
-            r"pypi-v\d+\.\d+\.\d+\.\d+",
+            r"pypi-v\d+(?:\.\d+)+",
             f"pypi-v{version}",
             updated_content
         )
+        
+        # 4. Dynamically run pytest and coverage to sync test count and coverage badges
+        try:
+            # We use sys.executable to run pytest under the current active environment
+            cmd = [sys.executable, "-m", "pytest", "--cov=src", "--cov-report=term"]
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=root_dir, encoding="utf-8")
+            
+            if result.returncode == 0:
+                stdout = result.stdout
+                
+                # Extract tests passed
+                tests_match = re.search(r"(\d+)\s+passed", stdout)
+                
+                # Extract coverage percentage from TOTAL row
+                cov_match = re.search(r"TOTAL\s+\d+\s+\d+\s+(\d+)%", stdout)
+                
+                if tests_match:
+                    passed_count = tests_match.group(1)
+                    # Replace tests badge (e.g., tests-138%20passed)
+                    updated_content = re.sub(
+                        r"tests-\d+%20passed",
+                        f"tests-{passed_count}%20passed",
+                        updated_content
+                    )
+                    
+                if cov_match:
+                    cov_percent = cov_match.group(1)
+                    # Replace coverage badge (e.g., coverage-100%25 or coverage-93%25)
+                    updated_content = re.sub(
+                        r"coverage-\d+%25",
+                        f"coverage-{cov_percent}%25",
+                        updated_content
+                    )
+        except Exception:
+            pass
         
         if updated_content != readme_content:
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write(updated_content)
                 
     return version
+
 
 def get_doe_designs():
     """
