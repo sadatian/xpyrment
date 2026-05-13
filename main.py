@@ -324,6 +324,15 @@ if __name__ == "__main__":
             if os.path.exists(folder_path):
                 shutil.rmtree(folder_path)
                 
+        # Automatically clean any legacy temporary sdist build folders (e.g. xpyrment-1.1.2.5)
+        for name in os.listdir(root_dir):
+            if name.startswith("xpyrment-") and os.path.isdir(os.path.join(root_dir, name)):
+                try:
+                    shutil.rmtree(os.path.join(root_dir, name))
+                except Exception:
+                    pass
+
+                
         print("📦 Building source distribution and wheel packages...")
         build_cmd = [sys.executable, "-m", "build"]
         try:
