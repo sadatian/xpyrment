@@ -363,6 +363,16 @@ if __name__ == "__main__":
             
         dist_files = os.path.join(dist_dir, "*")
         readme_path = os.path.join(root_dir, "README.md")
+        notes_path = os.path.join(root_dir, "RELEASE_NOTES.md")
+        
+        # Load or generate release notes content
+        if os.path.exists(notes_path):
+            with open(notes_path, "r", encoding="utf-8") as f:
+                notes_content = f.read()
+        else:
+            notes_content = f"# Release Notes - v{version}\n\nAutomated package release."
+            with open(notes_path, "w", encoding="utf-8") as f:
+                f.write(notes_content)
         
         # Helper to update pypi badge in README.md
         def update_pypi_badge(v):
@@ -388,6 +398,98 @@ if __name__ == "__main__":
                     return json.loads(r.read().decode("utf-8"))["info"]["version"]
             except Exception:
                 return None
+
+        # Helper to create GitHub Release
+        def create_github_release(v, body):
+            tag_name = f"v{v}"
+            print(f"🏷️ Creating local Git tag: {tag_name}...")
+            # Delete existing tag if any to avoid collision
+            subprocess.run(["git", "tag", "-d", tag_name], capture_output=True)
+            subprocess.run(["git", "tag", "-a", tag_name, "-m", f"Release {tag_name}\n\n{body}"], check=False)
+            
+            print(f"🚀 Pushing Git tag {tag_name} to origin...")
+            subprocess.run(["git", "push", "origin", f":refs/tags/{tag_name}"], capture_output=True)  # Delete remote tag if any
+            subprocess.run(["git", "push", "origin", tag_name], check=False)
+            
+            # Check GITHUB_TOKEN or GH_TOKEN
+            token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+            if not token:
+                print("⚠️ GITHUB_TOKEN or GH_TOKEN env variables not found. Tag has been pushed, but skipping API release creation.")
+                return
+                
+            print("🚀 Creating formal GitHub Release via REST API...")
+            import urllib.request
+            import json
+            
+            try:
+                remote_result = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, check=True)
+                remote_url = remote_result.stdout.strip()
+                match = re.search(r"github\.com[:/]([^/]+)/([^.]+)", remote_url)
+                if match:
+                    owner = match.group(1)
+                    repo = match.group(2)
+                else:
+                    owner = "sadatian"
+                    repo = "xpyrment"
+            except Exception:
+                owner = "sadatian"
+                repo = "xpyrment"
+                
+            api_url = f"https://api.github.com/repos/{owner}/{repo}/releases"
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "Content-Type": "application/json"
+            }
+            
+            data = {
+                "tag_name": tag_name,
+                "target_commitish": "main",
+                "name": tag_name,
+                "body": body,
+                "draft": False,
+                "prerelease": False
+            }
+            
+            try:
+                req = urllib.request.Request(
+                    api_url, 
+                    data=json.dumps(data).encode("utf-8"), 
+                    headers=headers, 
+                    method="POST"
+                )
+                with urllib.request.urlopen(req) as response:
+                    res_data = json.loads(response.read().decode("utf-8"))
+                    print(f"🎉 GitHub Release '{tag_name}' created successfully!")
+                    print(f"🔗 View Release: {res_data.get('html_url')}")
+                    
+                    release_id = res_data.get("id")
+                    upload_url_template = res_data.get("upload_url")
+                    if release_id and upload_url_template:
+                        upload_url = upload_url_template.split("{")[0]
+                        if os.path.exists(dist_dir):
+                            for filename in os.listdir(dist_dir):
+                                file_path = os.path.join(dist_dir, filename)
+                                if os.path.isfile(file_path):
+                                    print(f"📤 Uploading build asset to GitHub Release: {filename}...")
+                                    try:
+                                        with open(file_path, "rb") as asset_f:
+                                            asset_data = asset_f.read()
+                                        asset_req = urllib.request.Request(
+                                            f"{upload_url}?name={filename}",
+                                            data=asset_data,
+                                            headers={
+                                                "Authorization": f"Bearer {token}",
+                                                "Content-Type": "application/octet-stream",
+                                            },
+                                            method="POST"
+                                        )
+                                        urllib.request.urlopen(asset_req)
+                                    except Exception as ae:
+                                        print(f"⚠️ Asset upload failed for {filename}: {str(ae)}")
+            except Exception as e:
+                print(f"❌ Failed to create GitHub Release via REST API: {str(e)}")
         
         if args.testpypi:
             print(f"🔄 Updating README.md PyPI badge to v{version} prior to publishing...")
@@ -407,6 +509,7 @@ if __name__ == "__main__":
                     print("⚠️ Could not fetch latest TestPyPI version. Leaving badge as is.")
             else:
                 print("🎉 Successfully uploaded and synchronized PyPI badge!")
+                create_github_release(version, notes_content)
             
         if args.pypi:
             print(f"🔄 Updating README.md PyPI badge to v{version} prior to publishing...")
@@ -432,5 +535,7 @@ if __name__ == "__main__":
                         print("⚠️ Could not fetch latest PyPI/TestPyPI version. Leaving badge as is.")
             else:
                 print("🎉 Successfully uploaded and synchronized PyPI badge!")
+                create_github_release(version, notes_content)
+
 
 
