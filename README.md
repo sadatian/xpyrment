@@ -1,4 +1,4 @@
-# xpyrment 🧪
+# ![xpyrment](https://raw.githubusercontent.com/sadatian/xpyrment/refs/heads/main/src/xpyrment/assets/images/xpyrment_logo_mini.svg) xpyrment
 
 <p align="left">
   <img src="https://img.shields.io/badge/pypi-v1.1.2.9-800020?style=flat&logo=pypi&logoColor=black&labelColor=e1dae3" alt="PyPI version" />

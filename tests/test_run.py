@@ -5,6 +5,7 @@ from xpyrment.run.assignment import AssignmentLogger
 from xpyrment.run.ingestion import ingest_dataframe, load_from_sql
 from xpyrment.run.monitor import LiveMonitor
 from xpyrment.run.stopping import StoppingRules
+from xpyrment.plan.duration import estimate_duration_days
 
 
 def test_assignment_logger_deduplication():

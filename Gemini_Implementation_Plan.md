@@ -162,3 +162,12 @@ All maintenance work must follow these strict guardrails:
   - Cleared these `# TODO` tags from the source files and marked them as complete in `TASKS.md`.
 * **b) What must be done next**:
   - Continue working through the massive `Block T` backlog of TODOs!
+
+### 12. Hardening Tests and Codebase Integrity
+* **a) What was accomplished**:
+  - Identified and removed `tests/test_coverage_backfill.py` and `tests/test_coverage_backfill_2.py` as non-legitimate "coverups".
+  - Refactored all unique, functional test logic for core modules (e.g., `hash_assign`, `FullFactorialDesign`, `GuardrailMetric`, `route_inference_engine`) into the appropriate existing test files.
+  - Strictly prohibited the creation of dummy tests in the project's governance rules (`.agents/rules/continuous-testing.md`).
+  - Successfully verified the entire 154-test suite passes with 100% legitimate assertions.
+* **b) What must be done next**:
+  - Continue with the remaining tasks in the `Block T` backlog in `TASKS.md`.

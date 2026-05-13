@@ -6,6 +6,8 @@ from xpyrment.core.state import ExperimentState
 from xpyrment.core.experiment import Experiment
 from xpyrment.core.registry import ExperimentRegistry
 from xpyrment.metrics.taxonomy import MeanMetric
+from xpyrment.plan.hypothesis import HypothesisSpec
+from xpyrment.plan.preregistration import PreregistrationCard
 
 
 def test_experiment_state_transitions():
@@ -96,3 +98,18 @@ def test_experiment_registry_hashing():
 
     # Verifying unregistered ID must return False
     assert registry.verify_spec("EXP-999", spec) is False
+
+
+def test_hypothesis_spec():
+    """Tests hypothesis specification properties and directionality."""
+    m = MeanMetric("CTR", value_col="clicks")
+    h = HypothesisSpec(m, description="Increase CTR", direction="greater")
+    assert h.direction == "greater"
+    assert h.primary_metric.name == "CTR"
+
+
+def test_preregistration_card():
+    """Tests preregistration card verification logic."""
+    card = PreregistrationCard("exp1", {"mde": 0.05, "power": 0.8})
+    assert card.verify({"mde": 0.05, "power": 0.8}) is True
+    assert card.verify({"mde": 0.05, "power": 0.9}) is False

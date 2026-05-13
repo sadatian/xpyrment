@@ -7,6 +7,7 @@ from xpyrment.core.exceptions import PhaseOrderError
 from xpyrment.core.state import ExperimentState
 from xpyrment.metrics.taxonomy import MeanMetric, ProportionMetric
 from xpyrment.simulation import generate_ab_data
+from xpyrment.analyze.inference.router import route_inference_engine
 
 
 def test_end_to_end_setup_and_analysis():
@@ -370,6 +371,15 @@ def test_markov_journey_transition_homogeneity():
     assert len(pi_t) == 3
     assert np.isclose(np.sum(pi_c), 1.0)
     assert np.isclose(np.sum(pi_t), 1.0)
+
+
+def test_route_inference_engine():
+    """Tests the inference engine routing logic for different metric types."""
+    metric = MeanMetric("Revenue", value_col="revenue")
+    # Routing for a MeanMetric in a standard A/B test should return a frequentist engine string
+    engine = route_inference_engine(metric, "A/B")
+    assert engine is not None
+    assert isinstance(engine, str)
 
 
 

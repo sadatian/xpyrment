@@ -12,13 +12,12 @@ When activated, the agent MUST explicitly outline its test architecture and repr
 
 ---
 
-## 1. Gold-Standard Regression Debugging Flow
-When resolving a bug, regression, or calculation issue, do NOT edit production code immediately. Follow this strict verification loop:
-1. **Write Reproduction Test First**: Before applying any fix under `src/`, write a reproducing unit test in the corresponding test suite (e.g., prefixing with `test_reproduce_issue_...`).
-2. **Verify Failure**: Execute the test runner on the new test only to confirm that it fails under the current implementation.
-3. **Implement the Fix**: Modify the target file in `src/` to resolve the bug.
-4. **Assert Success**: Execute the reproduction test to confirm that it now passes successfully.
-5. **Full Suite Regression Check**: Execute the complete test suite (`pytest`) to confirm that zero existing tests or downstream modules are broken.
+## 1. Deferred Regression Debugging Flow
+When resolving a bug, regression, or calculation issue, do NOT edit production code and run tests immediately. Follow this strict verification loop:
+1. **Implement the Fix**: Modify the target file in `src/` to resolve the bug or implement the new feature.
+2. **Batch Test Runs**: Keep pytests deferred until after a complete set of major debugging or new feature implementation is done. It is useless to run `pytest` before everything.
+3. **Write Regression Tests**: After implementing major fixes/features, write unit tests under `tests/` ensuring exhaustive boundary coverage.
+4. **Full Suite Regression Check**: Execute the complete test suite (`pytest`) in batch at the end to confirm zero existing tests or downstream modules are broken.
 
 ---
 
@@ -31,6 +30,10 @@ When adding safe, backward-compatible new features:
 * **Random Seed Isolation**:
   - All stochastic operations (bootstrap, simulations, randomized partitions, bandits) must use local, isolated `np.random.Generator` objects initialized by a configurable integer seed.
   - Never call global `np.random.seed()` as it creates state leakage across test modules.
+* **Prohibition of Dummy Tests ("Coverups")**:
+  - Do NOT create "dummy tests" or "coverups" that merely call code wrapped in `try/except: pass` without meaningful assertions just to artificially inflate coverage.
+  - Every test MUST assert functional correctness, correctly setup necessary dependencies, and validate outputs.
+  - Test files like `test_coverage_backfill.py` containing zero-assertion logic are strictly forbidden.
 
 ---
 

@@ -85,9 +85,8 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
 1. **Systematic Bug Diagnosis Sequence**:
    When debugging a regression or mathematical failure, do NOT edit production files immediately. Follow these exact steps:
    - **Step A: Capture State**: Collect and inspect input values, dimensions, variances, and state variables using our profiling logs.
-   - **Step B: Isolate in Test**: Write a minimal failing unit test under `tests/` reproducing the exact bug (e.g., passing singular arrays or extreme values). Confirm that the test fails.
-   - **Step C: Safely Correct**: Apply the correction in the target `src/` file.
-   - **Step D: Regression Run**: Run the entire test suite to guarantee the fix did not break downstream dependencies.
+   - **Step B: Safely Correct**: Apply the correction in the target `src/` file.
+   - **Step C: Defer Regression Run**: Do not run pytests immediately. Keep test runs to the very end after a complete set of major debugging or new feature implementation is done.
 2. **Additive-First Feature Integration**:
    When adding a new feature (e.g., from Phase 2):
    - Do not replace existing methods or change signatures.
@@ -100,3 +99,6 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
 5. **No Automated Documentation Serving**:
    - Do NOT run the `mkdocs serve` command directly on behalf of the user.
    - If a live-served documentation preview is required, only compile the documentation locally via `mkdocs build` to check for compilation issues, and ask the user to run `mkdocs serve` separately in their own terminal.
+6. **Context & Token Optimization**:
+   - Make sure to use built in search functionality when possible to reduce context size and token expenditure.
+   - Consider all other possible measures to reduce context size and token use during operations.

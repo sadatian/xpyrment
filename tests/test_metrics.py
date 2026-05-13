@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 from xpyrment.metrics.taxonomy import MeanMetric, ProportionMetric, RatioMetric
+from xpyrment.metrics.guardrails import GuardrailMetric
+from xpyrment.metrics.transformations import log_transform, delta_normalization
 
 
 def test_mean_metric_calculation():
@@ -139,4 +141,25 @@ def test_reproduce_issue_cuped_singular_covariate():
     res_ratio = ratio_metric.calculate(df_ratio, "variant", "control", "treatment")
     assert res_ratio["cuped_applied"] is False
     assert res_ratio["variance_reduction"] == 0.0
+
+
+def test_guardrail_metric():
+    """Tests guardrail breach detection logic."""
+    class MockMetric:
+        def __init__(self, name):
+            self.name = name
+    m = MockMetric("latency")
+    g = GuardrailMetric(m, max_allowed_change=0.05)
+    assert g.check_breach({"relative_lift": 0.06}) is True
+    assert g.check_breach({"relative_lift": 0.04}) is False
+
+
+def test_transformations():
+    """Tests log transformation and delta normalization scaling."""
+    df = pd.DataFrame({"Y": [1, 10, 100], "X": [1, 2, 3]})
+    res_log = log_transform(df, "Y")
+    assert np.isclose(res_log.iloc[0], np.log(2))
+    
+    res_delta = delta_normalization(df, "Y")
+    assert len(res_delta) == 3
 

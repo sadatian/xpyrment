@@ -17,6 +17,8 @@ from xpyrment.design.doe.lhs import LatinHypercubeDesign
 from xpyrment.design.doe.mixture import MixtureDesign
 from xpyrment.design.doe.switchback import SwitchbackDesign
 from xpyrment.design.doe.evop import EVOPDesign
+from xpyrment.design.randomization import hash_assign
+from xpyrment.design.doe.full_factorial import FullFactorialDesign
 
 
 def test_design_experiment_proportion():
@@ -572,3 +574,18 @@ def test_carryover_decomposition():
 
 
 
+def test_hash_assign():
+    """Tests deterministic hashing for unit-to-variant assignments."""
+    assert hash_assign(123, 'salt', ['A', 'B']) == hash_assign(123, 'salt', ['A', 'B'])
+    assert hash_assign(123, 'salt1', ['A', 'B']) != hash_assign(123, 'salt2', ['A', 'B'])
+    with pytest.raises(ValueError):
+        hash_assign(123, 'salt', [])
+
+
+def test_full_factorial_design():
+    """Tests generation of a basic 2^k Full Factorial Design."""
+    design = FullFactorialDesign({'F1': [0, 1], 'F2': [0, 1]})
+    df = design.generate()
+    assert df.shape == (4, 2)
+    assert set(df['F1']) == {0, 1}
+    assert set(df['F2']) == {0, 1}
