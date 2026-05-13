@@ -414,8 +414,24 @@ if __name__ == "__main__":
             # Check GITHUB_TOKEN or GH_TOKEN
             token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
             if not token:
-                print("⚠️ GITHUB_TOKEN or GH_TOKEN env variables not found. Tag has been pushed, but skipping API release creation.")
+                # Try fallback to local .env file
+                env_path = os.path.join(root_dir, ".env")
+                if os.path.exists(env_path):
+                    try:
+                        with open(env_path, "r", encoding="utf-8") as env_f:
+                            for line in env_f:
+                                if line.strip() and not line.startswith("#") and "=" in line:
+                                    k, v = line.strip().split("=", 1)
+                                    if k.strip() in ["GITHUB_TOKEN", "GH_TOKEN"]:
+                                        token = v.strip().strip('"').strip("'")
+                                        break
+                    except Exception:
+                        pass
+                        
+            if not token:
+                print("⚠️ GITHUB_TOKEN or GH_TOKEN env variables not found (and no token found in .env). Tag has been pushed, but skipping API release creation.")
                 return
+
                 
             print("🚀 Creating formal GitHub Release via REST API...")
             import urllib.request
