@@ -1,4 +1,4 @@
-# Release Notes - v1.1.2.8
+# Release Notes - v1.1.2.9
 
 ## 🚀 What's New
 - **Automated Build & Publishing CLI**: Streamlined local and remote package releases using a standardized CLI tool in `main.py`.
@@ -9,5 +9,5 @@
 
 ## 📦 Installation
 ```bash
-pip install xpyrment==1.1.2.8
+pip install xpyrment==1.1.2.9
 ```

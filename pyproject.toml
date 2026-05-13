@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xpyrment"
-version = "1.1.2.5"
+version = "1.1.2.9"
 authors = [
     { name = "Dan Sadatian", email = "dan.sadatian@gmail.com" }
 ]
