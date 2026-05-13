@@ -254,7 +254,7 @@ class MeanMetric(BaseMetric):
             x = df_clean[self.pre_period_col].to_numpy()
 
             var_x = np.var(x, ddof=1)
-            if var_x > 0:
+            if not np.isclose(var_x, 0.0, atol=1e-12):
                 cov_yx = np.cov(y, x, ddof=1)[0, 1]
                 theta = cov_yx / var_x
                 mean_x_global = np.mean(x)
@@ -470,7 +470,7 @@ class RatioMetric(BaseMetric):
             var_pre_num = np.var(pre_num, ddof=1)
             var_pre_den = np.var(pre_den, ddof=1)
 
-            if var_pre_num > 0 and var_pre_den > 0:
+            if not np.isclose(var_pre_num, 0.0, atol=1e-12) and not np.isclose(var_pre_den, 0.0, atol=1e-12):
                 cov_num = np.cov(num, pre_num, ddof=1)[0, 1]
                 theta_num = cov_num / var_pre_num
                 mean_pre_num_global = np.mean(pre_num)

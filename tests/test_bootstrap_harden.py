@@ -52,6 +52,24 @@ def test_bootstrap_zero_variance_fallback():
     assert upper_p == 42.0
 
 
+def test_bootstrap_degenerate_resamples():
+    """Validates that sparse arrays that produce degenerate zero-variance replicates fall back gracefully."""
+    # Array with just one non-zero value, but we set random_seed such that
+    # the outlier is never sampled in the bootstrap resamples (or very rarely,
+    # causing degenerate replicates).
+    # To force degenerate, let's make an array of 50 zeros and 1 tiny non-zero value.
+    data = np.zeros(50)
+    data[0] = 1e-15
+    
+    # The input variance is > 0
+    assert np.var(data) > 0.0
+
+    lower, upper = run_bootstrap_ci(data, num_resamples=50, method="bca", random_seed=42)
+    # The bounds should just collapse to the point estimate safely without BCa math errors
+    assert lower == float(np.mean(data))
+    assert upper == float(np.mean(data))
+
+
 def test_bootstrap_large_chunked_execution():
     """Verifies that large arrays/resamples trigger chunked vectorized processing and run successfully."""
     # Setup data size such that num_resamples * size exceeds 10_000_000 elements threshold

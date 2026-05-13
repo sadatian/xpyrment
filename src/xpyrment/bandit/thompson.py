@@ -56,23 +56,18 @@ class ThompsonSamplingBandit:
         if rng is None:
             rng = np.random.default_rng()
 
-        best_sample = -float("inf")
-        selected_arm = self.arms[0]
+        if self.reward_type == "binary":
+            alphas = np.array([self.params[arm][0] for arm in self.arms])
+            betas = np.array([self.params[arm][1] for arm in self.arms])
+            samples = rng.beta(alphas, betas)
+        else:
+            mus = np.array([self.params[arm][0] for arm in self.arms])
+            precs = np.array([self.params[arm][1] for arm in self.arms])
+            sigmas = 1.0 / np.sqrt(precs)
+            samples = rng.normal(mus, sigmas)
 
-        for arm in self.arms:
-            if self.reward_type == "binary":
-                alpha, beta = self.params[arm]
-                sample = rng.beta(alpha, beta)
-            else:
-                mu_post, prec_post = self.params[arm]
-                sigma_post = 1.0 / np.sqrt(prec_post)
-                sample = rng.normal(mu_post, sigma_post)
-
-            if sample > best_sample:
-                best_sample = sample
-                selected_arm = arm
-
-        return selected_arm
+        best_idx = np.argmax(samples)
+        return self.arms[best_idx]
 
     def update(self, arm: str, reward: float):
         """Performs a closed-form conjugate posterior parameter update.

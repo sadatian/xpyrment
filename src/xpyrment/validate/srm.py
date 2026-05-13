@@ -6,8 +6,11 @@ or redirection bugs).
 """
 
 from typing import List
+import logging
 from scipy import stats
 from xpyrment.core.exceptions import SRMError
+
+logger = logging.getLogger(__name__)
 
 
 def check_srm(observed_counts: List[int], expected_ratios: List[float]) -> float:
@@ -77,9 +80,15 @@ def check_srm(observed_counts: List[int], expected_ratios: List[float]) -> float
             ```
     """
     total_observed = sum(observed_counts)
-    sum_ratios = sum(expected_ratios)
+    if total_observed == 0:
+        logger.warning("SRM check bypassed: total observed counts is 0.")
+        return 1.0
 
+    sum_ratios = sum(expected_ratios)
     expected_counts = [ratio * total_observed / sum_ratios for ratio in expected_ratios]
+
+    if any(e < 5 for e in expected_counts):
+        logger.warning("SRM chi-square approximation may be invalid because some expected counts are < 5.")
 
     # Perform chi-square goodness-of-fit test
     _, p_value = stats.chisquare(f_obs=observed_counts, f_exp=expected_counts)

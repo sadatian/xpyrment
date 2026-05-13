@@ -13,7 +13,7 @@ def run_aa_test_validation(
     metric_col: str,
     num_simulations: int = 100,
     seed: int = 42
-) -> float:
+) -> dict:
     r"""Runs an A/A test validation check, asserting that identical splits exhibit no treatment effect.
 
     An A/A test compares two groups that receive the exact same experience. The objective is to validate
@@ -27,8 +27,10 @@ def run_aa_test_validation(
         seed (int): Seed for random generator to guarantee reproducibility. Defaults to 42.
 
     Returns:
-        float: The Kolmogorov-Smirnov test p-value indicating goodness-of-fit to a Uniform(0, 1) distribution.
-            A value $> 0.05$ indicates that the p-values are uniformly distributed, validating the pipeline.
+        dict: A dictionary containing:
+            - ks_pvalue: The Kolmogorov-Smirnov test p-value indicating goodness-of-fit to a Uniform(0, 1) distribution.
+            - empirical_alpha_05: The raw empirical rejection rate at alpha=0.05.
+            - fdr_alpha_05: The rejection rate after applying Benjamini-Hochberg False Discovery Rate control.
     """
     import numpy as np
     from scipy import stats
@@ -36,13 +38,11 @@ def run_aa_test_validation(
     rng = np.random.default_rng(seed)
 
     p_values = []
-    groups = df[treatment_col].dropna().values
 
     # Clean the metric array to avoid NaNs interfering
     clean_df = df[[treatment_col, metric_col]].dropna()
     if len(clean_df) < 4:
-        # Too small to split or analyze
-        return 1.0
+        return {"ks_pvalue": 1.0, "empirical_alpha_05": 0.0, "fdr_alpha_05": 0.0}
 
     treatment_vals = clean_df[treatment_col].values
     metric_vals = clean_df[metric_col].values
@@ -51,26 +51,52 @@ def run_aa_test_validation(
     if len(unique_vals) < 2:
         raise ValueError(f"A/A test requires at least 2 distinct groups in '{treatment_col}'. Found {len(unique_vals)}.")
 
-    for _ in range(num_simulations):
-        # Permute assignment labels randomly to construct simulated A/A splits
-        shuffled_labels = rng.permutation(treatment_vals)
-        
-        # Split metric values based on shuffled mock-groups A1 and A2
-        A1 = metric_vals[shuffled_labels == unique_vals[0]]
-        A2 = metric_vals[shuffled_labels == unique_vals[1]]
+    n1 = int(np.sum(treatment_vals == unique_vals[0]))
+    n2 = len(treatment_vals) - n1
+    N = len(treatment_vals)
 
-        if len(A1) > 1 and len(A2) > 1:
-            # Welch's t-test under null hypothesis
-            _, p_val = stats.ttest_ind(A2, A1, equal_var=False)
-            if np.isnan(p_val):
-                p_values.append(1.0)
-            else:
-                p_values.append(float(p_val))
-        else:
-            p_values.append(1.0)
+    chunk_size = 5000
+    for i in range(0, num_simulations, chunk_size):
+        current_chunk = min(chunk_size, num_simulations - i)
+        
+        # Generate random permutations using argsort of random uniform
+        rand_idx = rng.random((current_chunk, N)).argsort(axis=1)
+        
+        idx1 = rand_idx[:, :n1]
+        idx2 = rand_idx[:, n1:]
+        
+        A1 = metric_vals[idx1] 
+        A2 = metric_vals[idx2] 
+        
+        mean1 = A1.mean(axis=1)
+        mean2 = A2.mean(axis=1)
+        
+        var1 = A1.var(axis=1, ddof=1)
+        var2 = A2.var(axis=1, ddof=1)
+        
+        vn1 = var1 / n1
+        vn2 = var2 / n2
+        
+        with np.errstate(divide='ignore', invalid='ignore'):
+            t_stat = (mean2 - mean1) / np.sqrt(vn1 + vn2)
+            df_stat = (vn1 + vn2)**2 / ( (vn1**2)/(n1-1) + (vn2**2)/(n2-1) )
+            
+            p_vals = 2 * stats.t.sf(np.abs(t_stat), df_stat)
+            
+        p_vals = np.nan_to_num(p_vals, nan=1.0)
+        p_values.extend(p_vals)
 
     # Perform Kolmogorov-Smirnov goodness-of-fit test against a continuous Uniform(0, 1) CDF
     ks_res = stats.kstest(p_values, "uniform")
-    # TODO: Add parallel execution or vectorization for large-scale multi-run simulations to reduce processing time under 100k iterations.
-    # TODO: Integrate false discovery rate (FDR) control and family-wise error rate verification diagnostics to confirm multi-metric simulation alpha thresholds.
-    return float(ks_res.pvalue)
+    
+    # False Discovery Rate (FDR) control using Benjamini-Hochberg
+    p_values = np.array(p_values)
+    empirical_alpha = np.mean(p_values < 0.05)
+    fdr_pvals = stats.false_discovery_control(p_values)
+    fdr_alpha = np.mean(fdr_pvals < 0.05)
+
+    return {
+        "ks_pvalue": float(ks_res.pvalue),
+        "empirical_alpha_05": float(empirical_alpha),
+        "fdr_alpha_05": float(fdr_alpha)
+    }

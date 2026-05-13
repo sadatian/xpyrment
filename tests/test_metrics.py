@@ -94,3 +94,49 @@ def test_mean_metric_cuped():
     ci_range_no_cuped = res_no_cuped["ci_upper"] - res_no_cuped["ci_lower"]
     ci_range_cuped = res_cuped["ci_upper"] - res_cuped["ci_lower"]
     assert ci_range_cuped < ci_range_no_cuped
+
+
+def test_reproduce_issue_cuped_singular_covariate():
+    """Tests that CUPED correctly falls back to unadjusted difference-in-means when covariate variance is near zero."""
+    n_samples = 100
+    # Create covariate with near-zero variance (~1e-22)
+    pre_rev = np.array([10.0] * n_samples, dtype=np.float64)
+    pre_rev[0] += 1e-10
+
+    post_rev = np.random.default_rng(42).normal(10, 2, n_samples)
+
+    df = pd.DataFrame(
+        {
+            "variant": ["control"] * 50 + ["treatment"] * 50,
+            "pre_revenue": pre_rev,
+            "revenue": post_rev,
+        }
+    )
+
+    metric_cuped = MeanMetric("Revenue", value_col="revenue", pre_period_col="pre_revenue")
+    res_cuped = metric_cuped.calculate(df, "variant", "control", "treatment")
+
+    assert res_cuped["cuped_applied"] is False
+    assert res_cuped["variance_reduction"] == 0.0
+
+    # Also test RatioMetric with near-zero pre-period variance
+    df_ratio = pd.DataFrame(
+        {
+            "variant": ["control"] * 50 + ["treatment"] * 50,
+            "clicks": post_rev,
+            "impressions": [100] * 100,
+            "pre_clicks": pre_rev,
+            "pre_impressions": [100] * 100,
+        }
+    )
+    ratio_metric = RatioMetric(
+        "CTR",
+        numerator_col="clicks",
+        denominator_col="impressions",
+        pre_numerator_col="pre_clicks",
+        pre_denominator_col="pre_impressions",
+    )
+    res_ratio = ratio_metric.calculate(df_ratio, "variant", "control", "treatment")
+    assert res_ratio["cuped_applied"] is False
+    assert res_ratio["variance_reduction"] == 0.0
+

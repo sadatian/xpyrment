@@ -61,5 +61,13 @@ def run_factorial_anova(df: pd.DataFrame, formula: str) -> pd.DataFrame:
         pd.DataFrame: A standard ANOVA table detailing Sum of Squares, degrees of freedom ($df$), F-statistics,
             and p-values for each term.
     """
-    # TODO: Implement statsmodels OLS and anova_lm integration
-    return pd.DataFrame()
+    import statsmodels.api as sm
+    import statsmodels.formula.api as smf
+
+    # Fit ordinary least squares model using R-style formula
+    model = smf.ols(formula, data=df).fit()
+    
+    # Compute Type II ANOVA table
+    anova_table = sm.stats.anova_lm(model, typ=2)
+    
+    return anova_table

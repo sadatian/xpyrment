@@ -5,8 +5,11 @@ Implements retrospective Chi-Squared tests and sequential binomial likelihood ra
 """
 
 from typing import Dict, List, Tuple, Union
+import logging
 import numpy as np
 from scipy.stats import chi2
+
+logger = logging.getLogger(__name__)
 
 
 class SampleRatioMismatchDetector:
@@ -42,6 +45,7 @@ class SampleRatioMismatchDetector:
         
         N = obs_ctrl + obs_trt
         if N == 0:
+            logger.warning("SRM check bypassed: total observed counts is 0.")
             return {
                 "chi_squared_statistic": 0.0,
                 "p_value": 1.0,
@@ -51,6 +55,9 @@ class SampleRatioMismatchDetector:
         # Expected counts
         exp_ctrl = N * self.target_ctrl
         exp_trt = N * self.target_trt
+
+        if exp_ctrl < 5 or exp_trt < 5:
+            logger.warning("SRM chi-square approximation may be invalid because expected counts are < 5.")
 
         # Pearson Chi-Squared formula
         chi_sq = ((obs_ctrl - exp_ctrl) ** 2) / exp_ctrl + ((obs_trt - exp_trt) ** 2) / exp_trt

@@ -23,6 +23,14 @@ def test_check_srm_mismatch_raises_error():
     assert "Sample Ratio Mismatch detected" in str(exc_info.value)
 
 
+def test_check_srm_extreme_low_counts():
+    """Asserts that check_srm safely handles zero counts or extremely low counts."""
+    p_val_zero = check_srm(observed_counts=[0, 0], expected_ratios=[0.5, 0.5])
+    assert p_val_zero == 1.0
+
+    p_val_low = check_srm(observed_counts=[2, 1], expected_ratios=[0.5, 0.5])
+    assert p_val_low >= 0.0
+
 def test_check_covariate_balance():
     """Tests SMD and p-value computations for continuous and categorical covariate balance."""
     rng = np.random.default_rng(42)
@@ -77,10 +85,13 @@ def test_run_aa_test_validation():
     })
 
     # Execute simulation (using 50 reps to keep it extremely fast)
-    ks_p_val = run_aa_test_validation(df, "group", "revenue", num_simulations=50, seed=42)
+    results = run_aa_test_validation(df, "group", "revenue", num_simulations=50, seed=42)
+    ks_p_val = results["ks_pvalue"]
 
     # Assert p-value boundary correctness
     assert 0.0 <= ks_p_val <= 1.0
+    assert 0.0 <= results["empirical_alpha_05"] <= 1.0
+    assert 0.0 <= results["fdr_alpha_05"] <= 1.0
 
 
 def test_check_novelty_effects():

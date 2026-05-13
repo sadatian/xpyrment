@@ -73,6 +73,20 @@ class DefinitiveScreeningDesign(DesignMatrix):
             ```
     """
 
+    def __init__(self, factors: dict):
+        """Initializes a Definitive Screening Design.
+
+        Args:
+            factors (dict): Mapping of factor labels to their designated low, mid, and high levels.
+        """
+        super().__init__(factors)
+        for factor_name, levels in self.factors.items():
+            if len(levels) != 3:
+                raise ValueError(
+                    f"Definitive Screening Designs strictly require exactly 3 levels per factor (low, mid, high). "
+                    f"Factor '{factor_name}' has {len(levels)} levels."
+                )
+
     def generate(self) -> pd.DataFrame:
         """Generates the Definitive Screening Design matrix.
 

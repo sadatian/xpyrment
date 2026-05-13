@@ -179,6 +179,20 @@ def test_fractional_factorial_generation():
     pd.testing.assert_series_equal(coded_df["E"], expected_E, check_names=False)
 
 
+def test_fractional_factorial_level_validation():
+    """Asserts that supplying non-2-level factors to Fractional Factorial raises ValueError."""
+    factors_3_level = {"A": [1.0, 2.0, 3.0], "B": [0.0, 1.0]}
+    with pytest.raises(ValueError, match="strictly require exactly 2 levels"):
+        FractionalFactorialDesign(factors_3_level, generator_string="B = A")
+
+
+def test_dsd_level_validation():
+    """Asserts that supplying non-3-level factors to DSD raises ValueError."""
+    factors_2_level = {"A": [-1.0, 1.0], "B": [-1.0, 1.0]}
+    with pytest.raises(ValueError, match="strictly require exactly 3 levels"):
+        DefinitiveScreeningDesign(factors_2_level)
+
+
 def test_ccd_generation():
     """Tests face-centered and rotatable central composite designs."""
     factors = {
@@ -299,13 +313,13 @@ def test_taguchi_generation():
 def test_dsd_generation():
     """Tests Definitive Screening Design (DSD) linear orthogonality and fold-over symmetry."""
     # Test even number of factors (k=4 -> N = 2k + 1 = 9 runs)
-    factors_even = {f"F{i}": [-1.0, 1.0] for i in range(1, 5)}
+    factors_even = {f"F{i}": [-1.0, 0.0, 1.0] for i in range(1, 5)}
     design_even = DefinitiveScreeningDesign(factors_even)
     df_even = design_even.generate()
     assert len(df_even) == 9
 
     # Test odd number of factors (k=5 -> N = 2k + 3 = 13 runs)
-    factors_odd = {f"F{i}": [-1.0, 1.0] for i in range(1, 6)}
+    factors_odd = {f"F{i}": [-1.0, 0.0, 1.0] for i in range(1, 6)}
     design_odd = DefinitiveScreeningDesign(factors_odd)
     df_odd = design_odd.generate()
     assert len(df_odd) == 13
@@ -313,8 +327,7 @@ def test_dsd_generation():
     # Map odd factors to coded space for algebraic verification
     coded_df = pd.DataFrame()
     for col in df_odd.columns:
-        low, high = factors_odd[col]
-        mid = (low + high) / 2
+        low, mid, high = factors_odd[col]
         half_range = (high - low) / 2
         coded_df[col] = (df_odd[col] - mid) / half_range
 

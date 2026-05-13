@@ -32,25 +32,33 @@ class LogisticRegression:
         return 1.0 / (1.0 + np.exp(-np.clip(z, -50, 50)))
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "LogisticRegression":
-        """Fits the model coefficients on the training set.
+        """Fits the model coefficients on the training set using SciPy optimization solvers.
 
         Args:
             X (np.ndarray): Design matrix of shape (N, P).
             y (np.ndarray): Target labels of shape (N,).
         """
+        from scipy.optimize import minimize
+
         N, P = X.shape
         X_bias = np.hstack([np.ones((N, 1)), X])
-        self.weights = np.zeros(P + 1)
+        
+        def loss(w):
+            z = np.dot(X_bias, w)
+            preds = self._sigmoid(z)
+            # Binary Cross Entropy
+            epsilon = 1e-15
+            preds = np.clip(preds, epsilon, 1.0 - epsilon)
+            return -np.sum(y * np.log(preds) + (1 - y) * np.log(1 - preds)) / N
+            
+        def grad(w):
+            z = np.dot(X_bias, w)
+            preds = self._sigmoid(z)
+            return np.dot(X_bias.T, preds - y) / N
 
-        for _ in range(self.max_iter):
-            old_weights = self.weights.copy()
-            z = np.dot(X_bias, self.weights)
-            predictions = self._sigmoid(z)
-            gradient = np.dot(X_bias.T, predictions - y) / N
-            self.weights -= self.lr * gradient
-
-            if np.max(np.abs(self.weights - old_weights)) < self.tol:
-                break
+        initial_weights = np.zeros(P + 1)
+        res = minimize(loss, initial_weights, jac=grad, method="L-BFGS-B", options={"maxiter": self.max_iter, "gtol": self.tol})
+        self.weights = res.x
         return self
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
@@ -123,25 +131,32 @@ class PropensityScoreMatcher:
 
         matched_controls = set()
 
-        for idx in treated_indices:
-            score_t = logits[idx]
-            best_dist = float("inf")
-            best_control_idx = None
+        from scipy.spatial.distance import cdist
 
-            for c_idx in control_indices:
-                if c_idx in matched_controls:
-                    continue
-                score_c = logits[c_idx]
-                dist = np.abs(score_t - score_c)
-                if dist < caliper_val and dist < best_dist:
-                    best_dist = dist
-                    best_control_idx = c_idx
-
-            if best_control_idx is not None:
-                # Assign matches weights of 1.0
-                result_df.iloc[idx, result_df.columns.get_loc("weight")] = 1.0
-                result_df.iloc[best_control_idx, result_df.columns.get_loc("weight")] = 1.0
-                matched_controls.add(best_control_idx)
+        matched_controls = set()
+        
+        logits_t = logits[treated_indices].reshape(-1, 1)
+        logits_c = logits[control_indices].reshape(-1, 1)
+        
+        # Vectorized absolute distance computation
+        dist_matrix = cdist(logits_t, logits_c, metric='cityblock')
+        
+        for i, idx in enumerate(treated_indices):
+            # Sort controls by distance
+            sorted_c_indices_local = np.argsort(dist_matrix[i])
+            
+            for local_c_idx in sorted_c_indices_local:
+                dist = dist_matrix[i, local_c_idx]
+                if dist > caliper_val:
+                    break  # Caliper violation, no more matches for this treated unit
+                    
+                c_idx = control_indices[local_c_idx]
+                if c_idx not in matched_controls:
+                    # Assign matches weights of 1.0
+                    result_df.iloc[idx, result_df.columns.get_loc("weight")] = 1.0
+                    result_df.iloc[c_idx, result_df.columns.get_loc("weight")] = 1.0
+                    matched_controls.add(c_idx)
+                    break
 
         # Filter out unmatched rows
         return result_df[result_df["weight"] > 0].copy()

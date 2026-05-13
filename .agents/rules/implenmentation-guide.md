@@ -94,16 +94,9 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
    - Inject new features cleanly via opt-in parameters, separate utility functions, or isolated submodules.
 3. **Preserve LaTeX & docstrings**:
    - Maintain all LaTeX mathematical notations in docstrings.
-   - Ensure code edits do not introduce docstring format violations that break MkDocs builds.
-4. **Strict Four-Digit Versioning & Compliance Rule**:
-   All source code and visual changes must strictly adhere to the following 4-digit versioning schema (`Major.Minor.Patch.Revision`):
-   - **Extremely small polishments / styling adjustments**: Increment revision by `+0.0.0.1` (4th digit, `0.0.0.x`) (e.g., `1.0.0.0` $\rightarrow$ `1.0.0.1`).
-   - **Bug fixes / error corrections**: Increment patch by `+0.0.1.0` (3rd digit, `0.0.x.0`) and zero out any downstream digits (e.g., `1.0.0.1` $\rightarrow$ `1.0.1.0`).
-   - **Features added / new tools / automation integrations / macro setups**: Increment minor version by `+0.1.0.0` (2nd digit, `0.x.0.0`) and zero out any downstream digits (e.g., `1.0.1.5` $\rightarrow$ `1.1.0.0`).
-   - **Major releases / complete structural overhauls**: Increment major version by `+1.0.0.0` (1st digit, `x.0.0.0`) and zero out any downstream digits (e.g., `1.1.2.3` $\rightarrow$ `2.0.0.0`).
-   - *Rule of Reset*: Any increment of a higher-order digit **must** reset (zero out) all digits downstream of it.
-5. **No Broken Skeletons**:
+    - Ensure code edits do not introduce docstring format violations that break MkDocs builds.
+4. **No Broken Skeletons**:
    - All newly added files, helpers, or hooks must be fully implemented, documented, and covered with unit tests before declaring the task finished.
-6. **No Automated Documentation Serving**:
+5. **No Automated Documentation Serving**:
    - Do NOT run the `mkdocs serve` command directly on behalf of the user.
    - If a live-served documentation preview is required, only compile the documentation locally via `mkdocs build` to check for compilation issues, and ask the user to run `mkdocs serve` separately in their own terminal.

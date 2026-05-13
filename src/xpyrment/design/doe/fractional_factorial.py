@@ -85,6 +85,13 @@ class FractionalFactorialDesign(DesignMatrix):
         """
         super().__init__(factors)
         self.generator_string = generator_string
+        
+        for factor_name, levels in self.factors.items():
+            if len(levels) != 2:
+                raise ValueError(
+                    f"Fractional Factorial designs strictly require exactly 2 levels per factor. "
+                    f"Factor '{factor_name}' has {len(levels)} levels."
+                )
 
     def generate(self) -> pd.DataFrame:
         """Generates the fractional factorial design matrix.

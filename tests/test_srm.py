@@ -26,6 +26,21 @@ def test_srm_retrospective_mismatch():
     assert res["srm_detected"]
 
 
+def test_srm_retrospective_zero_and_low_counts():
+    detector = SampleRatioMismatchDetector(target_treatment_ratio=0.5)
+    
+    # Total count = 0
+    res_zero = detector.test_retrospective((0, 0))
+    assert res_zero["chi_squared_statistic"] == 0.0
+    assert res_zero["p_value"] == pytest.approx(1.0)
+    assert not res_zero["srm_detected"]
+
+    # Low counts < 5
+    res_low = detector.test_retrospective((2, 1))
+    assert "p_value" in res_low
+    assert not res_low["srm_detected"]
+
+
 def test_srm_sequential_perfect():
     detector = SampleRatioMismatchDetector(target_treatment_ratio=0.5)
     

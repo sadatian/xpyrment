@@ -42,24 +42,19 @@ class UCB1Bandit:
         if unplayed:
             return rng.choice(unplayed)
 
-        # Phase 2: Compute UCB1 index for each arm
-        best_ucb = -float("inf")
-        best_arms = []
+        # Phase 2: Compute UCB1 index for each arm using vectorized NumPy operations
+        means = np.array([self.values[arm] for arm in self.arms])
+        counts = np.array([self.counts[arm] for arm in self.arms])
+        
+        # Optimistic uncertainty factor
+        ucb_vals = means + np.sqrt((self.c * math.log(self.total_steps)) / counts)
 
-        for arm in self.arms:
-            mean_val = self.values[arm]
-            n_i = self.counts[arm]
-            
-            # Optimistic uncertainty factor
-            ucb_val = mean_val + math.sqrt((self.c * math.log(self.total_steps)) / n_i)
-
-            if ucb_val > best_ucb:
-                best_ucb = ucb_val
-                best_arms = [arm]
-            elif ucb_val == best_ucb:
-                best_arms.append(arm)
-
-        return rng.choice(best_arms)
+        # Handle potential ties randomly
+        max_val = np.max(ucb_vals)
+        best_indices = np.where(ucb_vals == max_val)[0]
+        selected_idx = rng.choice(best_indices)
+        
+        return self.arms[selected_idx]
 
     def update(self, arm: str, reward: float):
         """Updates the count and sample average reward of the selected arm.

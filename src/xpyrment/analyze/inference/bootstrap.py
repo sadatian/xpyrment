@@ -104,6 +104,10 @@ def run_bootstrap_ci(
             indices = rng.choice(n, size=(current_chunk_size, n), replace=True)
             replicates[start_idx:end_idx] = np.mean(data_group[indices], axis=1)
 
+    # Guard against perfectly degenerate bootstrap distributions
+    if np.var(replicates) < 1e-12 or np.all(replicates == replicates[0]):
+        return (point_est, point_est)
+
     alpha = 1.0 - confidence_level
 
     try:
