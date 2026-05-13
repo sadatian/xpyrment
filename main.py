@@ -47,12 +47,30 @@ def sync_versions():
             f"release-v{version}%20stable",
             readme_content
         )
+        # Fetch the latest published version on PyPI or TestPyPI
+        pypi_version = None
+        try:
+            import urllib.request
+            import json
+            # Try PyPI first
+            try:
+                with urllib.request.urlopen("https://pypi.org/pypi/xpyrment/json", timeout=3) as r:
+                    pypi_version = json.loads(r.read().decode("utf-8"))["info"]["version"]
+            except Exception:
+                # Fallback to TestPyPI
+                with urllib.request.urlopen("https://test.pypi.org/pypi/xpyrment/json", timeout=3) as r:
+                    pypi_version = json.loads(r.read().decode("utf-8"))["info"]["version"]
+        except Exception:
+            pass
+
         # Replace PyPI badge (supporting any digit format)
+        target_pypi_version = pypi_version if pypi_version else version
         updated_content = re.sub(
             r"pypi-v\d+(?:\.\d+)+",
-            f"pypi-v{version}",
+            f"pypi-v{target_pypi_version}",
             updated_content
         )
+
         
         # 4. Dynamically run pytest and coverage to sync test count and coverage badges
         try:
@@ -267,3 +285,143 @@ def define_env(env):
         logo_param = f"&logo={logo}" if logo else ""
         logo_color_param = "&logoColor=white" if logo else ""
         return f'<img src="https://img.shields.io/badge/{name}-{status}-{color}?style=flat{logo_param}{logo_color_param}&labelColor=0b0b0b" alt="{name}" />'
+
+
+if __name__ == "__main__":
+    import argparse
+    import shutil
+    
+    parser = argparse.ArgumentParser(description="Automate building and publishing the xpyrment package.")
+    parser.add_argument("--build", action="store_true", help="Build source distribution and wheel.")
+    parser.add_argument("--testpypi", action="store_true", help="Publish the package to TestPyPI.")
+    parser.add_argument("--pypi", action="store_true", help="Publish the package to actual PyPI.")
+    parser.add_argument("--sync", action="store_true", help="Sync versions and test coverage badges without building.")
+    
+    args = parser.parse_args()
+    
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Check if any argument was passed, if not show help
+    if not any(vars(args).values()):
+        parser.print_help()
+        sys.exit(0)
+        
+    # Always load single source of truth version at the start
+    pyproject_path = os.path.join(root_dir, "pyproject.toml")
+    with open(pyproject_path, "rb") as f:
+        config = tomllib.load(f)
+    version = config["project"]["version"]
+        
+    if args.sync:
+        print("🔄 Running version and badge synchronization...")
+        version = sync_versions()
+        print(f"✅ Synchronized. Current single source of truth version: {version}")
+        
+    if args.build:
+        print("🧹 Cleaning previous build and dist directories...")
+        for folder in ["build", "dist", "src/xpyrment.egg-info"]:
+            folder_path = os.path.join(root_dir, folder)
+            if os.path.exists(folder_path):
+                shutil.rmtree(folder_path)
+                
+        print("📦 Building source distribution and wheel packages...")
+        build_cmd = [sys.executable, "-m", "build"]
+        try:
+            # Ensure build package is present
+            import build
+        except ImportError:
+            print("⚠️ 'build' package not found. Installing it under local active python interpreter...")
+            subprocess.run([sys.executable, "-m", "pip", "install", "build"], check=True)
+            
+        result = subprocess.run(build_cmd, cwd=root_dir)
+        if result.returncode == 0:
+            print("🎉 Build completed successfully. Artifacts saved inside 'dist/' directory.")
+        else:
+            print("❌ Build failed.")
+            sys.exit(result.returncode)
+            
+    if args.testpypi or args.pypi:
+        try:
+            import twine
+        except ImportError:
+            print("⚠️ 'twine' package not found. Installing it under local active python interpreter...")
+            subprocess.run([sys.executable, "-m", "pip", "install", "twine"], check=True)
+            
+        dist_dir = os.path.join(root_dir, "dist")
+        if not os.path.exists(dist_dir) or not os.listdir(dist_dir):
+            print("❌ No distribution files found in 'dist/' directory. Please run with --build flag first.")
+            sys.exit(1)
+            
+        dist_files = os.path.join(dist_dir, "*")
+        readme_path = os.path.join(root_dir, "README.md")
+        
+        # Helper to update pypi badge in README.md
+        def update_pypi_badge(v):
+            if os.path.exists(readme_path):
+                with open(readme_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                updated = re.sub(
+                    r"pypi-v\d+(?:\.\d+)+",
+                    f"pypi-v{v}",
+                    content
+                )
+                if updated != content:
+                    with open(readme_path, "w", encoding="utf-8") as f:
+                        f.write(updated)
+
+        # Helper to fetch latest remote version
+        def fetch_remote_version(is_testpypi):
+            import urllib.request
+            import json
+            url = "https://test.pypi.org/pypi/xpyrment/json" if is_testpypi else "https://pypi.org/pypi/xpyrment/json"
+            try:
+                with urllib.request.urlopen(url, timeout=3) as r:
+                    return json.loads(r.read().decode("utf-8"))["info"]["version"]
+            except Exception:
+                return None
+        
+        if args.testpypi:
+            print(f"🔄 Updating README.md PyPI badge to v{version} prior to publishing...")
+            update_pypi_badge(version)
+            
+            print("🚀 Uploading distribution files to TestPyPI...")
+            upload_cmd = [sys.executable, "-m", "twine", "upload", "--repository", "testpypi", dist_files]
+            result = subprocess.run(upload_cmd, cwd=root_dir)
+            
+            if result.returncode != 0:
+                print("❌ Upload to TestPyPI failed! Reverting PyPI badge in README.md to latest available version...")
+                remote_v = fetch_remote_version(is_testpypi=True)
+                if remote_v:
+                    update_pypi_badge(remote_v)
+                    print(f"✅ Reverted PyPI badge in README.md to latest available TestPyPI version: v{remote_v}")
+                else:
+                    print("⚠️ Could not fetch latest TestPyPI version. Leaving badge as is.")
+            else:
+                print("🎉 Successfully uploaded and synchronized PyPI badge!")
+            
+        if args.pypi:
+            print(f"🔄 Updating README.md PyPI badge to v{version} prior to publishing...")
+            update_pypi_badge(version)
+            
+            print("🚀 Uploading distribution files to actual PyPI...")
+            upload_cmd = [sys.executable, "-m", "twine", "upload", dist_files]
+            result = subprocess.run(upload_cmd, cwd=root_dir)
+            
+            if result.returncode != 0:
+                print("❌ Upload to PyPI failed! Reverting PyPI badge in README.md to latest available version...")
+                remote_v = fetch_remote_version(is_testpypi=False)
+                if remote_v:
+                    update_pypi_badge(remote_v)
+                    print(f"✅ Reverted PyPI badge in README.md to latest available PyPI version: v{remote_v}")
+                else:
+                    # Fallback to TestPyPI if not on actual PyPI
+                    remote_v = fetch_remote_version(is_testpypi=True)
+                    if remote_v:
+                        update_pypi_badge(remote_v)
+                        print(f"✅ Reverted PyPI badge in README.md to latest available TestPyPI version: v{remote_v}")
+                    else:
+                        print("⚠️ Could not fetch latest PyPI/TestPyPI version. Leaving badge as is.")
+            else:
+                print("🎉 Successfully uploaded and synchronized PyPI badge!")
+
+
