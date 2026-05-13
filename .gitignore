@@ -29,6 +29,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+xpyrment-*/
+
 
 # PyInstaller
 #  Usually these written by a python script before a bin is built
