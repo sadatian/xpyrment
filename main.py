@@ -7,7 +7,7 @@ import importlib
 import inspect
 import pkgutil
 
-def sync_versions():
+def sync_versions(force_pypi_version=None):
     """
     Using pyproject.toml as the absolute single source of truth,
     automatically synchronize the version string across:
@@ -64,7 +64,7 @@ def sync_versions():
             pass
 
         # Replace PyPI badge (supporting any digit format)
-        target_pypi_version = pypi_version if pypi_version else version
+        target_pypi_version = force_pypi_version if force_pypi_version else (pypi_version if pypi_version else version)
         updated_content = re.sub(
             r"pypi-v\d+(?:\.\d+)+",
             f"pypi-v{target_pypi_version}",
@@ -326,11 +326,13 @@ if __name__ == "__main__":
     with open(pyproject_path, "rb") as f:
         config = tomllib.load(f)
     version = config["project"]["version"]
-        
-    if args.sync:
-        print("🔄 Running version and badge synchronization...")
-        version = sync_versions()
-        print(f"✅ Synchronized. Current single source of truth version: {version}")
+
+    # Ensure everything is in sync before any build or publish action
+    if args.build or args.pypi or args.testpypi or args.sync:
+        print(f"🔄 Synchronizing versions and badges (Target: v{version})...")
+        # For build/publish, we force the PyPI badge to the version being released
+        force_v = version if (args.build or args.pypi or args.testpypi) else None
+        sync_versions(force_pypi_version=force_v)
         
     if args.build:
         print("🧹 Cleaning previous build and dist directories...")
@@ -389,30 +391,6 @@ if __name__ == "__main__":
             with open(notes_path, "w", encoding="utf-8") as f:
                 f.write(notes_content)
         
-        # Helper to update pypi badge in README.md
-        def update_pypi_badge(v):
-            if os.path.exists(readme_path):
-                with open(readme_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-                updated = re.sub(
-                    r"pypi-v\d+(?:\.\d+)+",
-                    f"pypi-v{v}",
-                    content
-                )
-                if updated != content:
-                    with open(readme_path, "w", encoding="utf-8") as f:
-                        f.write(updated)
-
-        # Helper to fetch latest remote version
-        def fetch_remote_version(is_testpypi):
-            import urllib.request
-            import json
-            url = "https://test.pypi.org/pypi/xpyrment/json" if is_testpypi else "https://pypi.org/pypi/xpyrment/json"
-            try:
-                with urllib.request.urlopen(url, timeout=3) as r:
-                    return json.loads(r.read().decode("utf-8"))["info"]["version"]
-            except Exception:
-                return None
 
         # Helper to create GitHub Release
         def create_github_release(v, body):
@@ -508,9 +486,6 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"❌ Failed to create GitHub Release via REST API: {str(e)}")
         
-        if args.testpypi:
-            print(f"🔄 Updating README.md PyPI badge to v{version} prior to publishing...")
-            update_pypi_badge(version)
             
             print("🚀 Uploading distribution files to TestPyPI...")
             env_vars = os.environ.copy()
@@ -524,19 +499,12 @@ if __name__ == "__main__":
             
             if result.returncode != 0:
                 print("❌ Upload to TestPyPI failed! Reverting PyPI badge in README.md to latest available version...")
-                remote_v = fetch_remote_version(is_testpypi=True)
-                if remote_v:
-                    update_pypi_badge(remote_v)
-                    print(f"✅ Reverted PyPI badge in README.md to latest available TestPyPI version: v{remote_v}")
-                else:
-                    print("⚠️ Could not fetch latest TestPyPI version. Leaving badge as is.")
+                sync_versions() # This will fetch the latest from PyPI/TestPyPI
             else:
                 print("🎉 Successfully uploaded and synchronized PyPI badge!")
                 create_github_release(version, notes_content)
             
         if args.pypi:
-            print(f"🔄 Updating README.md PyPI badge to v{version} prior to publishing...")
-            update_pypi_badge(version)
             
             print("🚀 Uploading distribution files to actual PyPI...")
             env_vars = os.environ.copy()
@@ -550,18 +518,7 @@ if __name__ == "__main__":
             
             if result.returncode != 0:
                 print("❌ Upload to PyPI failed! Reverting PyPI badge in README.md to latest available version...")
-                remote_v = fetch_remote_version(is_testpypi=False)
-                if remote_v:
-                    update_pypi_badge(remote_v)
-                    print(f"✅ Reverted PyPI badge in README.md to latest available PyPI version: v{remote_v}")
-                else:
-                    # Fallback to TestPyPI if not on actual PyPI
-                    remote_v = fetch_remote_version(is_testpypi=True)
-                    if remote_v:
-                        update_pypi_badge(remote_v)
-                        print(f"✅ Reverted PyPI badge in README.md to latest available TestPyPI version: v{remote_v}")
-                    else:
-                        print("⚠️ Could not fetch latest PyPI/TestPyPI version. Leaving badge as is.")
+                sync_versions() # This will fetch the latest from PyPI/TestPyPI
             else:
                 print("🎉 Successfully uploaded and synchronized PyPI badge!")
                 create_github_release(version, notes_content)

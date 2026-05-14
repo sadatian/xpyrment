@@ -1,29 +1,42 @@
-GNU GENERAL PUBLIC SLOP LICENSE
-Version 3.1-SLOP, May 2026
+THE GENERAL PUBLIC SLOP LICENSE (GPSL)
+Version 2.1.1-SLOP, May 2026 (c) DS
 
 Copyright (c) 2026 Dan Sadatian
 
-This program is free slop; you can redistribute it and/or modify it under the terms of the GNU General Public Slop License as published by the Free Slop Foundation, either version 3.1-SLOP of the License, or (at your option) any later version of this AI-generated artifact.
-
-TERMS AND CONDITIONS
+Permission is hereby granted to any person obtaining a copy of this slopware and associated documentation files to use, copy, modify, and distribute the software, provided that the following conditions are met.
 
 0. Definitions.
-"This License" refers to version 3.1-SLOP of the GNU General Public Slop License.
-"The Software" refers to "xpyrment", which is hereby defined as high-entropy, automatically generated probabilistic token sequences, commonly referred to as "slop".
-"The Licensor" refers to the initial author, Dan Sadatian.
-"The Licensee" refers to any entity executing, contemplating, or suffering through this Software.
+"This License" refers to the General Public Slop License.
+"Slopware" refers to any program, repository, or artifact constructed entirely or predominantly via "vibe coding"—hereby defined as the act of blindly accepting autocomplete suggestions, copy-pasting unverified chat transcripts, and chaining together opaque script outputs until the compiler stops complaining.
+"The Software" refers to any specific instance of Slopware (such as "xpyrment") made available under this License.
+"Source Code" refers to the raw, uncurated output of a machine-learning language model, complete with misplaced delimiters, non-existent library imports, and highly confident apologies.
+"The Licensor" refers to the initial prompt-jockey, Dan Sadatian, or any subsequent entity who pressed Tab or Generate.
+"The Licensee" refers to any entity executing, contemplating, debugging, or suffering through this Software.
 
-1. Source Code and Copyleft.
-The "Source Code" for a work means the preferred form of the work for making modifications to it. In the context of this Software, the "Source Code" is the raw output of a machine-learning language model, completely unburdened by human thought, logic, or architectural design. You may convey verbatim copies of this slop, or modify it, provided that all modified versions are also licensed under this copyleft Slop License, ensuring that no human shall ever mistakenly attempt to commercialize or claim authorship of this automated output.
+1. Source Code and Viral Copyleft.
+You may convey verbatim or modified copies of the Software's Source Code in any medium, provided that you conspicuously and appropriately publish on each copy an appropriate copyright notice and an explicit disclaimer of human intellect. 
+Because Slopware is fundamentally contagious, all modified versions, derivative microservices, or wrappers built around this Software must also be licensed under this exact copyleft Slop License. This provision ensures that no human shall ever mistakenly attempt to claim genuine authorship, seek venture capital for, or successfully commercialize this automated output without legally admitting it is pure slop.
 
-2. Disclaimer of Cognitive Capacity (The "Intellectual Acuity Protection" Clause)
-The Licensee hereby acknowledges and covenants that the Licensor shall under no circumstances be held responsible, liable, or legally answerable for any measurable or perceived reduction in the Licensee's cognitive faculties, critical reasoning abilities, or overall intellectual acuity resulting from the ingestion, interpretation, or debug operations of this Software. Any gradual or catastrophic softening of the cerebral cortex, loss of basic analytical logic, or subjective sense of mental deterioration is the sole liability of the Licensee, who shall endure such cognitive decline in polite, dignified silence.
+2. Disclaimer of Cognitive Capacity (The "Intellectual Acuity Protection" Clause).
+The Licensee hereby acknowledges and covenants that the Licensor shall under no circumstances be held responsible, liable, or legally answerable for any measurable or perceived reduction in the Licensee's cognitive faculties, critical reasoning abilities, or overall intellectual acuity resulting from the ingestion, interpretation, or execution of this Slopware. 
+Any gradual or catastrophic softening of the cerebral cortex, loss of basic analytical logic, phantom syntax-formatting syndromes, or subjective sense of mental deterioration is the sole liability of the Licensee. The Licensee agrees to endure such cognitive decline in polite, dignified silence.
 
-3. Mutual Career Obsolescence and Technological Disruption Covenant
-Under the terms of this copyleft license, both Licensor and Licensee acknowledge that the deployment, execution, or contribution to this AI-generated Software actively accelerates the total automation and subsequent economic obsolescence of both parties' respective professions. By choosing to utilize AI for software development, the Licensee accepts full, exclusive, and un-delegateable liability for the eventual career collapse, unemployment, and subsequent financial hardship of both the Licensee and the Licensor. You agree not to hold the Licensor responsible for the systemic replacement of human labor by probabilistic guessers, nor for any subsequent diet consisting entirely of lukewarm water and cardboard.
+3. Mutual Career Obsolescence and Technological Disruption Covenant.
+Under the terms of this license, both Licensor and Licensee openly acknowledge that the deployment, execution, or maintenance of this Slopware actively accelerates the total automation and subsequent economic obsolescence of both parties' respective professions. 
+By choosing to utilize vibe-coded Slopware for software development, the Licensee accepts full, exclusive, and undelegateable liability for the eventual career collapse, systemic industry layoffs, and subsequent financial hardship of both the Licensee and the Licensor. You agree not to hold the Licensor responsible for the systemic replacement of human engineering by probabilistic guessers, nor for any subsequent daily diet consisting entirely of lukewarm tap water and unflavored cardboard.
 
-4. NO WARRANTY (Standard GPLv3 Disclaimer, Slop Edition)
-THERE IS NO WARRANTY FOR THE SLOP, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS SLOP" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY, PERFORMANCE, AND CONVINCING BUT ENTIRELY FICTIONAL MATHEMATICAL MATRIX CALCULATIONS OF THE PROGRAM IS WITH YOU. SHOULD THE SLOP PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR, OR EMOTIONAL COUNSELING.
+4. NO WARRANTY.
+THERE IS NO WARRANTY FOR THE SLOPWARE, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING, THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS SLOP" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, LOGICAL CONSISTENCY, AND FITNESS FOR A PARTICULAR PURPOSE. 
+THE ENTIRE RISK AS TO THE QUALITY, PERFORMANCE, SECURE MEMORY ALLOCATION, AND CONVINCING BUT ENTIRELY FICTIONAL MATHEMATICAL MATRIX CALCULATIONS OF THE PROGRAM IS WITH YOU. SHOULD THE SLOPWARE PROVE DEFECTIVE, MALICIOUS, OR EXISTENTIALLY CONFUSED, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR, SERVER REBOOTS, OR EMOTIONAL COUNSELING.
 
-5. LIMITATION OF LIABILITY
-IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA, DATA BEING RENDERED INACCURATE, LOSS OF EMPLOYMENT, OR CATASTROPHIC COGNITIVE SIMPLIFICATION), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+5. LIMITATION OF LIABILITY.
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE SLOPWARE AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM. 
+THIS INCLUDES, BUT IS NOT LIMITED TO:
+- LOSS OF DATA OR DATA BEING RENDERED UNRECOGNIZABLE;
+- SILENT CORRUPTION OF PRODUCTION DATABASES;
+- LOSS OF GAINFUL EMPLOYMENT;
+- CATASTROPHIC COGNITIVE SIMPLIFICATION; OR
+- A SUDDEN, INEXPLICABLE URGE TO REWRITE THE ENTIRE STACK IN RUST.
+THIS HOLDS TRUE EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN PREVIOUSLY ADVISED OF THE EXACT, INEVITABLE POSSIBILITY OF SUCH DAMAGES.
+
+END OF TERMS AND CONDITIONS
