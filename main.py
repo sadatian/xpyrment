@@ -32,6 +32,7 @@ def sync_versions(force_pypi_version=None):
             current_version_content = f.read()
             
     if current_version_content != expected_version_content:
+        print(f"📝 Synchronizing {os.path.relpath(version_file_path, root_dir)} -> v{version}")
         with open(version_file_path, "w", encoding="utf-8") as f:
             f.write(expected_version_content)
             
@@ -65,6 +66,7 @@ def sync_versions(force_pypi_version=None):
 
         # Replace PyPI badge (supporting any digit format)
         target_pypi_version = force_pypi_version if force_pypi_version else (pypi_version if pypi_version else version)
+        print(f"🏷️ Setting PyPI badge to: v{target_pypi_version}")
         updated_content = re.sub(
             r"pypi-v\d+(?:\.\d+)+",
             f"pypi-v{target_pypi_version}",
@@ -73,6 +75,7 @@ def sync_versions(force_pypi_version=None):
 
         
         # 4. Dynamically run pytest and coverage to sync test count and coverage badges
+        print("🧪 Running test suite and coverage analysis...")
         try:
             # We use sys.executable to run pytest under the current active environment
             cmd = [sys.executable, "-m", "pytest", "--cov=src", "--cov-report=term"]
@@ -89,6 +92,7 @@ def sync_versions(force_pypi_version=None):
                 
                 if tests_match:
                     passed_count = tests_match.group(1)
+                    print(f"✅ Tests: {passed_count} passed.")
                     # Replace tests badge (e.g., tests-138%20passed)
                     updated_content = re.sub(
                         r"tests-\d+%20passed",
@@ -98,16 +102,23 @@ def sync_versions(force_pypi_version=None):
                     
                 if cov_match:
                     cov_percent = cov_match.group(1)
+                    print(f"📊 Coverage: {cov_percent}%")
                     # Replace coverage badge (e.g., coverage-100%25 or coverage-93%25)
                     updated_content = re.sub(
                         r"coverage-\d+%25",
                         f"coverage-{cov_percent}%25",
                         updated_content
                     )
-        except Exception:
+            else:
+                print(f"⚠️ Pytest failed with return code {result.returncode}. Skipping badge update.")
+                if result.stderr:
+                    print(f"Debug Info:\n{result.stderr}")
+        except Exception as e:
+            print(f"⚠️ Could not run pytest or coverage: {str(e)}")
             pass
         
         if updated_content != readme_content:
+            print(f"📝 Synchronizing {os.path.relpath(readme_path, root_dir)} badges...")
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write(updated_content)
                 
@@ -339,12 +350,14 @@ if __name__ == "__main__":
         for folder in ["build", "dist", "src/xpyrment.egg-info"]:
             folder_path = os.path.join(root_dir, folder)
             if os.path.exists(folder_path):
+                print(f"   - Removing {folder}/")
                 shutil.rmtree(folder_path)
                 
         # Automatically clean any legacy temporary sdist build folders (e.g. xpyrment-1.1.2.5)
         for name in os.listdir(root_dir):
             if name.startswith("xpyrment-") and os.path.isdir(os.path.join(root_dir, name)):
                 try:
+                    print(f"   - Removing legacy folder {name}/")
                     shutil.rmtree(os.path.join(root_dir, name))
                 except Exception:
                     pass
@@ -359,9 +372,13 @@ if __name__ == "__main__":
             print("⚠️ 'build' package not found. Installing it under local active python interpreter...")
             subprocess.run([sys.executable, "-m", "pip", "install", "build"], check=True)
             
+        print(f"📦 Running build command: {' '.join(build_cmd)}")
         result = subprocess.run(build_cmd, cwd=root_dir)
         if result.returncode == 0:
-            print("🎉 Build completed successfully. Artifacts saved inside 'dist/' directory.")
+            print(f"🎉 Build completed successfully. Artifacts saved inside '{os.path.relpath(os.path.join(root_dir, 'dist'), root_dir)}/' directory.")
+            if os.path.exists(os.path.join(root_dir, 'dist')):
+                for f in os.listdir(os.path.join(root_dir, 'dist')):
+                    print(f"   - {f}")
         else:
             print("❌ Build failed.")
             sys.exit(result.returncode)
@@ -410,6 +427,8 @@ if __name__ == "__main__":
                 print("⚠️ GITHUB_TOKEN or GH_TOKEN env variables not found. Tag has been pushed, but skipping API release creation.")
                 return
 
+            print(f"🔑 GitHub Token found ({'GH_TOKEN' if os.environ.get('GH_TOKEN') else 'GITHUB_TOKEN'}). Proceeding with API release...")
+
 
                 
             print("🚀 Creating formal GitHub Release via REST API...")
@@ -429,6 +448,8 @@ if __name__ == "__main__":
             except Exception:
                 owner = "sadatian"
                 repo = "xpyrment"
+            
+            print(f"📁 Repository: {owner}/{repo}")
                 
             api_url = f"https://api.github.com/repos/{owner}/{repo}/releases"
             headers = {
@@ -463,6 +484,8 @@ if __name__ == "__main__":
                     upload_url_template = res_data.get("upload_url")
                     if release_id and upload_url_template:
                         upload_url = upload_url_template.split("{")[0]
+                        print(f"📦 Release ID: {release_id}")
+                        print(f"📤 Uploading assets to: {upload_url}")
                         if os.path.exists(dist_dir):
                             for filename in os.listdir(dist_dir):
                                 file_path = os.path.join(dist_dir, filename)
@@ -491,8 +514,11 @@ if __name__ == "__main__":
             env_vars = os.environ.copy()
             pypi_token = env_vars.get("TESTPYPI_TOKEN") or env_vars.get("PYPI_TOKEN")
             if pypi_token:
+                print(f"🔑 Using API Token for TestPyPI authentication ({'TESTPYPI_TOKEN' if env_vars.get('TESTPYPI_TOKEN') else 'PYPI_TOKEN'}).")
                 env_vars["TWINE_USERNAME"] = "__token__"
                 env_vars["TWINE_PASSWORD"] = pypi_token
+            else:
+                print("⚠️ No API Token found for TestPyPI. Twine may prompt for credentials.")
             
             upload_cmd = [sys.executable, "-m", "twine", "upload", "--repository", "testpypi", dist_files]
             result = subprocess.run(upload_cmd, cwd=root_dir, env=env_vars)
@@ -510,8 +536,11 @@ if __name__ == "__main__":
             env_vars = os.environ.copy()
             pypi_token = env_vars.get("PYPI_TOKEN")
             if pypi_token:
+                print("🔑 Using API Token for PyPI authentication (PYPI_TOKEN).")
                 env_vars["TWINE_USERNAME"] = "__token__"
                 env_vars["TWINE_PASSWORD"] = pypi_token
+            else:
+                print("⚠️ No PYPI_TOKEN found. Twine may prompt for credentials.")
                 
             upload_cmd = [sys.executable, "-m", "twine", "upload", dist_files]
             result = subprocess.run(upload_cmd, cwd=root_dir, env=env_vars)

@@ -8,6 +8,8 @@
 - Removed redundant and misplaced badge update logic from the upload blocks.
 - Guaranteed that the `README.md` inside the distribution artifacts (`dist/`) will always contain the version currently being released.
 - Implemented automatic revert of badges to the latest remote version if an upload fails.
+- **Enhanced coverage synchronization**: `main.py --sync` now explicitly verifies and updates test coverage and test count badges in `README.md`, providing real-time feedback and diagnostic information if `pytest` fails.
+- **Increased Script Verbosity**: Added detailed progress logs throughout `main.py`, including file synchronization paths, build steps, artifact lists, authentication token detection, and GitHub Release API details.
 
 ## Detailed Plan
 
