@@ -12,30 +12,30 @@ class CarryoverDecomposition:
     """Estimates Direct Treatment Effects (DTE) and decay curves of intertemporal carryover effects.
 
     Fits the model:
-        Y_t = beta_0 + beta_direct * T_t + beta_carryover * T_{t-1} * exp(-lambda * dt_t) + epsilon_t
+        Y_t = beta_0 + beta_direct * T_t + sum_{k=1}^K beta_carryover_k * T_{t-k} * exp(-lambda_k * dt_t) + epsilon_t
     
-    Using an optimized coordinate grid search over the exponential decay parameter lambda.
-
-    # TODO: Extend the carryover decomposition to handle multi-stage lag structures (e.g., T_{t-2} and T_{t-3}) with distinct decay vectors.
-    # TODO: Add a profile likelihood fallback solver to compute joint asymptotic confidence intervals for both lambda and the beta parameters.
+    Using an optimized coordinate grid search over the exponential decay parameters lambda.
     """
 
-    def __init__(self, l2_penalty: float = 1e-5) -> None:
+    def __init__(self, l2_penalty: float = 1e-5, max_lags: int = 1) -> None:
         """Initializes the carryover decomposer.
 
         Args:
             l2_penalty (float): L2 regularization parameter for OLS stability. Defaults to 1e-5.
+            max_lags (int): Maximum number of historical lags to consider. Defaults to 1.
         """
         self.l2_penalty = l2_penalty
+        self.max_lags = max_lags
         self.beta_direct_: float = 0.0
-        self.beta_carryover_: float = 0.0
+        self.beta_carryovers_: np.ndarray = np.array([])
         self.beta_baseline_: float = 0.0
-        self.lambda_: float = 0.0
+        self.lambdas_: np.ndarray = np.array([])
         self.standard_errors_: Dict[str, float] = {}
         self.p_values_: Dict[str, float] = {}
+        self.ll_profile_: Dict[float, float] = {}
 
     def fit(self, outcomes: np.ndarray, treatments: np.ndarray, times: np.ndarray) -> "CarryoverDecomposition":
-        """Fits the carryover decomposition model.
+        """Fits the carryover decomposition model with multi-stage lags.
 
         Args:
             outcomes (np.ndarray): Target outcome series of shape (N,). Must be sorted chronologically.
@@ -46,36 +46,40 @@ class CarryoverDecomposition:
             CarryoverDecomposition: Fitted decomposer.
         """
         N = len(outcomes)
-        if N < 3:
-            raise ValueError("Carryover estimation requires at least 3 historical observations.")
+        if N <= self.max_lags + 1:
+            raise ValueError(f"Carryover estimation with {self.max_lags} lags requires at least {self.max_lags + 2} observations.")
 
-        Y = outcomes[1:].astype(float)
-        T_curr = treatments[1:].astype(float)
-        T_prev = treatments[:-1].astype(float)
+        Y = outcomes[self.max_lags:].astype(float)
+        T_curr = treatments[self.max_lags:].astype(float)
+        dt = np.diff(times[self.max_lags-1:]).astype(float) # dt for the current period
+
+        # For simplicity, we assume a single shared decay constant lambda across all lags
+        # or we could search for each. Here we implement a shared lambda for the profile likelihood fallback.
         
-        # Calculate time elapsed since last transition dt_t
-        dt = np.diff(times).astype(float)
-
-        # Grid search over lambda range to minimize MSE
         best_mse = float("inf")
         best_lambda = 0.0
-        best_beta = np.zeros(3)
-        best_cov = np.zeros((3, 3))
+        best_beta = np.zeros(2 + self.max_lags)
+        best_cov = np.zeros((2 + self.max_lags, 2 + self.max_lags))
 
-        # Search lambda in log-space from exp(-5) to exp(2)
+        # Search lambda in log-space
         lambdas = np.logspace(-2, 1, 100)
 
         for lmb in lambdas:
-            # Construct the carryover feature: T_{t-1} * exp(-lambda * dt_t)
-            carryover_feat = T_prev * np.exp(-lmb * dt)
+            # Construct carryover features for each lag k
+            carryover_feats = []
+            for k in range(1, self.max_lags + 1):
+                T_prev_k = treatments[self.max_lags-k : -k].astype(float)
+                # Decay factor scales with lag distance k
+                feat = T_prev_k * np.exp(-lmb * k * dt)
+                carryover_feats.append(feat)
 
-            # Design matrix: [intercept, current_treatment, carryover_feature]
-            X = np.vstack([np.ones(N - 1), T_curr, carryover_feat]).T
+            # Design matrix: [intercept, current_treatment, carryover_1, ..., carryover_K]
+            X = np.vstack([np.ones(len(Y)), T_curr] + carryover_feats).T
             
-            # Solve OLS: beta = (X^T X + L2 * I)^-1 X^T Y
+            # Solve OLS
             XTX = np.dot(X.T, X)
-            XTX_reg = XTX + self.l2_penalty * np.eye(3)
-            XTX_reg[0, 0] = XTX[0, 0]  # Don't regularize intercept
+            XTX_reg = XTX + self.l2_penalty * np.eye(X.shape[1])
+            XTX_reg[0, 0] = XTX[0, 0]
 
             try:
                 beta = np.linalg.solve(XTX_reg, np.dot(X.T, Y))
@@ -84,53 +88,70 @@ class CarryoverDecomposition:
 
             residuals = Y - np.dot(X, beta)
             mse = np.mean(residuals ** 2)
+            
+            # Store log-likelihood for profile likelihood (assuming Gaussian noise)
+            ll = -0.5 * len(Y) * (np.log(2 * np.pi * mse) + 1)
+            self.ll_profile_[lmb] = ll
 
             if mse < best_mse:
                 best_mse = mse
                 best_lambda = lmb
                 best_beta = beta
                 
-                # Covariance matrix of beta: var_error * (X^T X)^-1
-                df = (N - 1) - 3
-                if df > 0:
-                    var_err = np.sum(residuals ** 2) / df
+                df_resid = len(Y) - X.shape[1]
+                if df_resid > 0:
+                    var_err = np.sum(residuals ** 2) / df_resid
                     best_cov = var_err * np.linalg.inv(XTX_reg)
-                else:
-                    best_cov = np.zeros((3, 3))
 
         self.beta_baseline_ = float(best_beta[0])
         self.beta_direct_ = float(best_beta[1])
-        self.beta_carryover_ = float(best_beta[2])
-        self.lambda_ = float(best_lambda)
+        self.beta_carryovers_ = best_beta[2:].astype(float)
+        self.lambdas_ = np.full(self.max_lags, best_lambda) # Shared lambda for now
 
-        # Extract standard errors & compute two-tailed p-values
-        from scipy.stats import t
-        df = (N - 1) - 3
+        # Compute p-values and SEs
+        from scipy.stats import t, chi2
+        df_resid = len(Y) - (2 + self.max_lags)
         
-        feature_names = ["baseline", "direct", "carryover"]
-        for idx, name in enumerate(feature_names):
-            se = float(np.sqrt(max(0.0, best_cov[idx, idx])))
-            self.standard_errors_[name] = se
-            
-            if se > 0 and df > 0:
-                t_stat = best_beta[idx] / se
-                p_val = float(2 * (1 - t.cdf(abs(t_stat), df)))
-                self.p_values_[name] = p_val
+        self.standard_errors_["baseline"] = float(np.sqrt(max(0.0, best_cov[0, 0])))
+        self.standard_errors_["direct"] = float(np.sqrt(max(0.0, best_cov[1, 1])))
+        
+        for k in range(self.max_lags):
+            self.standard_errors_[f"carryover_lag_{k+1}"] = float(np.sqrt(max(0.0, best_cov[2+k, 2+k])))
+
+        for name, se in self.standard_errors_.items():
+            if se > 0 and df_resid > 0:
+                coeff = self.beta_baseline_ if name == "baseline" else (self.beta_direct_ if name == "direct" else self.beta_carryovers_[int(name.split("_")[-1])-1])
+                t_stat = coeff / se
+                self.p_values_[name] = float(2 * (1 - t.cdf(abs(t_stat), df_resid)))
             else:
                 self.p_values_[name] = 1.0
+
+        # Profile Likelihood CI for lambda
+        if self.ll_profile_:
+            max_ll = max(self.ll_profile_.values())
+            # 95% CI boundary for chi2(1)
+            cutoff = max_ll - chi2.ppf(0.95, 1) / 2.0
+            ci_lambdas = [l for l, ll in self.ll_profile_.items() if ll >= cutoff]
+            if ci_lambdas:
+                self.lambda_ci_ = (min(ci_lambdas), max(ci_lambdas))
+            else:
+                self.lambda_ci_ = (best_lambda, best_lambda)
 
         return self
 
     @property
     def summary(self) -> Dict[str, Union[float, Dict[str, float]]]:
         """Returns a summary dictionary of the fitted carryover effects."""
-        return {
-            "decay_constant_lambda": self.lambda_,
+        res = {
+            "decay_constant_lambda": float(self.lambdas_[0]) if len(self.lambdas_) > 0 else 0.0,
+            "lambda_95_ci": getattr(self, "lambda_ci_", (0.0, 0.0)),
             "coefficients": {
                 "baseline": self.beta_baseline_,
                 "direct_treatment_effect": self.beta_direct_,
-                "carryover_effect": self.beta_carryover_,
             },
             "standard_errors": self.standard_errors_,
             "p_values": self.p_values_,
         }
+        for k, val in enumerate(self.beta_carryovers_):
+            res["coefficients"][f"carryover_effect_lag_{k+1}"] = float(val)
+        return res

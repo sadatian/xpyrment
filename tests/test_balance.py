@@ -33,3 +33,28 @@ def test_covariate_balance_checker():
     assert isinstance(love_plot, str)
     assert "LOVE PLOT" in love_plot
     assert "historical_clicks" in love_plot
+
+
+def test_balance_ks_and_mahalanobis():
+    """Validates Kolmogorov-Smirnov distance and Mahalanobis joint balance diagnostics."""
+    from xpyrment.validate.balance import check_covariate_balance
+    import pandas as pd
+    
+    # Create unbalanced data
+    np.random.seed(42)
+    n = 100
+    df = pd.DataFrame({
+        "treatment": [0] * n + [1] * n,
+        "cov1": np.concatenate([np.random.normal(0, 1, n), np.random.normal(0.5, 1.2, n)]),
+        "cov2": np.concatenate([np.random.normal(0, 1, n), np.random.normal(0.2, 1.0, n)]),
+        "cat1": ["A"] * n + ["B"] * n
+    })
+    
+    results = check_covariate_balance(df, "treatment", ["cov1", "cov2", "cat1"])
+    
+    assert "cov1" in results
+    assert "ks_statistic" in results["cov1"]
+    assert "ks_p_value" in results["cov1"]
+    assert "_multivariate" in results
+    assert "mahalanobis_distance" in results["_multivariate"]
+    assert results["_multivariate"]["n_covariates"] == 2

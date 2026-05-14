@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import pytest
 import numpy as np
 
@@ -174,6 +176,42 @@ def test_bayesian_inference_conjugate_normal_normal():
     # Probability treatment is superior must be near 1
     assert results["pbb"] > 0.99
     assert results["expected_loss"] < 0.01
+
+
+def test_bayesian_gamma_poisson():
+    """Tests Gamma-Poisson conjugate posterior parameters and exact decision metrics."""
+    from xpyrment.analyze.inference.bayesian import BayesianInference
+    
+    bi = BayesianInference(model_type="gamma_poisson")
+    prior = {"alpha": 1.0, "beta": 1.0}
+    observed = {
+        "control_counts": 10, "control_exposure": 100,
+        "treatment_counts": 20, "treatment_exposure": 100
+    }
+    
+    res = bi.estimate_posterior(prior, observed, exact=True)
+    
+    assert "pbb" in res
+    assert "expected_loss" in res
+    assert res["pbb"] > 0.9  # 20/100 is clearly better than 10/100
+    assert res["control_posterior"]["param1"] == 11.0 # 1 + 10
+    assert res["control_posterior"]["param2"] == 101.0 # 1 + 100
+
+
+def test_bayesian_exact_integration():
+    """Validates that numerical integration matches Monte Carlo sampling within standard error bounds."""
+    from xpyrment.analyze.inference.bayesian import BayesianInference
+    
+    # Test Beta-Binomial exact
+    bi = BayesianInference(model_type="beta_binomial")
+    prior = {"alpha": 1.0, "beta": 1.0}
+    observed = {"k_c": 50, "n_c": 100, "k_t": 60, "n_t": 100}
+    
+    res_exact = bi.estimate_posterior(prior, observed, exact=True)
+    res_mc = bi.estimate_posterior(prior, observed, exact=False)
+    
+    assert abs(res_exact["pbb"] - res_mc["pbb"]) < 0.05
+    assert abs(res_exact["expected_loss"] - res_mc["expected_loss"]) < 0.01
 
 
 def test_streaming_ols():

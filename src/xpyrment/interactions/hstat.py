@@ -52,5 +52,57 @@ def compute_friedman_h_statistic(model: Any, X_data: Any, feature_i: str, featur
     Returns:
         float: The computed Friedman's H-statistic ($H_{ij} \\in [0, 1]$).
     """
-    # TODO: Implement H-statistic calculations
-    return 0.0
+    import numpy as np
+    import pandas as pd
+
+    # Ensure X_data is a DataFrame for easy column indexing
+    if not isinstance(X_data, pd.DataFrame):
+        X_data = pd.DataFrame(X_data)
+
+    def get_pd(features: list, vals: np.ndarray) -> np.ndarray:
+        """Computes average prediction when 'features' are fixed at 'vals'."""
+        X_temp = X_data.copy()
+        for idx, feat in enumerate(features):
+            X_temp[feat] = vals[:, idx] if vals.ndim > 1 else vals[idx]
+        
+        preds = model.predict(X_temp)
+        return np.mean(preds)
+
+    # We evaluate PDs over the empirical distribution of X_data
+    n = len(X_data)
+    pd_ij = np.zeros(n)
+    pd_i = np.zeros(n)
+    pd_j = np.zeros(n)
+
+    for k in range(n):
+        xi_k = X_data.iloc[k][feature_i]
+        xj_k = X_data.iloc[k][feature_j]
+        
+        # PD_ij(xi_k, xj_k)
+        # We need the average of f(xi_k, xj_k, X_\setminus ij)
+        X_ij = X_data.copy()
+        X_ij[feature_i] = xi_k
+        X_ij[feature_j] = xj_k
+        pd_ij[k] = np.mean(model.predict(X_ij))
+
+        # PD_i(xi_k)
+        X_i = X_data.copy()
+        X_i[feature_i] = xi_k
+        pd_i[k] = np.mean(model.predict(X_i))
+
+        # PD_j(xj_k)
+        X_j = X_data.copy()
+        X_j[feature_j] = xj_k
+        pd_j[k] = np.mean(model.predict(X_j))
+
+    # Center the PDs as per Friedman (2008) to remove grand mean effects
+    # In some implementations, this is handled by the differencing
+    
+    numerator = np.sum((pd_ij - pd_i - pd_j)**2)
+    denominator = np.sum(pd_ij**2)
+
+    if denominator == 0:
+        return 0.0
+    
+    h2 = numerator / denominator
+    return float(np.sqrt(max(0, h2)))

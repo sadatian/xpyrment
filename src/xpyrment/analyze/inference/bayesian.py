@@ -35,25 +35,27 @@ class BayesianInference:
              $$
              \frac{1}{\sigma_N^2} = \frac{1}{\sigma_0^2} + \frac{N}{\sigma^2} \quad \text{and} \quad \mu_N = \sigma_N^2 \left( \frac{\mu_0}{\sigma_0^2} + \frac{N\bar{Y}}{\sigma^2} \right)
              $$
+        3. **Gamma-Poisson Model** (for discrete counts/rates, $\lambda \in [0, \infty)$):
+           - Prior: $\lambda \sim \text{Gamma}(\alpha, \beta)$ (shape $\alpha$, rate $\beta$).
+           - Likelihood: Poisson ($k$ total counts across $n$ units).
+           - Posterior:
+             $$
+             \lambda|k, n \sim \text{Gamma}(\alpha + k, \beta + n)
+             $$
+
     Decision-Making Criteria and Analytics:
         - **Probability of Being Best (PBB)**: The probability that the treatment parameter $\theta_T$ is strictly greater
           than the control parameter $\theta_C$:
           $$
-          \text{PBB} = P(\theta_T > \theta_C) = \int_{-\infty}^{\infty} \int_{\theta_C}^{\infty} f_T(\theta_T) f_C(\theta_C) \, d\theta_T \, d\theta_C
+          \text{PBB} = P(\theta_T > \theta_C) = \int_{-\infty}^{\infty} f_C(\theta_C) [1 - F_T(\theta_C)] \, d\theta_C
           $$
-          (Typically estimated via Monte Carlo sampling: drawing 100k random samples from each posterior and calculating the fraction where sample $t > c$).
         - **Expected Loss ($L$)**: The expected metric drop if the treatment is shipped but is actually inferior:
           $$
-          L(T) = \mathbb{E}[\max(\theta_C - \theta_T, 0)]
+          L(T) = \mathbb{E}[\max(\theta_C - \theta_T, 0)] = \int_{-\infty}^{\infty} \int_{-\infty}^{\theta_C} (\theta_C - \theta_T) f_T(\theta_T) f_C(\theta_C) \, d\theta_T \, d\theta_C
           $$
-          If the expected loss is below a certain threshold $\epsilon$ (the "acceptable risk level"), the treatment can be
-          safely deployed.
-        - **Region of Practical Equivalence (ROPE)**: Establishes a range $[-\delta, \delta]$ representing differences so small
-          they are practically equivalent to zero. If the posterior distribution of the difference ($\theta_T - \theta_C$) lies
-          entirely inside the ROPE, we conclude that the two variants are equivalent.
 
     Attributes:
-        model_type (str): Conjugate model pairing label. Options: `"beta_binomial"`, `"normal_normal"`.
+        model_type (str): Conjugate model pairing label. Options: `"beta_binomial"`, `"normal_normal"`, `"gamma_poisson"`.
             Defaults to `"beta_binomial"`.
     """
 
@@ -61,12 +63,12 @@ class BayesianInference:
         """Initializes a BayesianInference.
 
         Args:
-            model_type (str): Conjugate model to use (`"beta_binomial"` or `"normal_normal"`).
+            model_type (str): Conjugate model to use (`"beta_binomial"`, `"normal_normal"`, or `"gamma_poisson"`).
                 Defaults to `"beta_binomial"`.
         """
         self.model_type = model_type
 
-    def estimate_posterior(self, prior_params: dict, observed_data: dict) -> dict:
+    def estimate_posterior(self, prior_params: dict, observed_data: dict, exact: bool = True) -> dict:
         """Estimates conjugate posterior distributions based on prior settings and raw observations.
 
         Performs the analytical conjugate update formulas, then computes PBB, Expected Loss, and
@@ -75,12 +77,14 @@ class BayesianInference:
         Args:
             prior_params (dict): Prior parameters (e.g., `{"alpha": 1, "beta": 1}` or `{"mean": 0, "variance": 1}`).
             observed_data (dict): Observed outcomes (conversions and counts, or means and variances).
+            exact (bool): Whether to use numerical integration for exact PBB and Expected Loss.
+                If False, uses Monte Carlo sampling (20k samples). Defaults to True.
 
         Returns:
             dict: Posterior distribution parameters, credible intervals, and decision metrics.
         """
         import numpy as np
-        from scipy import stats
+        from scipy import stats, integrate
 
         if self.model_type == "beta_binomial":
             # Prior parameters
@@ -94,40 +98,12 @@ class BayesianInference:
             n_t = observed_data.get("treatment_trials", observed_data.get("n_t", 1))
 
             # Posterior parameters
-            alpha_c_post = a0 + k_c
-            beta_c_post = b0 + n_c - k_c
+            dist_c = stats.beta(a0 + k_c, b0 + n_c - k_c)
+            dist_t = stats.beta(a0 + k_t, b0 + n_t - k_t)
 
-            alpha_t_post = a0 + k_t
-            beta_t_post = b0 + n_t - k_t
-
-            # Generate samples for Monte Carlo simulation of PBB and Expected Loss
-            samples_c = stats.beta.rvs(alpha_c_post, beta_c_post, size=20000, random_state=42)
-            samples_t = stats.beta.rvs(alpha_t_post, beta_t_post, size=20000, random_state=42)
-
-            # Credible intervals (95%)
-            ci_c_lower, ci_c_upper = stats.beta.ppf([0.025, 0.975], alpha_c_post, beta_c_post)
-            ci_t_lower, ci_t_upper = stats.beta.ppf([0.025, 0.975], alpha_t_post, beta_t_post)
-
-            # Probability of being best (treatment > control)
-            pbb = float(np.mean(samples_t > samples_c))
-            # Expected loss of treatment
-            expected_loss = float(np.mean(np.maximum(samples_c - samples_t, 0.0)))
-
-            return {
-                "control_posterior": {
-                    "param1": float(alpha_c_post),
-                    "param2": float(beta_c_post),
-                    "ci_lower": float(ci_c_lower),
-                    "ci_upper": float(ci_c_upper)
-                },
-                "treatment_posterior": {
-                    "param1": float(alpha_t_post),
-                    "param2": float(beta_t_post),
-                    "ci_lower": float(ci_t_lower),
-                    "ci_upper": float(ci_t_upper)
-                },
-                "pbb": pbb,
-                "expected_loss": expected_loss
+            res = {
+                "control_posterior": {"param1": float(dist_c.args[0]), "param2": float(dist_c.args[1])},
+                "treatment_posterior": {"param1": float(dist_t.args[0]), "param2": float(dist_t.args[1])}
             }
 
         elif self.model_type == "normal_normal":
@@ -144,48 +120,92 @@ class BayesianInference:
             var_t = observed_data.get("treatment_variance", observed_data.get("var_t", 1.0))
             n_t = observed_data.get("treatment_n", observed_data.get("n_t", 1))
 
-            # Posterior variance: 1 / var_post = 1 / var_0 + n / var_sample
+            # Posterior calculation
             prec_0 = 1.0 / var_0
             
-            # Control posterior
             prec_c = prec_0 + n_c / var_c
             var_c_post = 1.0 / prec_c
             mu_c_post = var_c_post * (mu_0 * prec_0 + n_c * mean_c / var_c)
 
-            # Treatment posterior
             prec_t = prec_0 + n_t / var_t
             var_t_post = 1.0 / prec_t
             mu_t_post = var_t_post * (mu_0 * prec_0 + n_t * mean_t / var_t)
 
-            # Generate samples
-            samples_c = stats.norm.rvs(mu_c_post, np.sqrt(var_c_post), size=20000, random_state=42)
-            samples_t = stats.norm.rvs(mu_t_post, np.sqrt(var_t_post), size=20000, random_state=42)
+            dist_c = stats.norm(mu_c_post, np.sqrt(var_c_post))
+            dist_t = stats.norm(mu_t_post, np.sqrt(var_t_post))
 
-            # Credible intervals (95%)
-            ci_c_lower, ci_c_upper = stats.norm.ppf([0.025, 0.975], mu_c_post, np.sqrt(var_c_post))
-            ci_t_lower, ci_t_upper = stats.norm.ppf([0.025, 0.975], mu_t_post, np.sqrt(var_t_post))
-
-            pbb = float(np.mean(samples_t > samples_c))
-            expected_loss = float(np.mean(np.maximum(samples_c - samples_t, 0.0)))
-
-            return {
-                "control_posterior": {
-                    "param1": float(mu_c_post),
-                    "param2": float(var_c_post),
-                    "ci_lower": float(ci_c_lower),
-                    "ci_upper": float(ci_c_upper)
-                },
-                "treatment_posterior": {
-                    "param1": float(mu_t_post),
-                    "param2": float(var_t_post),
-                    "ci_lower": float(ci_t_lower),
-                    "ci_upper": float(ci_t_upper)
-                },
-                "pbb": pbb,
-                "expected_loss": expected_loss
+            res = {
+                "control_posterior": {"param1": float(mu_c_post), "param2": float(var_c_post)},
+                "treatment_posterior": {"param1": float(mu_t_post), "param2": float(var_t_post)}
             }
+
+        elif self.model_type == "gamma_poisson":
+            # Prior parameters: shape alpha, rate beta (rate = 1/scale)
+            a0 = prior_params.get("alpha", prior_params.get("shape", 1.0))
+            b0 = prior_params.get("beta", prior_params.get("rate", 1.0))
+
+            # Observed data: k counts in n exposure units
+            k_c = observed_data.get("control_counts", observed_data.get("k_c", 0))
+            n_c = observed_data.get("control_exposure", observed_data.get("n_c", 1))
+            k_t = observed_data.get("treatment_counts", observed_data.get("k_t", 0))
+            n_t = observed_data.get("treatment_exposure", observed_data.get("n_t", 1))
+
+            # Posterior parameters: alpha_post = alpha + k, beta_post = beta + n
+            # Scipy gamma uses scale = 1/beta
+            dist_c = stats.gamma(a0 + k_c, scale=1.0 / (b0 + n_c))
+            dist_t = stats.gamma(a0 + k_t, scale=1.0 / (b0 + n_t))
+
+            res = {
+                "control_posterior": {"param1": float(dist_c.args[0]), "param2": float(1.0 / dist_c.extra_args[0] if hasattr(dist_c, 'extra_args') else 1.0/dist_c.kwds['scale'])},
+                "treatment_posterior": {"param1": float(dist_t.args[0]), "param2": float(1.0 / dist_t.extra_args[0] if hasattr(dist_t, 'extra_args') else 1.0/dist_t.kwds['scale'])}
+            }
+            # Fix param2 extraction for robustness
+            res["control_posterior"]["param2"] = float(a0 + k_c) # wait no, param2 is rate
+            res["control_posterior"]["param1"] = float(a0 + k_c)
+            res["control_posterior"]["param2"] = float(b0 + n_c)
+            res["treatment_posterior"]["param1"] = float(a0 + k_t)
+            res["treatment_posterior"]["param2"] = float(b0 + n_t)
+
         else:
             raise ValueError(f"Unknown Bayesian model type: {self.model_type}")
 
-        # TODO: Implement conjugate Gamma-Poisson model pairing for discrete count metrics (such as page views or clicks).
-        # TODO: Add numerical integration solvers to compute PBB and Expected Loss exactly without relying on Monte Carlo simulations.
+        # Common metrics
+        ci_c_lower, ci_c_upper = dist_c.ppf([0.025, 0.975])
+        ci_t_lower, ci_t_upper = dist_t.ppf([0.025, 0.975])
+        res["control_posterior"].update({"ci_lower": float(ci_c_lower), "ci_upper": float(ci_c_upper)})
+        res["treatment_posterior"].update({"ci_lower": float(ci_t_lower), "ci_upper": float(ci_t_upper)})
+
+        if exact:
+            # Determine integration bounds based on the spread of the distributions
+            # We use the [0.0001, 0.9999] quantile range to cover the meaningful parts of the PDF
+            low_c, high_c = dist_c.ppf([0.0001, 0.9999])
+            low_t, high_t = dist_t.ppf([0.0001, 0.9999])
+            
+            # Use the union of both ranges plus a small buffer
+            lower = min(low_c, low_t)
+            upper = max(high_c, high_t)
+            
+            # If the distribution is very narrow (e.g. at zero), ensure we have some width
+            if upper <= lower:
+                upper = lower + 1.0
+
+            # Exact PBB: integral of f_c(x) * (1 - F_t(x))
+            pbb, _ = integrate.quad(lambda x: dist_c.pdf(x) * (1 - dist_t.cdf(x)), lower, upper, limit=100)
+            
+            # Exact Expected Loss: integral of f_c(x) * integral_{-inf}^{x} (x - y) * f_t(y) dy
+            # Which is: integral f_c(x) * [x * F_t(x) - integral_{-inf}^{x} y * f_t(y) dy]
+            def loss_integrand(x):
+                # Integral_{lower}^{x} y * f_t(y) dy is the partial mean
+                inner_val, _ = integrate.quad(lambda y: y * dist_t.pdf(y), lower, x, limit=50)
+                return dist_c.pdf(x) * (x * dist_t.cdf(x) - inner_val)
+
+            expected_loss, _ = integrate.quad(loss_integrand, lower, upper, limit=100)
+        else:
+            # Monte Carlo fallback
+            samples_c = dist_c.rvs(size=20000, random_state=42)
+            samples_t = dist_t.rvs(size=20000, random_state=42)
+            pbb = float(np.mean(samples_t > samples_c))
+            expected_loss = float(np.mean(np.maximum(samples_c - samples_t, 0.0)))
+
+        res.update({"pbb": float(pbb), "expected_loss": float(expected_loss)})
+        return res

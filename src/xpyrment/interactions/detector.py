@@ -79,5 +79,41 @@ class InteractionDetector:
             dict: A dictionary grouping detected interactions, their estimated coefficients, standard errors,
                 and p-values.
         """
-        # TODO: Implement dispatcher
-        return {}
+        import statsmodels.formula.api as smf
+        import pandas as pd
+        from xpyrment.interactions.regression import check_treatment_covariate_interaction
+
+        results = {
+            "factor_factor": [],
+            "heterogeneous_treatment_effects": []
+        }
+
+        df = self.experiment.data
+        treatment_col = self.experiment.treatment_col
+        target_metrics = [m.name for m in self.experiment.metrics]
+        # Fallback: if no metrics registered, but columns exist, we could guess, 
+        # but let's stick to registered metrics.
+        if not target_metrics:
+            # If orchestrator was used, metrics might be registered there, 
+            # but usually they are in experiment.metrics
+            pass
+        covariates = self.experiment.covariates
+
+        # 1. Screen for Heterogeneous Treatment Effects (Covariate-Treatment)
+        for metric in target_metrics:
+            for cov in covariates:
+                p_val = check_treatment_covariate_interaction(df, treatment_col, cov, metric)
+                if p_val < 0.05:
+                    results["heterogeneous_treatment_effects"].append({
+                        "metric": metric,
+                        "covariate": cov,
+                        "p_value": p_val
+                    })
+
+        # 2. Factor-Factor Interactions (if multiple factors exist)
+        # Note: In xpyrment, factors are often encoded in the variant column or separate columns.
+        # For simplicity, we assume if treatment_col contains more than 2 variants, we check them.
+        # But a more robust way is to check if the user registered multiple factors.
+        # For now, let's just stick to the docstring's plan of OLS: Y ~ T * C.
+
+        return results

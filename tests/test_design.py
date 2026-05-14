@@ -568,8 +568,30 @@ def test_carryover_decomposition():
     # Assert accurate recovery within numerical bounds
     assert decomposer.beta_baseline_ == pytest.approx(10.0, abs=0.1)
     assert decomposer.beta_direct_ == pytest.approx(2.5, abs=0.1)
-    assert decomposer.beta_carryover_ == pytest.approx(1.8, abs=0.1)
-    assert decomposer.lambda_ == pytest.approx(0.5, abs=0.1)
+    assert decomposer.beta_carryovers_[0] == pytest.approx(1.8, abs=0.1)
+    assert decomposer.lambdas_[0] == pytest.approx(0.5, abs=0.1)
+
+
+def test_carryover_multi_lag_and_profile():
+    """Validates multi-stage lag structures and profile likelihood confidence intervals."""
+    from xpyrment.design.doe.carryover import CarryoverDecomposition
+    
+    np.random.seed(42)
+    n = 50
+    times = np.arange(n)
+    treatments = np.random.randint(0, 2, n)
+    # Generate outcomes with carryover from T-1 and T-2
+    outcomes = 10 + 2 * treatments + 1 * np.roll(treatments, 1) * np.exp(-0.5) + 0.5 * np.roll(treatments, 2) * np.exp(-0.5 * 2) + np.random.normal(0, 0.1, n)
+    
+    cd = CarryoverDecomposition(max_lags=2)
+    cd.fit(outcomes, treatments, times) 
+    
+    summary = cd.summary
+    assert "decay_constant_lambda" in summary
+    assert "lambda_95_ci" in summary
+    assert "carryover_effect_lag_1" in summary["coefficients"]
+    assert "carryover_effect_lag_2" in summary["coefficients"]
+    assert summary["coefficients"]["direct_treatment_effect"] > 0
 
 
 

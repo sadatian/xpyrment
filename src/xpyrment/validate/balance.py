@@ -74,13 +74,18 @@ def check_covariate_balance(df: pd.DataFrame, treatment_col: str, covariate_cols
             # Welch's t-test (unequal variances assumed)
             if len(val_0) > 0 and len(val_1) > 0:
                 _, p_val = stats.ttest_ind(val_1, val_0, equal_var=False)
+                # Kolmogorov-Smirnov test for distribution shape alignment
+                ks_stat, ks_p = stats.ks_2samp(val_1, val_0)
             else:
                 p_val = 1.0
+                ks_stat, ks_p = 0.0, 1.0
 
             results[cov] = {
                 "type": "numeric",
                 "smd": float(smd),
-                "p_value": float(p_val)
+                "p_value": float(p_val),
+                "ks_statistic": float(ks_stat),
+                "ks_p_value": float(ks_p)
             }
         else:
             # Categorical covariate: build crosstab contingency table
@@ -98,6 +103,30 @@ def check_covariate_balance(df: pd.DataFrame, treatment_col: str, covariate_cols
                 "p_value": float(p_val)
             }
 
-    # TODO: Add Kolmogorov-Smirnov distance validation checks on continuous covariates to verify full distribution shape alignment beyond mean and variance.
-    # TODO: Integrate Mahalanobis distance multivariate covariance balance tests to verify joint multi-feature balance.
+    # Integrate Mahalanobis distance multivariate covariance balance tests
+    numeric_covs = [cov for cov in covariate_cols if pd.api.types.is_numeric_dtype(df[cov])]
+    if len(numeric_covs) >= 1:
+        data_0 = grp_0[numeric_covs].dropna()
+        data_1 = grp_1[numeric_covs].dropna()
+
+        if len(data_0) > len(numeric_covs) and len(data_1) > len(numeric_covs):
+            mean_0 = data_0.mean().values
+            mean_1 = data_1.mean().values
+            
+            # Pooled covariance matrix
+            cov_0 = data_0.cov().values
+            cov_1 = data_1.cov().values
+            pooled_cov = (cov_0 + cov_1) / 2.0
+            
+            try:
+                inv_pooled_cov = np.linalg.pinv(pooled_cov)
+                diff = mean_1 - mean_0
+                mahalanobis_dist = np.sqrt(np.dot(np.dot(diff, inv_pooled_cov), diff))
+                results["_multivariate"] = {
+                    "mahalanobis_distance": float(mahalanobis_dist),
+                    "n_covariates": len(numeric_covs)
+                }
+            except np.linalg.LinAlgError:
+                pass
+
     return results

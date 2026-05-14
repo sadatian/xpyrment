@@ -113,3 +113,19 @@ def test_stopping_rules_msprt():
     lambda_h1 = rules.calculate_msprt_lambda(n=1000, mean_diff=1.2, variance=10.0, tau=0.5)
     assert lambda_h1 > 100.0
     assert rules.check_msprt_stop(lambda_h1) is True
+
+
+def test_estimate_duration_days():
+    """Tests duration estimations based on traffic and sample size requirements."""
+    assert estimate_duration_days(50000, 5000) == 10.0
+    with pytest.raises(ValueError):
+        estimate_duration_days(0, 5000)
+
+
+def test_load_from_sql_mock():
+    """Tests load_from_sql integration (using sqlite3 memory mock)."""
+    # Simply verify it returns a dataframe for a valid query
+    df = load_from_sql('SELECT 1 as id', 'sqlite:///:memory:')
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 1
+    assert df.iloc[0]['id'] == 1

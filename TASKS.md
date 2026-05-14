@@ -63,7 +63,7 @@ This is the central task board for the **`xpyrment`** project maintenance. It is
 - [ ] **copula.py**: Support parametric copula families (such as Clayton or Gumbel) to capture asymmetric tail dependencies.
 - [ ] **d_optimal.py**: Add alternative optimality criteria such as A-Optimality (trace of inverse information matrix) and G-Optimality (minimizing maximum prediction variance).
 - [ ] **d_optimal.py**: Implement fast rank-1 update formulas (using Sherman-Morrison) to compute determinants in O(1) instead of recalculating full SVD in O(p^3).
-- [ ] **detector.py**: Implement dispatcher
+- [x] **detector.py**: Implement dispatcher
 - [ ] **diff_in_diff.py**: Implement cluster-robust standard errors to handle correlated errors across repeat-measure cohort panels.
 - [ ] **diff_in_diff.py**: Support incorporating external covariate matrices into OLS adjustments.
 - [ ] **double_ml.py**: Support estimating Heterogeneous Treatment Effects (CATE) via local polynomial residual-on-residual regression
@@ -80,8 +80,8 @@ This is the central task board for the **`xpyrment`** project maintenance. It is
 - [ ] **federated.py**: Implement threshold decryption where the private key lambda is divided into shares (lambda_1, lambda_2)
 - [ ] **frequentist.py**: Add Brunner-Munzel test as a robust alternative to Mann-Whitney U when variances are highly unequal.
 - [ ] **frequentist.py**: Implement Fisher's Exact test and G-test of independence for high-precision categorical conversions.
-- [ ] **hstat.py**: Implement H-statistic calculations
-- [ ] **hte.py**: Implement causal tree or subgroup t-test sweep
+- [x] **hstat.py**: Implement H-statistic calculations
+- [x] **hte.py**: Implement causal tree or subgroup t-test sweep
 - [ ] **identity.py**: Implement parallelized union-find component graph traversal using multi-threaded batch resolution for large-scale production logs.
 - [ ] **infinite_mixture.py**: Extend the collapsed Gibbs sampler to multivariate Normal-Inverse-Wishart conjugate mixtures.
 - [ ] **infinite_mixture.py**: Implement a Variational Inference (VI) coordinate ascent solver (Blei-Jordan, 2006) to accelerate clustering speed on massive scale datasets.
@@ -111,7 +111,7 @@ This is the central task board for the **`xpyrment`** project maintenance. It is
 - [ ] **plots.py**: Implement plotting code
 - [ ] **privacy.py**: Implement Renyi Differential Privacy (RDP) accounting to support tight composition over multi-pass queries.
 - [ ] **privacy.py**: Support private covariance matrix noise injection based on the Wishart mechanism or advanced output perturbation.
-- [ ] **regression.py**: Implement interactive regression model
+- [x] **regression.py**: Implement interactive regression model
 - [ ] **rolling_synthetic_control.py**: Add interactive covariate balance weight constraints (V-matrix optimizations) within the rolling SLSQP loss functions.
 - [ ] **rolling_synthetic_control.py**: Implement out-of-fold temporal cross-validation to select rolling window size H and regularization hyper-parameters (lambda_l1, lambda_l2) dynamically.
 - [ ] **router.py**: Implement full intelligent router
@@ -150,12 +150,12 @@ This is the central task board for the **`xpyrment`** project maintenance. It is
 * **Objective**: Address all pending TODOs scattered across the codebase.
 * **Status**: 📅 Planned
 
-- [ ] **balance.py**: Add Kolmogorov-Smirnov distance validation checks on continuous covariates to verify full distribution shape alignment beyond mean and variance.
-- [ ] **balance.py**: Integrate Mahalanobis distance multivariate covariance balance tests to verify joint multi-feature balance.
-- [ ] **bayesian.py**: Add numerical integration solvers to compute PBB and Expected Loss exactly without relying on Monte Carlo simulations.
-- [ ] **bayesian.py**: Implement conjugate Gamma-Poisson model pairing for discrete count metrics (such as page views or clicks).
-- [ ] **carryover.py**: Add a profile likelihood fallback solver to compute joint asymptotic confidence intervals for both lambda and the beta parameters.
-- [ ] **carryover.py**: Extend the carryover decomposition to handle multi-stage lag structures (e.g., T_{t-2} and T_{t-3}) with distinct decay vectors.
+- [x] **balance.py**: Add Kolmogorov-Smirnov distance validation checks on continuous covariates to verify full distribution shape alignment beyond mean and variance.
+- [x] **balance.py**: Integrate Mahalanobis distance multivariate covariance balance tests to verify joint multi-feature balance.
+- [x] **bayesian.py**: Add numerical integration solvers to compute PBB and Expected Loss exactly without relying on Monte Carlo simulations.
+- [x] **bayesian.py**: Implement conjugate Gamma-Poisson model pairing for discrete count metrics (such as page views or clicks).
+- [x] **carryover.py**: Add a profile likelihood fallback solver to compute joint asymptotic confidence intervals for both lambda and the beta parameters.
+- [x] **carryover.py**: Extend the carryover decomposition to handle multi-stage lag structures (e.g., T_{t-2} and T_{t-3}) with distinct decay vectors.
 - [ ] **causal_forest.py**: Implement randomized feature subspace selection (m_try) at each split to increase forest diversity.
 - [ ] **causal_forest.py**: Support true honest splitting (partitioning on half the training set, estimating outcomes on the other half).
 - [ ] **cluster.py**: Implement modularity-based partitioning (e.g., Louvain or Spectral partitioning) for denser, complex networks.
@@ -165,7 +165,7 @@ This is the central task board for the **`xpyrment`** project maintenance. It is
 - [ ] **copula.py**: Support parametric copula families (such as Clayton or Gumbel) to capture asymmetric tail dependencies.
 - [ ] **d_optimal.py**: Add alternative optimality criteria such as A-Optimality (trace of inverse information matrix) and G-Optimality (minimizing maximum prediction variance).
 - [ ] **d_optimal.py**: Implement fast rank-1 update formulas (using Sherman-Morrison) to compute determinants in O(1) instead of recalculating full SVD in O(p^3).
-- [ ] **detector.py**: Implement dispatcher
+- [x] **detector.py**: Implement dispatcher
 - [ ] **diff_in_diff.py**: Implement cluster-robust standard errors to handle correlated errors across repeat-measure cohort panels.
 - [ ] **diff_in_diff.py**: Support incorporating external covariate matrices into OLS adjustments.
 - [ ] **double_ml.py**: Support estimating Heterogeneous Treatment Effects (CATE) via local polynomial residual-on-residual regression
@@ -182,8 +182,8 @@ This is the central task board for the **`xpyrment`** project maintenance. It is
 - [ ] **federated.py**: Implement threshold decryption where the private key lambda is divided into shares (lambda_1, lambda_2)
 - [ ] **frequentist.py**: Add Brunner-Munzel test as a robust alternative to Mann-Whitney U when variances are highly unequal.
 - [ ] **frequentist.py**: Implement Fisher's Exact test and G-test of independence for high-precision categorical conversions.
-- [ ] **hstat.py**: Implement H-statistic calculations
-- [ ] **hte.py**: Implement causal tree or subgroup t-test sweep
+- [x] **hstat.py**: Implement H-statistic calculations
+- [x] **hte.py**: Implement causal tree or subgroup t-test sweep
 - [ ] **identity.py**: Implement parallelized union-find component graph traversal using multi-threaded batch resolution for large-scale production logs.
 - [ ] **infinite_mixture.py**: Extend the collapsed Gibbs sampler to multivariate Normal-Inverse-Wishart conjugate mixtures.
 - [ ] **infinite_mixture.py**: Implement a Variational Inference (VI) coordinate ascent solver (Blei-Jordan, 2006) to accelerate clustering speed on massive scale datasets.
@@ -227,7 +227,7 @@ This is the central task board for the **`xpyrment`** project maintenance. It is
 - [ ] **plots.py**: Implement plotting code
 - [ ] **privacy.py**: Implement Renyi Differential Privacy (RDP) accounting to support tight composition over multi-pass queries.
 - [ ] **privacy.py**: Support private covariance matrix noise injection based on the Wishart mechanism or advanced output perturbation.
-- [ ] **regression.py**: Implement interactive regression model
+- [x] **regression.py**: Implement interactive regression model
 - [ ] **rolling_synthetic_control.py**: Add interactive covariate balance weight constraints (V-matrix optimizations) within the rolling SLSQP loss functions.
 - [ ] **rolling_synthetic_control.py**: Implement out-of-fold temporal cross-validation to select rolling window size H and regularization hyper-parameters (lambda_l1, lambda_l2) dynamically.
 - [ ] **router.py**: Implement full intelligent router

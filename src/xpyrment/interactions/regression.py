@@ -59,5 +59,25 @@ def check_treatment_covariate_interaction(df: pd.DataFrame, treatment_col: str, 
     Returns:
         float: The calculated p-value of the Likelihood Ratio Test. A value $< 0.05$ indicates a significant interaction.
     """
-    # TODO: Implement interactive regression model
-    return 1.0
+    import statsmodels.api as sm
+    import statsmodels.formula.api as smf
+    from scipy.stats import chi2
+
+    # Model 1: Additive (Restricted)
+    formula_null = f"{target_col} ~ {treatment_col} + {covariate_col}"
+    model_null = smf.ols(formula_null, data=df).fit()
+
+    # Model 2: Interactive (Unrestricted)
+    formula_alt = f"{target_col} ~ {treatment_col} * {covariate_col}"
+    model_alt = smf.ols(formula_alt, data=df).fit()
+
+    # Likelihood Ratio Test
+    # For OLS, LRT = n * ln(RSS_null / RSS_alt)
+    # But statsmodels OLS results have .llf (log-likelihood)
+    llf_null = model_null.llf
+    llf_alt = model_alt.llf
+
+    lr_stat = 2 * (llf_alt - llf_null)
+    p_value = chi2.sf(lr_stat, df=1)
+
+    return float(p_value)

@@ -57,5 +57,47 @@ def scan_subgroups_for_hte(df: pd.DataFrame, treatment_col: str, metric_col: str
         dict: A dictionary of detected heterogeneous treatment effects, including interaction p-values,
             segment-specific lifts, and confidence intervals.
     """
-    # TODO: Implement causal tree or subgroup t-test sweep
-    return {}
+    import statsmodels.formula.api as smf
+    import numpy as np
+
+    hte_results = {}
+
+    for segment in segment_cols:
+        # Fit OLS: Y ~ T * S
+        formula = f"{metric_col} ~ {treatment_col} * {segment}"
+        try:
+            model = smf.ols(formula, data=df).fit()
+            
+            # Check interaction p-value (usually the last coefficient if segment is binary/numeric)
+            # For categorical segments, we look for any interaction term
+            interaction_terms = [c for c in model.pvalues.index if ":" in c]
+            
+            significant_interaction = False
+            for term in interaction_terms:
+                if model.pvalues[term] < 0.05:
+                    significant_interaction = True
+                    break
+            
+            if significant_interaction:
+                # Calculate lifts within each level of the segment
+                segment_levels = df[segment].unique()
+                lifts = {}
+                for level in segment_levels:
+                    sub_df = df[df[segment] == level]
+                    ctrl = sub_df[sub_df[treatment_col] == 0][metric_col]
+                    trt = sub_df[sub_df[treatment_col] == 1][metric_col]
+                    
+                    if len(ctrl) > 1 and len(trt) > 1:
+                        mean_ctrl = np.mean(ctrl)
+                        mean_trt = np.mean(trt)
+                        lift = (mean_trt - mean_ctrl) / mean_ctrl if mean_ctrl != 0 else 0.0
+                        lifts[str(level)] = lift
+                
+                hte_results[segment] = {
+                    "interaction_p_value": min(model.pvalues[interaction_terms]),
+                    "subgroup_lifts": lifts
+                }
+        except Exception:
+            continue
+
+    return hte_results
