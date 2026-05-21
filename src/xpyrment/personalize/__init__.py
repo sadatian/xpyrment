@@ -11,6 +11,7 @@ from xpyrment.personalize.double_ml import DoubleMachineLearning
 from xpyrment.personalize.dtr import QFactorModel, DynamicTreatmentRegime
 from xpyrment.personalize.infinite_mixture import InfiniteDirichletClusterer
 from xpyrment.personalize.subgroup import SubgroupHeterogeneityDiscoverer
+from xpyrment.personalize.dragonnet import DragonNet
 
 __all__ = [
     "SLearner",
@@ -24,4 +25,6 @@ __all__ = [
     "DynamicTreatmentRegime",
     "InfiniteDirichletClusterer",
     "SubgroupHeterogeneityDiscoverer",
+    "DragonNet",
 ]
+

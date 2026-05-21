@@ -173,3 +173,132 @@ def test_double_machine_learning():
     assert dml.p_value < 1e-3
 
 
+def test_dragonnet_fit_and_prediction():
+    """Validates DragonNet execution pathways, predictions conformity, and CATE estimates."""
+    from xpyrment.personalize.dragonnet import DragonNet
+
+    rng = np.random.default_rng(42)
+    n = 200
+    p = 4
+
+    X = rng.normal(size=(n, p))
+    # Standard propensity confounding
+    prop_logit = 0.5 * X[:, 0] - 0.2 * X[:, 1]
+    propensity = 1.0 / (1.0 + np.exp(-prop_logit))
+    treatment = rng.binomial(1, propensity).astype(float)
+
+    # Treatment effect is +3.0 when X[:, 0] > 0, else +0.5
+    true_effect = np.where(X[:, 0] > 0.0, 3.0, 0.5)
+    y = 10.0 + 2.0 * X[:, 0] + X[:, 1] + treatment * true_effect + rng.normal(scale=0.1, size=n)
+
+    # Train DragonNet using standard Adam optimizer
+    model = DragonNet(
+        shared_hidden_dim=8,
+        outcome_hidden_dim=4,
+        propensity_hidden_dim=4,
+        alpha=1.0,
+        epochs=30,
+        batch_size=32,
+        learning_rate=0.01,
+        random_state=42,
+    )
+    model.fit(X, treatment, y)
+
+    # Asserts outcome shape
+    y0_pred, y1_pred = model.predict(X)
+    assert y0_pred.shape == (n,)
+    assert y1_pred.shape == (n,)
+
+    # Asserts CATE/effect shape
+    cate = model.estimate_effect(X)
+    assert cate.shape == (n,)
+
+    # Verify high-treatment effect group predicted effect is higher
+    assert np.mean(cate[X[:, 0] > 0.0]) > np.mean(cate[X[:, 0] <= 0.0])
+
+    # Asserts propensity scores properties
+    prop_pred = model.predict_propensity(X)
+    assert prop_pred.shape == (n,)
+    assert np.all(prop_pred >= 0.0) and np.all(prop_pred <= 1.0)
+
+
+def test_dragonnet_optimizers_and_regularization():
+    """Validates SGD-Momentum paths and regularization updates for DragonNet."""
+    from xpyrment.personalize.dragonnet import DragonNet
+
+    rng = np.random.default_rng(42)
+    n = 50
+    p = 3
+
+    X = rng.normal(size=(n, p))
+    treatment = rng.binomial(1, 0.5, size=n).astype(float)
+    y = 5.0 + X[:, 0] + treatment * 2.0 + rng.normal(scale=0.1, size=n)
+
+    # Test SGD with Momentum
+    model_sgd = DragonNet(
+        shared_hidden_dim=6,
+        outcome_hidden_dim=3,
+        propensity_hidden_dim=3,
+        optimizer="sgd",
+        momentum=0.95,
+        alpha=0.5,
+        lambda_reg=1e-3,
+        epochs=5,
+        batch_size=None,  # Full batch
+        random_state=42,
+    )
+    model_sgd.fit(X, treatment, y)
+    
+    assert model_sgd._is_fitted
+    y0, y1 = model_sgd.predict(X)
+    assert y0.shape == (n,)
+
+
+def test_dragonnet_edge_cases_and_gating():
+    """Validates early state gating errors and degenerate input safeguards for DragonNet."""
+    from xpyrment.personalize.dragonnet import DragonNet
+    from xpyrment.core.exceptions import PhaseOrderError
+
+    rng = np.random.default_rng(42)
+    X = rng.normal(size=(20, 2))
+    t = rng.binomial(1, 0.5, size=20).astype(float)
+    y = rng.normal(size=20)
+
+    # 1. Unfitted calls must raise PhaseOrderError
+    model = DragonNet()
+    with pytest.raises(PhaseOrderError):
+        model.predict(X)
+    with pytest.raises(PhaseOrderError):
+        model.estimate_effect(X)
+    with pytest.raises(PhaseOrderError):
+        model.predict_propensity(X)
+
+    # 2. Empty dataset must raise ValueError
+    with pytest.raises(ValueError, match="empty dataset"):
+        model.fit(np.zeros((0, 2)), np.zeros(0), np.zeros(0))
+
+    # 3. Tiny dataset must raise ValueError
+    with pytest.raises(ValueError, match="Insufficient samples"):
+        model.fit(np.zeros((3, 2)), np.zeros(3), np.zeros(3))
+
+    # 4. Non-binary treatment indicator must raise ValueError
+    with pytest.raises(ValueError, match="only binary values"):
+        model.fit(X, t * 2.0, y)
+
+    # 5. Single class treatment allocation must raise ValueError
+    with pytest.raises(ValueError, match="variation in treatment assignment"):
+        model.fit(X, np.ones_like(t), y)
+
+    # 6. NaN or Infinite inputs must raise ValueError
+    X_nan = X.copy()
+    X_nan[0, 0] = np.nan
+    with pytest.raises(ValueError, match="contain invalid NaN values"):
+        model.fit(X_nan, t, y)
+
+    X_inf = X.copy()
+    X_inf[0, 0] = np.inf
+    with pytest.raises(ValueError, match="contain infinite"):
+        model.fit(X_inf, t, y)
+
+
+

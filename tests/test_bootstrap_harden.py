@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from xpyrment.analyze.inference.bootstrap import run_bootstrap_ci
+from xpyrment.analyze.inference.bootstrap import run_bootstrap_ci, run_block_bootstrap_ci
 
 
 def test_bootstrap_basic_percentile_and_bca():
@@ -94,3 +94,100 @@ def test_bootstrap_invalid_method():
     data = np.array([1, 2, 3, 4, 5])
     with pytest.raises(ValueError, match="Unknown bootstrap method"):
         run_bootstrap_ci(data, method="invalid_bootstrap_method")
+
+
+def test_block_bootstrap_basic():
+    """Asserts that both moving and circular block bootstraps produce valid, logical intervals."""
+    rng = np.random.default_rng(42)
+    # Simulate a highly autocorrelated AR(1) process
+    data = np.zeros(200)
+    for i in range(1, 200):
+        data[i] = 0.7 * data[i - 1] + rng.normal()
+
+    # MBB with percentile
+    lower_m, upper_m = run_block_bootstrap_ci(
+        data, block_size=10, num_resamples=1000, bootstrap_method="moving", ci_method="percentile", random_seed=42
+    )
+    assert lower_m < upper_m
+    assert -1.5 < lower_m < 0.5
+    assert -0.5 < upper_m < 1.5
+
+    # CBB with BCa
+    lower_c, upper_c = run_block_bootstrap_ci(
+        data, block_size=10, num_resamples=1000, bootstrap_method="circular", ci_method="bca", random_seed=42
+    )
+    assert lower_c < upper_c
+    assert -1.5 < lower_c < 0.5
+    assert -0.5 < upper_c < 1.5
+
+
+def test_block_bootstrap_consistency_with_iid():
+    """Asserts that block bootstrap with block_size=1 yields identical statistical bounds to i.i.d. bootstrap."""
+    rng = np.random.default_rng(100)
+    data = rng.normal(loc=10.0, scale=2.0, size=50)
+
+    # I.I.D percentile
+    low_iid, up_iid = run_bootstrap_ci(
+        data, num_resamples=500, confidence_level=0.95, method="percentile", random_seed=99
+    )
+
+    # Block moving with block_size=1 percentile
+    low_block, up_block = run_block_bootstrap_ci(
+        data, block_size=1, num_resamples=500, confidence_level=0.95, bootstrap_method="moving", ci_method="percentile", random_seed=99
+    )
+
+    assert low_iid == pytest.approx(low_block)
+    assert up_iid == pytest.approx(up_block)
+
+
+def test_block_bootstrap_reproducibility():
+    """Asserts that seed replication holds exactly for block bootstrap."""
+    data = np.arange(100, dtype=float)
+
+    # Run 1
+    low1, up1 = run_block_bootstrap_ci(
+        data, block_size=5, num_resamples=100, bootstrap_method="circular", ci_method="bca", random_seed=123
+    )
+    # Run 2
+    low2, up2 = run_block_bootstrap_ci(
+        data, block_size=5, num_resamples=100, bootstrap_method="circular", ci_method="bca", random_seed=123
+    )
+
+    assert low1 == low2
+    assert up1 == up2
+
+
+def test_block_bootstrap_edge_cases():
+    """Validates block bootstrap parameter boundaries and error triggers."""
+    data = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+
+    # Empty array
+    with pytest.raises(ValueError, match="empty data group"):
+        run_block_bootstrap_ci(np.array([]), block_size=2)
+
+    # Block size zero or negative
+    with pytest.raises(ValueError, match="Block size must be a positive integer"):
+        run_block_bootstrap_ci(data, block_size=0)
+    with pytest.raises(ValueError, match="Block size must be a positive integer"):
+        run_block_bootstrap_ci(data, block_size=-3)
+
+    # Block size larger than n
+    with pytest.raises(ValueError, match="cannot exceed data length"):
+        run_block_bootstrap_ci(data, block_size=6)
+
+    # Constant array (zero variance)
+    const_data = np.array([7.0] * 20)
+    low, up = run_block_bootstrap_ci(const_data, block_size=4, num_resamples=100, bootstrap_method="moving", ci_method="bca")
+    assert low == 7.0
+    assert up == 7.0
+
+
+def test_block_bootstrap_large_chunked():
+    """Asserts chunked vectorized block bootstrap works perfectly for large datasets."""
+    # Size that triggers chunking: total elements = 500 * 25000 = 12,500,000 > 10,000,000 threshold
+    data = np.arange(25000, dtype=float)
+    low, up = run_block_bootstrap_ci(
+        data, block_size=100, num_resamples=500, bootstrap_method="moving", ci_method="percentile", random_seed=42
+    )
+    assert low < up
+

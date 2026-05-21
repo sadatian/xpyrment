@@ -165,3 +165,173 @@ def run_bootstrap_ci(
         return (point_est, point_est)
 
     return (lower_bound, upper_bound)
+
+
+def run_block_bootstrap_ci(
+    data_group: np.ndarray,
+    block_size: int,
+    num_resamples: int = 2000,
+    confidence_level: float = 0.95,
+    bootstrap_method: str = "moving",
+    ci_method: str = "percentile",
+    random_seed: Optional[int] = None,
+) -> tuple:
+    r"""Computes non-parametric block bootstrap confidence intervals for dependent/autocorrelated data.
+
+    Block bootstrap methods (Moving Block and Circular Block) resample contiguous blocks of data to preserve
+    the temporal dependence structure within the time-series or sequence.
+
+    ??? mathbox "Mathematical Formulation of Block Bootstrap"
+        Let $\mathbf{x} = (x_1, x_2, \dots, x_n)$ be a time series of length $n$, and let $b$ be the block size.
+        
+        1. **Moving Block Bootstrap (MBB)**:
+           We define $N = n - b + 1$ overlapping blocks of length $b$:
+           $$
+           B_i = (x_i, x_{i+1}, \dots, x_{i+b-1}), \quad \text{for } i = 1, \dots, N
+           $$
+           We resample $k = \lceil n/b \rceil$ blocks with replacement from $\{B_1, \dots, B_N\}$, concatenate them,
+           and truncate the final sequence to length $n$.
+           
+        2. **Circular Block Bootstrap (CBB)**:
+           We define $n$ overlapping blocks of length $b$ by wrapping the time series circularly:
+           $$
+           B_i = (x_i, x_{i+1}, \dots, x_{i+b-1}), \quad \text{for } i = 1, \dots, n
+           $$
+           where index wrap-around uses modulo arithmetic: $x_j = x_{((j - 1) \bmod n) + 1}$. We resample $k = \lceil n/b \rceil$
+           blocks with replacement from $\{B_1, \dots, B_n\}$, concatenate them, and truncate the final sequence to length $n$.
+
+    Args:
+        data_group (np.ndarray): The raw 1D array of observed values.
+        block_size (int): The size of contiguous blocks ($b$).
+        num_resamples (int): The number of bootstrap iterations ($B$). Defaults to 2000.
+        confidence_level (float): The desired confidence interval width ($1 - \alpha$). Defaults to 0.95.
+        bootstrap_method (str): The block bootstrap method (`"moving"` or `"circular"`). Defaults to `"moving"`.
+        ci_method (str): The confidence interval estimation method (`"percentile"` or `"bca"`). Defaults to `"percentile"`.
+        random_seed (Optional[int]): Random seed for numpy generator reproducibility. Defaults to None.
+
+    Returns:
+        tuple: A tuple of floats `(lower_bound, upper_bound)` representing the calculated interval.
+    """
+    n = len(data_group)
+    if n == 0:
+        raise ValueError("Cannot run block bootstrap on empty data group.")
+
+    if block_size <= 0:
+        raise ValueError(f"Block size must be a positive integer, got {block_size}.")
+
+    if block_size > n:
+        raise ValueError(f"Block size {block_size} cannot exceed data length {n}.")
+
+    if bootstrap_method not in ("moving", "circular"):
+        raise ValueError(f"Unknown bootstrap method: {bootstrap_method}. Choose 'moving' or 'circular'.")
+
+    if ci_method not in ("percentile", "bca"):
+        raise ValueError(f"Unknown confidence interval method: {ci_method}. Choose 'percentile' or 'bca'.")
+
+    # Point estimate
+    point_est = float(np.mean(data_group))
+
+    # Guard against zero-variance or constant arrays
+    if np.var(data_group) < 1e-12 or np.all(data_group == data_group[0]):
+        return (point_est, point_est)
+
+    rng = np.random.default_rng(random_seed)
+
+    # Number of blocks to concatenate to reach length >= n
+    k = int(np.ceil(n / block_size))
+
+    # Determine the number of starting indices available
+    if bootstrap_method == "moving":
+        num_blocks = n - block_size + 1
+    else:  # circular
+        num_blocks = n
+
+    # Smart chunk size calculation to prevent OOM
+    max_elements = 10_000_000
+    total_elements = num_resamples * n
+
+    replicates = np.zeros(num_resamples)
+    block_offsets = np.arange(block_size)
+
+    # Chunked loop
+    chunk_size = max(1, max_elements // n)
+    for start_idx in range(0, num_resamples, chunk_size):
+        end_idx = min(start_idx + chunk_size, num_resamples)
+        current_chunk_size = end_idx - start_idx
+
+        # Choose start indices of shape (current_chunk_size, k)
+        start_indices = rng.choice(num_blocks, size=(current_chunk_size, k), replace=True)
+
+        if bootstrap_method == "moving":
+            # indices_2d: shape (current_chunk_size, k, block_size)
+            indices_2d = start_indices[:, :, np.newaxis] + block_offsets[np.newaxis, np.newaxis, :]
+            indices_flat = indices_2d.reshape(current_chunk_size, -1)
+            indices_truncated = indices_flat[:, :n]
+        else:  # circular
+            indices_2d = (start_indices[:, :, np.newaxis] + block_offsets[np.newaxis, np.newaxis, :]) % n
+            indices_flat = indices_2d.reshape(current_chunk_size, -1)
+            indices_truncated = indices_flat[:, :n]
+
+        # Compute statistic of interest (the mean of the bootstrap sample)
+        replicates[start_idx:end_idx] = np.mean(data_group[indices_truncated], axis=1)
+
+    # Guard against perfectly degenerate bootstrap distributions
+    if np.var(replicates) < 1e-12 or np.all(replicates == replicates[0]):
+        return (point_est, point_est)
+
+    alpha = 1.0 - confidence_level
+
+    try:
+        if ci_method == "percentile":
+            lower_pct = 100 * (alpha / 2.0)
+            upper_pct = 100 * (1.0 - alpha / 2.0)
+            lower_bound = float(np.percentile(replicates, lower_pct))
+            upper_bound = float(np.percentile(replicates, upper_pct))
+        elif ci_method == "bca":
+            # 1. Bias correction z0
+            prop = np.mean(replicates < point_est)
+            # Clip proportion to prevent norm.ppf boundary infinities
+            prop = np.clip(prop, 1e-6, 1.0 - 1e-6)
+            z0 = norm.ppf(prop)
+
+            # 2. Acceleration parameter a using jackknife means
+            if n > 1:
+                sum_y = np.sum(data_group)
+                jack_estimates = (sum_y - data_group) / (n - 1)
+                mean_jack = np.mean(jack_estimates)
+                diff = mean_jack - jack_estimates
+                num = np.sum(diff ** 3)
+                den = 6.0 * (np.sum(diff ** 2) ** 1.5)
+                a = num / den if den > 1e-12 else 0.0
+            else:
+                a = 0.0
+
+            # 3. Corrected percentiles
+            z_alpha_2 = norm.ppf(alpha / 2.0)
+            z_1_alpha_2 = norm.ppf(1.0 - alpha / 2.0)
+
+            den1 = 1.0 - a * (z0 + z_alpha_2)
+            den2 = 1.0 - a * (z0 + z_1_alpha_2)
+
+            alpha_1 = norm.cdf(z0 + (z0 + z_alpha_2) / (den1 if abs(den1) > 1e-12 else 1e-12))
+            alpha_2 = norm.cdf(z0 + (z0 + z_1_alpha_2) / (den2 if abs(den2) > 1e-12 else 1e-12))
+
+            # Clamp back mapping boundaries
+            alpha_1 = np.clip(alpha_1, 1e-6, 1.0 - 1e-6)
+            alpha_2 = np.clip(alpha_2, 1e-6, 1.0 - 1e-6)
+
+            lower_bound = float(np.percentile(replicates, alpha_1 * 100))
+            upper_bound = float(np.percentile(replicates, alpha_2 * 100))
+    except Exception:
+        # Graceful fallback to simple percentile under mathematical failures
+        lower_pct = 100 * (alpha / 2.0)
+        upper_pct = 100 * (1.0 - alpha / 2.0)
+        lower_bound = float(np.percentile(replicates, lower_pct))
+        upper_bound = float(np.percentile(replicates, upper_pct))
+
+    # Final sanity bounds verification
+    if np.isnan(lower_bound) or np.isnan(upper_bound) or np.isinf(lower_bound) or np.isinf(upper_bound):
+        return (point_est, point_est)
+
+    return (lower_bound, upper_bound)
+
