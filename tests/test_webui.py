@@ -395,3 +395,114 @@ def test_dashboard_server_run_exception(caplog: pytest.LogCaptureFixture) -> Non
         
     assert any("Error in dashboard server loop" in record.message for record in caplog.records)
 
+
+def test_dashboard_server_causal_cuped_scenario() -> None:
+    """Verifies that the dashboard CUPED endpoints, state configurations, and t-test analytics work correctly."""
+    # 1. Setup correlated mock dataset
+    rng = np.random.default_rng(42)
+    pre = rng.normal(100.0, 15.0, size=100)
+    # Control vs Treatment
+    val = np.zeros(100)
+    variant = ["control", "treatment"] * 50
+    for i in range(100):
+        if variant[i] == "control":
+            val[i] = pre[i] + rng.normal(5.0, 1.0)
+        else:
+            val[i] = pre[i] + rng.normal(8.0, 1.0)
+
+    df = pd.DataFrame({
+        "unit_id": [f"user_{i}" for i in range(100)],
+        "exposed_at": pd.date_range(start="2026-05-01", periods=100, freq="h"),
+        "variant": variant,
+        "pre_value": pre,
+        "metric_value": val
+    })
+
+    monitor = LiveMonitor(df, time_col="exposed_at")
+    server = ExperimentDashboardServer(monitor, expected_ratios=[0.5, 0.5], port=0, freq="h")
+
+    try:
+        server.start()
+        base_url = f"http://127.0.0.1:{server.port}"
+
+        # A. Query /api/data and check that metric_value was computed without CUPED by default
+        with urllib.request.urlopen(f"{base_url}/api/data", timeout=5.0) as response:
+            data = json.loads(response.read().decode("utf-8"))["data"]
+            assert data["cuped_active"] is False
+            m_res = data["metrics_analysis"][0]
+            assert m_res["metric_name"] == "Conversion Revenue"
+            assert m_res["cuped_applied"] is False
+            assert m_res["variance_reduction"] == 0.0
+
+        # B. Toggle CUPED ON
+        toggle_req = urllib.request.Request(
+            f"{base_url}/api/cuped/toggle",
+            data=json.dumps({"active": True}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(toggle_req, timeout=5.0) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            assert res["status"] == "success"
+            assert res["cuped_active"] is True
+            assert server.cuped_active is True
+
+        # C. Query /api/data again and verify CUPED calculation
+        with urllib.request.urlopen(f"{base_url}/api/data", timeout=5.0) as response:
+            data = json.loads(response.read().decode("utf-8"))["data"]
+            assert data["cuped_active"] is True
+            m_res = data["metrics_analysis"][0]
+            assert m_res["cuped_applied"] is True
+            assert m_res["variance_reduction"] > 0.8  # Expect high variance reduction (> 80%) due to positive correlation
+
+        # D. Toggle CUPED OFF (flip without body)
+        toggle_req_flip = urllib.request.Request(
+            f"{base_url}/api/cuped/toggle",
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(toggle_req_flip, timeout=5.0) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            assert res["status"] == "success"
+            assert res["cuped_active"] is False
+            assert server.cuped_active is False
+
+    finally:
+        server.stop()
+
+
+def test_dashboard_server_metric_failure_handling(caplog: pytest.LogCaptureFixture) -> None:
+    """Verifies that failures in custom metric calculations are caught, logged, and bypassed safely."""
+    from xpyrment.metrics.taxonomy import BaseMetric
+    
+    class FailingMetric(BaseMetric):
+        def calculate(self, df, treatment_col, control, treatment):
+            raise RuntimeError("Injected metric calculation failure")
+
+        def name(self) -> str:
+            return "Failing"
+
+    df = pd.DataFrame({
+        "unit_id": ["u1", "u2"],
+        "exposed_at": ["2026-05-01 10:00:00", "2026-05-01 10:01:00"],
+        "variant": ["control", "treatment"]
+    })
+    monitor = LiveMonitor(df, time_col="exposed_at")
+    server = ExperimentDashboardServer(monitor, expected_ratios=[0.5, 0.5], port=0, metrics=[FailingMetric("Failing")])
+
+    import logging
+    try:
+        server.start()
+        base_url = f"http://127.0.0.1:{server.port}"
+        
+        with caplog.at_level(logging.WARNING):
+            with urllib.request.urlopen(f"{base_url}/api/data", timeout=5.0) as response:
+                data = json.loads(response.read().decode("utf-8"))["data"]
+                # Payload should still load successfully, but with an empty metrics_analysis
+                assert len(data["metrics_analysis"]) == 0
+        
+        assert any("Error calculating metric Failing" in record.message for record in caplog.records)
+    finally:
+        server.stop()
+
+

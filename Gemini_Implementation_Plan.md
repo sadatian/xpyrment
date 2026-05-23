@@ -60,10 +60,15 @@
   - Executed release verification script `main.py --sync` successfully compiling the package and updating documentation stats.
   - Verified 100% test greenness across the entire repository (205/205 tests passed).
   - Synchronized and updated all `README.md` live badges showcasing `92%` overall coverage and `205` total passed tests.
+- **Settings & Usage Guidance (Completed)**: Provided precise instructions on how to access and adjust settings to see model/token usage metrics and quotas within both the desktop application and the terminal-first **Antigravity (Gemini) CLI (`agy`)** utilizing TUI slash commands (`/usage`, `/context`, `/settings`). Specified the manual configuration of the `statusLine` option in `settings.json` to enable active real-time status bar metrics.
 
 ### Next Steps
 - **GitHub Release Integration**: Execute standard publish command `python main.py --build --testpypi` to generate distribution wheels and create the GitHub Release assets.
 - **Phase 2 (Live Lift & Statistical Inference Analysis) Execution**: Plan the interactive dashboard's next expansion for live Welch's t-test outcomes, lifts, and CUPED variance reduction.
+- **Follow-up Support**: Assist the user with any further settings adjustment queries or custom quota tracking requirements.
+
+
+
 
 
 

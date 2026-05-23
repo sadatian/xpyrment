@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 from xpyrment.run.monitor import LiveMonitor
+from xpyrment.metrics.taxonomy import BaseMetric, MeanMetric
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,8 @@ class ExperimentDashboardServer:
         host: str = "127.0.0.1",
         port: int = 0,
         variant_col: str = "variant",
-        freq: str = "D"
+        freq: str = "D",
+        metrics: Optional[List[BaseMetric]] = None
     ) -> None:
         """Initializes the ExperimentDashboardServer.
 
@@ -70,6 +72,7 @@ class ExperimentDashboardServer:
             port (int): Port to bind to. Set to 0 to dynamically allocate a free port.
             variant_col (str): Variant column name. Defaults to "variant".
             freq (str): Binning frequency. Defaults to "D".
+            metrics (Optional[List[BaseMetric]]): Pluggable analytical metrics to monitor.
         """
         self.monitor = monitor
         self.expected_ratios = expected_ratios
@@ -81,6 +84,12 @@ class ExperimentDashboardServer:
         self.thread: Optional[threading.Thread] = None
         self.port: int = port
         self._is_running = False
+
+        # Pluggable Metrics Registry and CUPED state
+        self.metrics = metrics if metrics is not None else [
+            MeanMetric("Conversion Revenue", value_col="metric_value", pre_period_col="pre_value")
+        ]
+        self.cuped_active = False
 
         # Simulation configurations
         self._lock = threading.Lock()
@@ -168,6 +177,22 @@ class ExperimentDashboardServer:
                     self.send_header("Content-Type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps({"status": "success"}).encode("utf-8"))
+                
+                elif self.path == "/api/cuped/toggle":
+                    with server_instance._lock:
+                        if "active" in params:
+                            server_instance.cuped_active = bool(params["active"])
+                        else:
+                            server_instance.cuped_active = not server_instance.cuped_active
+                        current_cuped = server_instance.cuped_active
+                    
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "status": "success",
+                        "cuped_active": current_cuped
+                    }).encode("utf-8"))
                 
                 else:
                     self.send_response(404)
@@ -277,10 +302,22 @@ class ExperimentDashboardServer:
                     self.sim_counter += 1
                     count = self.sim_counter
                 variant = rng.choice(["control", "treatment"], p=[p_control, p_treatment])
+                
+                # Pre-period covariate X_i ~ N(100.0, 15.0^2)
+                pre_value = float(rng.normal(100.0, 15.0))
+                
+                # Outcome Y_i: Control vs Treatment (simulates a +3.0 absolute lift)
+                if variant == "control":
+                    metric_value = pre_value + float(rng.normal(5.0, 5.0))
+                else:
+                    metric_value = pre_value + float(rng.normal(8.0, 5.0))
+
                 new_rows.append({
                     "unit_id": f"sim_USER_{count:06d}",
                     "exposed_at": now,
-                    "variant": variant
+                    "variant": variant,
+                    "pre_value": pre_value,
+                    "metric_value": metric_value
                 })
             
             new_df = pd.DataFrame(new_rows)
@@ -325,8 +362,51 @@ class ExperimentDashboardServer:
                         ratios.append(float(val2 / total) if total > 0 else 0.0)
 
             observed_counts = []
+            variants = sorted(list(cumulative.columns)) if not cumulative.empty else []
             if not cumulative.empty:
                 observed_counts = [int(x) for x in cumulative.iloc[-1].values]
+
+            # Dynamic Real-Time Causal Metrics Welch / CUPED Calculations
+            metrics_results = []
+            if len(variants) == 2 and not self.monitor.df.empty:
+                ctrl_arm = variants[0]
+                treat_arm = variants[1]
+                for v in variants:
+                    if "ctrl" in str(v).lower() or "control" in str(v).lower():
+                        ctrl_arm = v
+                        treat_arm = [x for x in variants if x != v][0]
+                        break
+
+                for m in self.metrics:
+                    orig_pre_period_col = getattr(m, "pre_period_col", None)
+                    orig_pre_numerator_col = getattr(m, "pre_numerator_col", None)
+                    orig_pre_denominator_col = getattr(m, "pre_denominator_col", None)
+
+                    if not self.cuped_active:
+                        if hasattr(m, "pre_period_col"):
+                            m.pre_period_col = None
+                        if hasattr(m, "pre_numerator_col"):
+                            m.pre_numerator_col = None
+                        if hasattr(m, "pre_denominator_col"):
+                            m.pre_denominator_col = None
+
+                    try:
+                        res = m.calculate(
+                            df=self.monitor.df,
+                            treatment_col=self.variant_col,
+                            control=ctrl_arm,
+                            treatment=treat_arm
+                        )
+                        metrics_results.append(res)
+                    except Exception as me:
+                        logger.warning(f"Error calculating metric {m.name}: {me}", exc_info=True)
+                    finally:
+                        if hasattr(m, "pre_period_col"):
+                            m.pre_period_col = orig_pre_period_col
+                        if hasattr(m, "pre_numerator_col"):
+                            m.pre_numerator_col = orig_pre_numerator_col
+                        if hasattr(m, "pre_denominator_col"):
+                            m.pre_denominator_col = orig_pre_denominator_col
 
             payload = {
                 "status": "success",
@@ -334,7 +414,7 @@ class ExperimentDashboardServer:
                     "shutoff_triggered": checks.get("shutoff_triggered", False),
                     "alerts_triggered": checks.get("alerts_triggered", []),
                     "expected_ratios": self.expected_ratios,
-                    "variants": sorted(list(cumulative.columns)) if not cumulative.empty else [],
+                    "variants": variants,
                     "observed_counts": observed_counts,
                     "traffic_anomaly": checks.get("traffic_anomaly", {}),
                     "cumulative_srm": checks.get("cumulative_srm", {}),
@@ -344,6 +424,8 @@ class ExperimentDashboardServer:
                         "columns": columns,
                         "ratios": ratios
                     },
+                    "metrics_analysis": metrics_results,
+                    "cuped_active": self.cuped_active,
                     "simulation": {
                         "active": self.sim_active,
                         "rate": self.sim_rate,
@@ -1002,6 +1084,196 @@ class ExperimentDashboardServer:
             background: rgba(239, 68, 68, 0.18);
             border-color: rgba(239, 68, 68, 0.4);
         }
+
+        /* Real-Time Inference Styles */
+        .metric-card {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-card-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .metric-card-title h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-card-title span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .metric-stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .metric-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .metric-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-stat-value.lift-positive {
+            color: var(--color-healthy);
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .metric-stat-value.lift-negative {
+            color: var(--color-alert);
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .sig-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .sig-badge.significant {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--color-healthy);
+        }
+
+        .sig-badge.not-significant {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .vr-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: var(--color-treatment);
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+
+        /* CI Visual Container */
+        .ci-visual-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        .ci-track {
+            position: relative;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            width: 100%;
+            overflow: visible;
+        }
+
+        .ci-zero-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            border-left: 1px dashed rgba(255, 255, 255, 0.25);
+            left: 50%;
+            z-index: 1;
+        }
+
+        .ci-range-bar {
+            position: absolute;
+            top: 3px;
+            height: 6px;
+            border-radius: 3px;
+            z-index: 2;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ci-range-bar.significant-pos {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.5), rgba(16, 185, 129, 0.8));
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .ci-range-bar.significant-neg {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.5), rgba(239, 68, 68, 0.8));
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .ci-range-bar.non-significant {
+            background: linear-gradient(90deg, rgba(148, 163, 184, 0.3), rgba(148, 163, 184, 0.6));
+            box-shadow: none;
+        }
+
+        .ci-estimate-dot {
+            position: absolute;
+            top: -3px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid var(--bg-dark);
+            z-index: 3;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ci-labels-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -1070,6 +1342,16 @@ class ExperimentDashboardServer:
             </div>
         </section>
 
+        <!-- Causal Inference Panel -->
+        <section class="glass-panel" id="causal-inference-panel" style="display: none;">
+            <div class="chart-header" style="margin-bottom: 20px;">
+                <h3>Live Causal Inference & Lift Analysis</h3>
+            </div>
+            <div id="metrics-container" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Dynamic causal metric cards will render here -->
+            </div>
+        </section>
+
         <!-- Alerts Panel -->
         <section class="glass-panel alert-panel">
             <h3>Diagnostic Activity Feed & Alerts</h3>
@@ -1110,6 +1392,21 @@ class ExperimentDashboardServer:
                 <div class="slider-container">
                     <input type="range" id="sim-rate-range" min="1" max="100" value="10" oninput="updateRateLabel(this.value)" onchange="sendConfig()">
                     <span class="slider-label"><span id="sim-rate-val">10</span> req/sec</span>
+                </div>
+            </div>
+
+            <!-- Variance Reduction Settings -->
+            <div class="sim-section">
+                <label class="section-title">Variance Reduction</label>
+                <div class="toggle-container">
+                    <span class="toggle-label" style="display: flex; flex-direction: column; gap: 4px;">
+                        <span>Apply CUPED</span>
+                        <span style="font-size: 0.72rem; color: var(--text-secondary);">Using pre-period covariate</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="sim-cuped-checkbox" onchange="toggleCuped()">
+                        <span class="slider-switch"></span>
+                    </label>
                 </div>
             </div>
 
@@ -1628,8 +1925,11 @@ class ExperimentDashboardServer:
                         updateCards(res.data);
                         updateAlertFeed(res.data);
                         drawCharts(res.data);
+                        updateMetricsPanel(res.data);
 
                         // Synchronize simulator drawer controls with server state
+                        document.getElementById('sim-cuped-checkbox').checked = res.data.cuped_active;
+
                         if (res.data.simulation) {
                             const sim = res.data.simulation;
                             isSimulating = sim.active;
