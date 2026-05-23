@@ -13,3 +13,8 @@ All source code and visual changes must strictly adhere to the following 4-digit
 4. **Major releases / complete structural overhauls**: Increment major version by `+1.0.0.0` (1st digit, `x.0.0.0`) and zero out any downstream digits (e.g., `1.1.2.3` $\rightarrow$ `2.0.0.0`).
 
 **Rule of Reset**: Any increment of a higher-order digit **must** reset (zero out) all digits downstream of it.
+
+## 📝 Changelog Preparation & Release Flow
+
+Before suggesting any package build or publish command (e.g. `--build` via `main.py`), and immediately after completing any major release preparation (such as version bumps and cleanup), you **must** prepare and update `CHANGELOG.md` first.
+Once the `CHANGELOG.md` is updated, explicitly remind the user to run the build/release command.

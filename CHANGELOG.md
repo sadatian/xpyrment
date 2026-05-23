@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.2.0] - 2026-05-23
+
+### Added
+- **Live Causal Inference & Lift Analysis (Phase 2)**: Developed and integrated real-time Welch's t-test causal estimations and relative lift percentage computations over registered dashboard metrics.
+- **Correlated Causal Background Data Simulator**: Redesigned the background simulation thread to generate continuous `metric_value` and `pre_value` (pre-period baseline covariate) logs in real-time ($X_i \sim \mathcal{N}(100.0, 15.0^2)$).
+- **CUPED Variance Reduction REST Endpoint**: Added `/api/cuped/toggle` POST endpoint to control variance reduction dynamically and thread-safely.
+- **Glassmorphic UI Causal Panel & Visual CI Contracting Bar**: Integrated horizontal CI visual boundary bars displaying real-time contraction when CUPED is activated, along with glowing relative lift percentages, statistical power, and significance badges.
+
+### Changed
+- Promoted package version to `1.5.2.0`.
+- Added comprehensive unit and integration tests under `tests/test_webui.py` achieving 100% green test passes and 99% coverage on `webui.py`.
+
 ## [1.5.0.0] - 2026-05-22
 
 ### Added
