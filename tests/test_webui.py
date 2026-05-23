@@ -213,3 +213,185 @@ def test_teardown_and_redundant_stop() -> None:
     # Redundant stop on stopped server
     server.stop()
     assert server._is_running is False
+
+
+def test_dashboard_server_simulation_scenario() -> None:
+    """Verifies that the dashboard simulator endpoints start, stop, configure, and reset correctly."""
+    import time
+    
+    df = pd.DataFrame(columns=["unit_id", "exposed_at", "variant"])
+    monitor = LiveMonitor(df, time_col="exposed_at")
+    server = ExperimentDashboardServer(monitor, expected_ratios=[0.5, 0.5], port=0, freq="s")
+
+    try:
+        server.start()
+        base_url = f"http://127.0.0.1:{server.port}"
+
+        # 1. Config simulation (rate=50, srm_bias=True)
+        config_req = urllib.request.Request(
+            f"{base_url}/api/simulate/config",
+            data=json.dumps({"rate": 50, "srm_bias": True, "traffic_drop": False}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(config_req, timeout=5.0) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            assert res["status"] == "success"
+            assert res["rate"] == 50.0
+            assert res["srm_bias"] is True
+
+        # 2. Toggle Simulation ON
+        toggle_req = urllib.request.Request(
+            f"{base_url}/api/simulate/toggle",
+            data=json.dumps({"active": True}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(toggle_req, timeout=5.0) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            assert res["status"] == "success"
+            assert res["sim_active"] is True
+            assert server.sim_active is True
+
+        # 3. Wait for simulator loop to append records
+        time.sleep(1.2)
+        
+        # Verify that data got appended dynamically
+        with server._lock:
+            assert len(server.monitor.df) > 0
+            assert server.sim_counter > 0
+
+        # 4. Fetch telemetry payload and verify simulation state
+        with urllib.request.urlopen(f"{base_url}/api/data", timeout=5.0) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            assert data["status"] == "success"
+            payload = data["data"]
+            assert payload["simulation"]["active"] is True
+            assert payload["simulation"]["rate"] == 50.0
+            assert payload["simulation"]["srm_bias"] is True
+
+        # 5. Toggle Simulation OFF
+        toggle_req_off = urllib.request.Request(
+            f"{base_url}/api/simulate/toggle",
+            data=json.dumps({"active": False}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(toggle_req_off, timeout=5.0) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            assert res["status"] == "success"
+            assert res["sim_active"] is False
+            assert server.sim_active is False
+
+        # 6. Reset Simulation data
+        reset_req = urllib.request.Request(
+            f"{base_url}/api/simulate/reset",
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(reset_req, timeout=5.0) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            assert res["status"] == "success"
+            
+        with server._lock:
+            assert len(server.monitor.df) == 0
+
+    finally:
+        server.stop()
+
+
+def test_webui_coverage_gaps() -> None:
+    """Covers edge cases and gaps in ExperimentDashboardServer to achieve maximum test coverage."""
+    # 1. Setup minimal monitor and server
+    df = pd.DataFrame({
+        "unit_id": ["u1"],
+        "exposed_at": ["2026-05-01 10:00:00"],
+        "variant": ["control"]
+    })
+    monitor = LiveMonitor(df, time_col="exposed_at")
+    server = ExperimentDashboardServer(monitor, expected_ratios=[0.5, 0.5], port=0)
+
+    try:
+        # Start server
+        server.start()
+        base_url = f"http://127.0.0.1:{server.port}"
+
+        # A. Guard: Double start() call (line 97)
+        server.start()
+
+        # B. Request: /favicon.ico (lines 119-120)
+        with urllib.request.urlopen(f"{base_url}/favicon.ico", timeout=5.0) as response:
+            assert response.status == 204
+
+        # C. POST with invalid JSON (lines 132-133)
+        req_invalid_json = urllib.request.Request(
+            f"{base_url}/api/simulate/toggle",
+            data=b"this is not valid json {",
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req_invalid_json, timeout=5.0) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            assert res["status"] == "success"
+
+        # D. POST with unhandled path (lines 173-176)
+        req_unhandled_path = urllib.request.Request(
+            f"{base_url}/api/simulate/unhandled_endpoint",
+            data=json.dumps({}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with pytest.raises(urllib.error.HTTPError) as excinfo:
+            urllib.request.urlopen(req_unhandled_path, timeout=5.0)
+        assert excinfo.value.code == 404
+
+        # E. Guard: Double start_simulation() call (line 216)
+        server.start_simulation()
+        assert server.sim_active is True
+        server.start_simulation()
+
+        # F. Simulator traffic drop loop branch (lines 260-262)
+        server.update_simulation_config(rate=10, srm_bias=False, traffic_drop=True)
+        # Give simulator time to hit the sleep block in its loop
+        import time
+        time.sleep(0.1)
+
+        # G. Simulator zero/negative rate loop branch (lines 265-267)
+        with server._lock:
+            server.sim_rate = 0.0
+            server.sim_traffic_drop = False
+        # Sleep long enough to let the background thread wake up, evaluate the zero-rate condition, and sleep
+        time.sleep(1.2)
+
+        server.stop_simulation()
+
+    finally:
+        server.stop()
+
+
+def test_dashboard_server_run_exception(caplog: pytest.LogCaptureFixture) -> None:
+    """Verifies that exceptions in the server running loop are caught and logged."""
+    df = pd.DataFrame({"unit_id": ["u1"], "exposed_at": ["2026-05-01 10:00:00"], "variant": ["control"]})
+    monitor = LiveMonitor(df, time_col="exposed_at")
+    server = ExperimentDashboardServer(monitor, expected_ratios=[0.5, 0.5], port=0)
+    
+    # We mock self.server to raise an error during serve_forever
+    class MockServer:
+        def __init__(self) -> None:
+            self.server_address = ("127.0.0.1", 0)
+        def serve_forever(self) -> None:
+            raise RuntimeError("Injected serve_forever failure")
+        def shutdown(self) -> None:
+            pass
+        def server_close(self) -> None:
+            pass
+
+    server.server = MockServer()  # type: ignore
+    server._is_running = True
+    
+    import logging
+    with caplog.at_level(logging.ERROR):
+        server._run_server()
+        
+    assert any("Error in dashboard server loop" in record.message for record in caplog.records)
+

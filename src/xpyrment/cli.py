@@ -251,3 +251,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         handle_balance(args)
     elif args.subcommand == "regress":
         handle_regress(args)
+
+
+if __name__ == "__main__":
+    main()

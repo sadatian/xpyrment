@@ -509,7 +509,7 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"❌ Failed to create GitHub Release via REST API: {str(e)}")
         
-            
+        if args.testpypi:
             print("🚀 Uploading distribution files to TestPyPI...")
             env_vars = os.environ.copy()
             pypi_token = env_vars.get("TESTPYPI_TOKEN") or env_vars.get("PYPI_TOKEN")
@@ -531,7 +531,6 @@ if __name__ == "__main__":
                 create_github_release(version, notes_content)
             
         if args.pypi:
-            
             print("🚀 Uploading distribution files to actual PyPI...")
             env_vars = os.environ.copy()
             pypi_token = env_vars.get("PYPI_TOKEN")

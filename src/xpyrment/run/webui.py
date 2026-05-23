@@ -7,6 +7,7 @@ and serves a premium dark-mode, glassmorphic client-side dashboard with live cha
 import json
 import logging
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any, Dict, List, Optional
 import numpy as np
@@ -81,6 +82,15 @@ class ExperimentDashboardServer:
         self.port: int = port
         self._is_running = False
 
+        # Simulation configurations
+        self._lock = threading.Lock()
+        self.sim_active = False
+        self.sim_thread: Optional[threading.Thread] = None
+        self.sim_rate = 10.0
+        self.sim_srm_bias = False
+        self.sim_traffic_drop = False
+        self.sim_counter = 0
+
     def start(self) -> None:
         """Binds the HTTP socket and starts the dashboard server loop in a background thread."""
         if self._is_running:
@@ -114,6 +124,57 @@ class ExperimentDashboardServer:
                     self.end_headers()
                     self.wfile.write(b"Not Found")
 
+            def do_POST(self) -> None:
+                content_length = int(self.headers.get("Content-Length", 0))
+                post_data = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else ""
+                try:
+                    params = json.loads(post_data) if post_data else {}
+                except Exception:
+                    params = {}
+
+                if self.path == "/api/simulate/toggle":
+                    active = params.get("active", False)
+                    if active:
+                        server_instance.start_simulation()
+                    else:
+                        server_instance.stop_simulation()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "status": "success",
+                        "sim_active": server_instance.sim_active
+                    }).encode("utf-8"))
+
+                elif self.path == "/api/simulate/config":
+                    rate = params.get("rate", server_instance.sim_rate)
+                    srm_bias = params.get("srm_bias", server_instance.sim_srm_bias)
+                    traffic_drop = params.get("traffic_drop", server_instance.sim_traffic_drop)
+                    
+                    server_instance.update_simulation_config(rate, srm_bias, traffic_drop)
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "status": "success", 
+                        "rate": server_instance.sim_rate,
+                        "srm_bias": server_instance.sim_srm_bias,
+                        "traffic_drop": server_instance.sim_traffic_drop
+                    }).encode("utf-8"))
+
+                elif self.path == "/api/simulate/reset":
+                    server_instance.reset_simulation_data()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"status": "success"}).encode("utf-8"))
+                
+                else:
+                    self.send_response(404)
+                    self.send_header("Content-Type", "text/plain")
+                    self.end_headers()
+                    self.wfile.write(b"Not Found")
+
         # Bind immediately on the parent thread to capture port or EADDRINUSE exceptions
         self.server = HTTPServer((self.host, self.port_requested), DashboardHTTPRequestHandler)
         self.port = self.server.server_address[1]
@@ -135,6 +196,8 @@ class ExperimentDashboardServer:
         if not self._is_running or not self.server:
             return
 
+        self.stop_simulation()
+
         self.server.shutdown()
         self.server.server_close()
 
@@ -146,56 +209,150 @@ class ExperimentDashboardServer:
         self.thread = None
         logger.info("xpyrment Live Dashboard server stopped cleanly.")
 
+    def start_simulation(self) -> None:
+        """Starts the background thread-safe traffic simulator."""
+        with self._lock:
+            if self.sim_active:
+                return
+            self.sim_active = True
+            self.sim_thread = threading.Thread(target=self._run_simulation_loop, daemon=True)
+            self.sim_thread.start()
+            logger.info("Simulation engine activated.")
+
+    def stop_simulation(self) -> None:
+        """Halts the background traffic simulator thread."""
+        with self._lock:
+            if not self.sim_active:
+                return
+            self.sim_active = False
+        if self.sim_thread:
+            self.sim_thread.join(timeout=2.0)
+            self.sim_thread = None
+        logger.info("Simulation engine deactivated.")
+
+    def update_simulation_config(self, rate: float, srm_bias: bool, traffic_drop: bool) -> None:
+        """Updates live simulation configurations thread-safely."""
+        with self._lock:
+            self.sim_rate = max(1.0, float(rate))
+            self.sim_srm_bias = bool(srm_bias)
+            self.sim_traffic_drop = bool(traffic_drop)
+            logger.info(f"Simulation config updated: rate={self.sim_rate}, srm_bias={self.sim_srm_bias}, traffic_drop={self.sim_traffic_drop}")
+
+    def reset_simulation_data(self) -> None:
+        """Clears all historical logs in the monitor dataset to begin a fresh run."""
+        with self._lock:
+            empty_df = pd.DataFrame(columns=self.monitor.df.columns)
+            self.monitor.df = empty_df
+            self.monitor.shutoff_triggered = False
+            self.sim_counter = 0
+            logger.info("Simulation dataset has been cleared and reset.")
+
+    def _run_simulation_loop(self) -> None:
+        rng = np.random.default_rng()
+        while True:
+            with self._lock:
+                if not self.sim_active:
+                    break
+                rate = self.sim_rate
+                srm_bias = self.sim_srm_bias
+                traffic_drop = self.sim_traffic_drop
+
+            if traffic_drop:
+                time.sleep(1.0)
+                continue
+
+            num_to_gen = int(rate)
+            if num_to_gen <= 0:
+                time.sleep(1.0)
+                continue
+
+            new_rows = []
+            now = pd.Timestamp.now()
+            
+            p_control = 0.70 if srm_bias else 0.50
+            p_treatment = 1.0 - p_control
+
+            for _ in range(num_to_gen):
+                with self._lock:
+                    self.sim_counter += 1
+                    count = self.sim_counter
+                variant = rng.choice(["control", "treatment"], p=[p_control, p_treatment])
+                new_rows.append({
+                    "unit_id": f"sim_USER_{count:06d}",
+                    "exposed_at": now,
+                    "variant": variant
+                })
+            
+            new_df = pd.DataFrame(new_rows)
+            with self._lock:
+                self.monitor.df = pd.concat([self.monitor.df, new_df], ignore_index=True)
+
+            time.sleep(1.0)
+
     def get_api_payload(self) -> Dict[str, Any]:
         """Runs diagnostics checks and serializes stats safely to JSON-compatible data structures."""
-        checks = self.monitor.run_telemetry_checks(
-            expected_ratios=self.expected_ratios,
-            variant_col=self.variant_col,
-            freq=self.freq
-        )
+        with self._lock:
+            checks = self.monitor.run_telemetry_checks(
+                expected_ratios=self.expected_ratios,
+                variant_col=self.variant_col,
+                freq=self.freq
+            )
 
-        cumulative = self.monitor.get_cumulative_traffic(variant_col=self.variant_col, freq=self.freq)
+            cumulative = self.monitor.get_cumulative_traffic(variant_col=self.variant_col, freq=self.freq)
 
-        labels = []
-        columns = {}
-        ratios = []
+            labels = []
+            columns = {}
+            ratios = []
 
-        if not cumulative.empty:
-            cumulative = cumulative.reindex(columns=sorted(cumulative.columns))
-            labels = [str(idx.date()) for idx in cumulative.index]
-            for col in cumulative.columns:
-                columns[str(col)] = cumulative[col].tolist()
+            if not cumulative.empty:
+                cumulative = cumulative.reindex(columns=sorted(cumulative.columns))
+                
+                if self.freq in ["s", "S"]:
+                    labels = [idx.strftime("%H:%M:%S") for idx in cumulative.index]
+                elif self.freq in ["min", "T"]:
+                    labels = [idx.strftime("%H:%M") for idx in cumulative.index]
+                else:
+                    labels = [str(idx.date()) for idx in cumulative.index]
 
-            # Ratio tracking if exactly two arms exist
-            if len(cumulative.columns) == 2:
-                col1, col2 = cumulative.columns[0], cumulative.columns[1]
-                for val1, val2 in zip(cumulative[col1], cumulative[col2]):
-                    total = val1 + val2
-                    ratios.append(float(val2 / total) if total > 0 else 0.0)
+                for col in cumulative.columns:
+                    columns[str(col)] = cumulative[col].tolist()
 
-        observed_counts = []
-        if not cumulative.empty:
-            observed_counts = [int(x) for x in cumulative.iloc[-1].values]
+                # Ratio tracking if exactly two arms exist
+                if len(cumulative.columns) == 2:
+                    col1, col2 = cumulative.columns[0], cumulative.columns[1]
+                    for val1, val2 in zip(cumulative[col1], cumulative[col2]):
+                        total = val1 + val2
+                        ratios.append(float(val2 / total) if total > 0 else 0.0)
 
-        payload = {
-            "status": "success",
-            "data": {
-                "shutoff_triggered": checks.get("shutoff_triggered", False),
-                "alerts_triggered": checks.get("alerts_triggered", []),
-                "expected_ratios": self.expected_ratios,
-                "variants": sorted(list(cumulative.columns)) if not cumulative.empty else [],
-                "observed_counts": observed_counts,
-                "traffic_anomaly": checks.get("traffic_anomaly", {}),
-                "cumulative_srm": checks.get("cumulative_srm", {}),
-                "sequential_srm": checks.get("sequential_srm", {}),
-                "trends": {
-                    "labels": labels,
-                    "columns": columns,
-                    "ratios": ratios
+            observed_counts = []
+            if not cumulative.empty:
+                observed_counts = [int(x) for x in cumulative.iloc[-1].values]
+
+            payload = {
+                "status": "success",
+                "data": {
+                    "shutoff_triggered": checks.get("shutoff_triggered", False),
+                    "alerts_triggered": checks.get("alerts_triggered", []),
+                    "expected_ratios": self.expected_ratios,
+                    "variants": sorted(list(cumulative.columns)) if not cumulative.empty else [],
+                    "observed_counts": observed_counts,
+                    "traffic_anomaly": checks.get("traffic_anomaly", {}),
+                    "cumulative_srm": checks.get("cumulative_srm", {}),
+                    "sequential_srm": checks.get("sequential_srm", {}),
+                    "trends": {
+                        "labels": labels,
+                        "columns": columns,
+                        "ratios": ratios
+                    },
+                    "simulation": {
+                        "active": self.sim_active,
+                        "rate": self.sim_rate,
+                        "srm_bias": self.sim_srm_bias,
+                        "traffic_drop": self.sim_traffic_drop
+                    }
                 }
             }
-        }
-        return numpy_to_python(payload)
+            return numpy_to_python(payload)
 
     def get_html_content(self) -> str:
         """Returns the self-contained premium glassmorphic HTML structure for the client dashboard."""
@@ -547,6 +704,304 @@ class ExperimentDashboardServer:
         .alert-feed::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.2);
         }
+
+        /* Floating Settings/Simulator Button */
+        .settings-toggle-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, var(--color-control) 0%, var(--color-treatment) 100%);
+            border: none;
+            border-radius: 9999px;
+            color: white;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-toggle-btn:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 6px 24px rgba(14, 165, 233, 0.6);
+        }
+
+        /* Simulator Drawer panel */
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -380px;
+            width: 360px;
+            height: 100vh;
+            background: rgba(10, 10, 18, 0.9);
+            border-left: 1px solid var(--border-glass);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .drawer.open {
+            right: 0;
+        }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .drawer-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-primary) 30%, var(--color-treatment) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* Drawer sections */
+        .drawer-body {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .sim-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sim-section.border-top {
+            border-top: 1px solid var(--border-glass);
+            padding-top: 20px;
+            margin-top: 10px;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .text-danger {
+            color: var(--color-alert) !important;
+        }
+
+        .sim-status-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .sim-status-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sim-status-badge.offline {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .sim-status-badge.active {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--color-healthy);
+            animation: pulse-glow 2s infinite;
+        }
+
+        .sim-action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sim-action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .sim-action-btn.start {
+            background: rgba(14, 165, 233, 0.15);
+            border-color: rgba(14, 165, 233, 0.3);
+            color: var(--color-control);
+        }
+
+        .sim-action-btn.stop {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: var(--color-alert);
+        }
+
+        /* Sliders */
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--color-control);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--color-control);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Switches */
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        .toggle-label {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-switch {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider-switch:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-switch {
+            background-color: var(--color-treatment);
+        }
+
+        input:focus + .slider-switch {
+            box-shadow: 0 0 1px var(--color-treatment);
+        }
+
+        input:checked + .slider-switch:before {
+            transform: translateX(22px);
+        }
+
+        /* Reset button */
+        .reset-btn {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            color: var(--color-alert);
+            padding: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+        }
+
+        .reset-btn:hover {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -630,11 +1085,69 @@ class ExperimentDashboardServer:
         </footer>
     </div>
 
+    <!-- Floating Settings Toggle Button -->
+    <button class="settings-toggle-btn" onclick="toggleDrawer()">⚙️ Simulator Panel</button>
+
+    <!-- Floating Drawer Panel -->
+    <div class="drawer" id="simulator-drawer">
+        <div class="drawer-header">
+            <h3>Experiment Simulator</h3>
+            <button class="close-btn" onclick="toggleDrawer()">&times;</button>
+        </div>
+        <div class="drawer-body">
+            <!-- Simulator Status -->
+            <div class="sim-section">
+                <label class="section-title">Simulator Status</label>
+                <div class="sim-status-container">
+                    <span class="sim-status-badge offline" id="sim-status-badge">SIMULATION OFFLINE</span>
+                    <button class="sim-action-btn start" id="sim-toggle-btn" onclick="toggleSimulation()">Start Simulator</button>
+                </div>
+            </div>
+            
+            <!-- Rate Slider -->
+            <div class="sim-section">
+                <label class="section-title">Traffic Generation Rate</label>
+                <div class="slider-container">
+                    <input type="range" id="sim-rate-range" min="1" max="100" value="10" oninput="updateRateLabel(this.value)" onchange="sendConfig()">
+                    <span class="slider-label"><span id="sim-rate-val">10</span> req/sec</span>
+                </div>
+            </div>
+
+            <!-- Toggles -->
+            <div class="sim-section">
+                <label class="section-title">Inject Anomalies</label>
+                
+                <div class="toggle-container">
+                    <span class="toggle-label">Inject SRM Bias (70/30)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="sim-srm-checkbox" onchange="sendConfig()">
+                        <span class="slider-switch"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-container">
+                    <span class="toggle-label">Inject Traffic Dropout</span>
+                    <label class="switch">
+                        <input type="checkbox" id="sim-drop-checkbox" onchange="sendConfig()">
+                        <span class="slider-switch"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Danger Zone Actions -->
+            <div class="sim-section border-top">
+                <label class="section-title text-danger">Reset Controls</label>
+                <button class="reset-btn" onclick="resetSimulationData()">Clear Dashboard Logs</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Live Polling & Drawing Script -->
     <script>
         let assignmentChart = null;
         let sprtChart = null;
         let isChartJsLoaded = typeof Chart !== 'undefined';
+        let isSimulating = false;
 
         // Custom responsive SVG generators if Chart.js fails
         function generateAssignmentSvg(trends) {
@@ -1029,6 +1542,83 @@ class ExperimentDashboardServer:
             }
         }
 
+        // Drawer management & Simulator commands
+        function toggleDrawer() {
+            const drawer = document.getElementById('simulator-drawer');
+            drawer.classList.toggle('open');
+        }
+
+        function updateRateLabel(val) {
+            document.getElementById('sim-rate-val').innerText = val;
+        }
+
+        function toggleSimulation() {
+            const targetState = !isSimulating;
+            fetch('/api/simulate/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ active: targetState })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    isSimulating = res.sim_active;
+                    updateSimBadgeAndButton();
+                }
+            })
+            .catch(err => console.error('Error toggling simulation:', err));
+        }
+
+        function updateSimBadgeAndButton() {
+            const badge = document.getElementById('sim-status-badge');
+            const btn = document.getElementById('sim-toggle-btn');
+
+            if (isSimulating) {
+                badge.className = 'sim-status-badge active';
+                badge.innerText = 'SIMULATION ACTIVE';
+                btn.className = 'sim-action-btn stop';
+                btn.innerText = 'Stop Simulator';
+            } else {
+                badge.className = 'sim-status-badge offline';
+                badge.innerText = 'SIMULATION OFFLINE';
+                btn.className = 'sim-action-btn start';
+                btn.innerText = 'Start Simulator';
+            }
+        }
+
+        function sendConfig() {
+            const rate = parseInt(document.getElementById('sim-rate-range').value);
+            const srm_bias = document.getElementById('sim-srm-checkbox').checked;
+            const traffic_drop = document.getElementById('sim-drop-checkbox').checked;
+
+            fetch('/api/simulate/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rate, srm_bias, traffic_drop })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    console.log('Simulation config updated:', res);
+                }
+            })
+            .catch(err => console.error('Error updating config:', err));
+        }
+
+        function resetSimulationData() {
+            if (confirm('Are you sure you want to clear all telemetry data on the dashboard? This will reset active trend charts.')) {
+                fetch('/api/simulate/reset', { method: 'POST' })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        console.log('Simulation logs cleared.');
+                        fetchUpdate();
+                    }
+                })
+                .catch(err => console.error('Error resetting data:', err));
+            }
+        }
+
         // Periodic API polling function
         function fetchUpdate() {
             fetch('/api/data')
@@ -1038,6 +1628,18 @@ class ExperimentDashboardServer:
                         updateCards(res.data);
                         updateAlertFeed(res.data);
                         drawCharts(res.data);
+
+                        // Synchronize simulator drawer controls with server state
+                        if (res.data.simulation) {
+                            const sim = res.data.simulation;
+                            isSimulating = sim.active;
+                            updateSimBadgeAndButton();
+                            
+                            document.getElementById('sim-rate-range').value = sim.rate;
+                            document.getElementById('sim-rate-val').innerText = sim.rate;
+                            document.getElementById('sim-srm-checkbox').checked = sim.srm_bias;
+                            document.getElementById('sim-drop-checkbox').checked = sim.traffic_drop;
+                        }
                     }
                 })
                 .catch(err => {

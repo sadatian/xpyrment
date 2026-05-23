@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.0.0] - 2026-05-22
+
+### Added
+- **Dynamic SRM Shutoff Webhooks & Alert System (Block 61)**: Implemented pluggable HTTP webhook listener hooks and alert triggers inside `LiveMonitor` (`src/xpyrment/run/monitor.py`) supporting Slack (rich Markdown notifications), Email (notification body format), and generic custom JSON POST webhooks, featuring complete fault isolation between registered handlers.
+- **High-Performance Parquet & DuckDB Streaming Ingestion (Block 62)**: Engineered out-of-core streaming statistics computation in `DuckDBIngester` (`src/xpyrment/run/ingestion.py`) to process multi-gigabyte Parquet datasets. Implemented out-of-core Standardized Mean Difference (SMD), Pearson Chi-Square, and Welch's t-test stats completely bypassing RAM load limits.
+- **Deep Learning CATE Meta-Learners (Block 63)**: Developed `DragonNet` (`src/xpyrment/personalize/dragonnet.py`), a mathematically rigorous 3-headed joint representation neural network in pure NumPy. Enforced joint optimization with L2 regularization, Tanh shared layers, and propensity score clipping boundaries ($10^{-7}$) to guard against confounding selection bias.
+- **Autoregressive & Block-Bootstrap Covariance Structures (Block 64)**: Integrated Moving Block Bootstrap (MBB) and Circular Block Bootstrap (CBB) resampling engines in `src/xpyrment/analyze/inference/bootstrap.py` to preserve temporal dependencies, along with Knapp-Hartung and Newey-West HAC standard error covariance estimators in `MetaRegressor` (`src/xpyrment/analyze/meta_regression.py`) to correct for serial auto-correlations.
+- **Interactive Live-Streaming Dashboard Web-UI (Block 65)**: Created `ExperimentDashboardServer` (`src/xpyrment/run/webui.py`) serving a thread-safe glassmorphic dark-mode live-monitoring dashboard with polling interfaces, live Chart.js/SVG fallback trends, sequential SPRT martingale pathing, and active anomaly alerts.
+
 ## [1.3.0.0] - 2026-05-14
 
 ### Added
