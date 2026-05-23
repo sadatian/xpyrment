@@ -1,4 +1,4 @@
-# Gemini Implementation Plan - Phased Sprint Execution (v1.5.1.3)
+# Gemini Implementation Plan - Phased Sprint Execution (v1.5.2.0)
 
 ## Status: Completed & Verified ✅
 
@@ -60,12 +60,19 @@
   - Executed release verification script `main.py --sync` successfully compiling the package and updating documentation stats.
   - Verified 100% test greenness across the entire repository (205/205 tests passed).
   - Synchronized and updated all `README.md` live badges showcasing `92%` overall coverage and `205` total passed tests.
+- **Phase 2 (Live Causal Lift & Statistical Inference) Completed (v1.5.2.0)**:
+  - Developed and integrated real-time t-test causal estimations and relative lift percentage computations over registered dashboard metrics.
+  - Implemented correlated causal background data simulator generating $X_i$ covariate and $Y_i$ outcome streams.
+  - Added a REST toggle `/api/cuped/toggle` allowing users to activate or deactivate CUPED adjustments thread-safely.
+  - Implemented premium glassmorphic UI additions including a visual contracting confidence interval bar and live CUPED variance reduction feedback badge.
+  - Authored comprehensive end-to-end integration tests verifying endpoint state transitions and statistical accuracy (10/10 passed).
+  - Synchronized package version to `1.5.2.0` across the codebase and updated README.md badges.
 - **Settings & Usage Guidance (Completed)**: Provided precise instructions on how to access and adjust settings to see model/token usage metrics and quotas within both the desktop application and the terminal-first **Antigravity (Gemini) CLI (`agy`)** utilizing TUI slash commands (`/usage`, `/context`, `/settings`). Specified the manual configuration of the `statusLine` option in `settings.json` to enable active real-time status bar metrics.
 
 ### Next Steps
+- **Merge & Finalize Phase 2**: Coordinate codebase commit and merge for version `1.5.2.0`.
 - **GitHub Release Integration**: Execute standard publish command `python main.py --build --testpypi` to generate distribution wheels and create the GitHub Release assets.
-- **Phase 2 (Live Lift & Statistical Inference Analysis) Execution**: Plan the interactive dashboard's next expansion for live Welch's t-test outcomes, lifts, and CUPED variance reduction.
-- **Follow-up Support**: Assist the user with any further settings adjustment queries or custom quota tracking requirements.
+- **Phase 3 (Personalization HTE Visualization - DragonNet) Planning**: Begin architectural plans for personalizing HTE visualization (DragonNet) on the interactive dashboard.
 
 
 
