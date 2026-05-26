@@ -31,7 +31,7 @@ def numpy_to_python(obj: Any) -> Any:
     return obj
 
 class XpyrmentHubServer:
-    """Master Hub Server acting as a launcher for the suite of modules."""
+    """Primary Hub Server acting as a launcher for the suite of modules."""
 
     def __init__(self, host: str = "127.0.0.1", port: int = 7000, log_usage: bool = False):
         self.host = host
@@ -127,7 +127,149 @@ class XpyrmentHubServer:
                         self.end_headers()
                         self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
                 elif self.path.startswith("/api/module/design/generate"):
-                    from xpyrment.design.doe import get_doe_designs
+                    try:
+                        from xpyrment.design.doe import get_doe_designs
+                        designs = get_doe_designs()
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "success", "data": [{"name": k, "desc": v["summary"]} for k, v in designs.items()]}).encode("utf-8"))
+                    except Exception as e:
+                        self.send_response(500)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                elif self.path == "/api/module/quasi/analyze":
+                    if server_instance.shared_data is None:
+                        self.send_response(400)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
+                        return
+                    try:
+                        from xpyrment.quasi.diff_in_diff import fit_ols
+                        df = server_instance.shared_data.copy()
+                        y_col = params.get("y_col", "revenue" if "revenue" in df.columns else df.columns[-1])
+                        if "converted" in df.columns and "revenue" not in df.columns:
+                            y_col = "converted"
+                        x_cols = params.get("x_cols", ["variant"] if "variant" in df.columns else [df.columns[0]])
+                        if "variant" in df.columns:
+                            df["variant"] = df["variant"].map({"treatment": 1, "control": 0}).fillna(0)
+                        X = df[x_cols].to_numpy()
+                        y = df[y_col].to_numpy()
+                        res = fit_ols(X, y)
+                        results = {"intercept": {"coef": res["beta"][0], "p_value": res["p_values"][0], "se": res["standard_errors"][0]}}
+                        for idx, col in enumerate(x_cols):
+                            results[col] = {"coef": res["beta"][idx+1], "p_value": res["p_values"][idx+1], "se": res["standard_errors"][idx+1]}
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "success", "data": results}).encode("utf-8"))
+                    except Exception as e:
+                        self.send_response(500)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                elif self.path == "/api/module/balance":
+                    from xpyrment.validate.balance import check_covariate_balance
+                    if server_instance.shared_data is None:
+                        self.send_response(400)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
+                        return
+                    try:
+                        group_col = params.get("group_col", "variant")
+                        covariates = params.get("covariates", [])
+                        results = check_covariate_balance(server_instance.shared_data, group_col, covariates)
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "success", "data": results}).encode("utf-8"))
+                    except Exception as e:
+                        self.send_response(500)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                elif self.path == "/api/module/personalize/train":
+                    if server_instance.shared_data is None:
+                        self.send_response(400)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
+                        return
+                    try:
+                        from xpyrment.personalize.meta_learners import TLearner
+                        df = server_instance.shared_data.copy()
+                        y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
+                        X = df.drop(columns=[y_col, "variant", "user_id"], errors="ignore").to_numpy()
+                        T = df["variant"].map({"treatment": 1, "control": 0}).fillna(0).to_numpy()
+                        y = df[y_col].to_numpy()
+                        learner = TLearner()
+                        learner.fit(X, T, y)
+                        cate = learner.predict(X)
+                        avg_cate = float(cate.mean())
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "success", "message": f"T-Learner trained successfully. Average CATE: {avg_cate:.4f}"}).encode("utf-8"))
+                    except Exception as e:
+                        self.send_response(500)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                elif self.path == "/api/module/network/cluster":
+                    if server_instance.shared_data is None:
+                        self.send_response(400)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
+                        return
+                    try:
+                        from xpyrment.network.partition import GraphPartitioner
+                        import numpy as np
+                        df = server_instance.shared_data
+                        num_nodes = len(df)
+                        edges = np.random.randint(0, num_nodes, size=(min(1000, num_nodes * 2), 2))
+                        partitioner = GraphPartitioner(edges=edges, num_nodes=num_nodes)
+                        clusters = partitioner.partition()
+                        num_clusters = len(set(clusters))
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "success", "message": f"Graph partitioned successfully into {num_clusters} clusters."}).encode("utf-8"))
+                    except Exception as e:
+                        self.send_response(500)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                elif self.path == "/api/module/interactions/anova":
+                    if server_instance.shared_data is None:
+                        self.send_response(400)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
+                        return
+                    try:
+                        from xpyrment.interactions.detector import InteractionDetector
+                        import pandas as pd
+                        df = server_instance.shared_data.copy()
+                        y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
+                        x_cols = [c for c in df.columns if c not in [y_col, "user_id"]]
+                        X = df[x_cols].apply(lambda x: pd.factorize(x)[0]).to_numpy()
+                        y = df[y_col].to_numpy()
+                        detector = InteractionDetector(metric_name=y_col, factors=x_cols)
+                        res = detector.detect(df, x_cols)
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        out = "\n".join([f"{k}: p={v}" for k,v in res.items()]) if isinstance(res, dict) else str(res)
+                        self.wfile.write(json.dumps({"status": "success", "message": f"ANOVA Calculated:\n{out}"}).encode("utf-8"))
+                    except Exception as e:
+                        self.send_response(500)
+                        self.send_header("Content-Type", "application/json")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
                 else:
                     self.send_response(404)
                     self.send_header("Content-Type", "text/plain")
@@ -140,7 +282,7 @@ class XpyrmentHubServer:
         self._is_running = True
         self.thread = threading.Thread(target=self._run_server, daemon=True)
         self.thread.start()
-        logger.info(f"xpyrment Master Hub started at http://{self.host}:{self.port}")
+        logger.info(f"xpyrment Primary Hub started at http://{self.host}:{self.port}")
 
     def _run_server(self) -> None:
         try:
@@ -162,7 +304,7 @@ class XpyrmentHubServer:
         self._is_running = False
         self.server = None
         self.thread = None
-        logger.info("xpyrment Master Hub server stopped cleanly.")
+        logger.info("xpyrment Primary Hub server stopped cleanly.")
 
     def get_html_content(self) -> str:
         return """<!DOCTYPE html>
@@ -170,7 +312,7 @@ class XpyrmentHubServer:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>xpyrment Master Hub</title>
+    <title>xpyrment Primary Hub</title>
     <!-- Premium Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -439,7 +581,7 @@ class XpyrmentHubServer:
         <!-- Overview View -->
         <div id="view-overview" class="module-view active">
             <div class="module-header">
-                <h2>Welcome to Xpyrment Master Hub</h2>
+                <h2>Welcome to Xpyrment Primary Hub</h2>
                 <p>Enterprise-grade digital experimentation, causal inference, and classical DoE.</p>
             </div>
             <div class="glass-panel">
