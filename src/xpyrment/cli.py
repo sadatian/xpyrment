@@ -209,7 +209,7 @@ def handle_regress(args: argparse.Namespace) -> None:
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Builds and returns the master command-line argument parser."""
+    """Builds and returns the primary command-line argument parser."""
     parser = argparse.ArgumentParser(
         prog="xpyrment",
         description="Enterprise-grade experiment design, classical DoE, and statistical analysis CLI wrapper."
@@ -237,7 +237,49 @@ def create_parser() -> argparse.ArgumentParser:
     regress_parser.add_argument("--y-col", type=str, required=True, help="Outcome target variable name.")
     regress_parser.add_argument("--x-cols", type=str, required=True, help="Comma-separated predictor column names.")
 
+    # 4. Primary Hub Server (webui)
+    app_parser = subparsers.add_parser("app", help="Launch the major Xpyrment Hub dashboard (Web UI).")
+    app_parser.add_argument("--port", type=int, default=7000, help="Port to bind the server to. Defaults to 7000.")
+    app_parser.add_argument("--host", type=str, default="127.0.0.1", help="Host address to bind to. Defaults to 127.0.0.1.")
+    app_parser.add_argument("--no-browser", action="store_true", help="Prevent the browser from opening automatically.")
+    app_parser.add_argument("--log-usage", action="store_true", help="Enable usage logging.")
+
     return parser
+
+
+def handle_app(args: argparse.Namespace) -> None:
+    """Handles starting the Primary Web UI Hub."""
+    import webbrowser
+    from xpyrment.run.hub import XpyrmentHubServer
+
+    print("==================================================")
+    print("             XPYRMENT PRIMARY HUB                  ")
+    print("==================================================")
+    print(f" Starting on http://{args.host}:{args.port}")
+    if args.log_usage:
+        print(" Usage logging is ENABLED.")
+    print(" Press Ctrl+C to stop the server.")
+    print("==================================================")
+
+    server = XpyrmentHubServer(host=args.host, port=args.port, log_usage=args.log_usage)
+    server.start()
+
+    url = f"http://{args.host}:{args.port}"
+    if not args.no_browser:
+        print(f"Opening browser at {url} ...")
+        try:
+            webbrowser.open(url)
+        except Exception as e:
+            print(f"Could not open browser automatically: {e}")
+
+    try:
+        import time
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nShutting down primary hub server...")
+        server.stop()
+        print("Server stopped cleanly. Goodbye!")
 
 
 def main(argv: Optional[List[str]] = None) -> None:
@@ -251,6 +293,8 @@ def main(argv: Optional[List[str]] = None) -> None:
         handle_balance(args)
     elif args.subcommand == "regress":
         handle_regress(args)
+    elif args.subcommand == "app":
+        handle_app(args)
 
 
 if __name__ == "__main__":

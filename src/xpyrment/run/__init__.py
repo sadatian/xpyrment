@@ -26,3 +26,6 @@ __all__ = [
     "ExperimentDashboardServer",
 ]
 
+from xpyrment.run.hub import XpyrmentHubServer
+
+__all__.append("XpyrmentHubServer")
