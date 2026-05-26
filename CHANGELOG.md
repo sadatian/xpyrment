@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.0.0] - Upcoming
+### Added
+- Created the master `XpyrmentHubServer` dashboard.
+- Introduced `app` subcommand to CLI to launch the interactive UI hub.
+- Dashboard features fully-functional backends for Continuous Monitoring, Experimental Design, Quasi-Experiments, Personalization, Governance, and Interactions over a shared, live datastore.
+
 ## [1.5.2.0] - 2026-05-23
 
 ### Added

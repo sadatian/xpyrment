@@ -7,7 +7,7 @@ Expected Improvement (EI) optimization.
 # TODO: Implement automatic kernel lengthscale optimization (marginal likelihood maximization) via Brent's method or gradient descent on GP log likelihood.
 """
 
-from typing import Callable, Dict, List, Optional, Tuple, Type, Any
+from typing import Callable, Dict, List, Optional, Tuple, Type, Any, Literal
 import numpy as np
 from scipy.stats import norm
 
