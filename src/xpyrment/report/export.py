@@ -61,11 +61,11 @@ def plot_forest(
     sig_color = "#009688"
     nonsig_color = "#78909c"
 
-    for idx, (_, row) in enumerate(df.iterrows()):
-        lift = row["relative_lift"]
-        ci_lower = row["rel_ci_lower"]
-        ci_upper = row["rel_ci_upper"]
-        p_val = row["p_value"]
+    for idx, row in enumerate(df.itertuples()):
+        lift = getattr(row, "relative_lift")
+        ci_lower = getattr(row, "rel_ci_lower")
+        ci_upper = getattr(row, "rel_ci_upper")
+        p_val = getattr(row, "p_value")
 
         is_significant = p_val < alpha
         color = sig_color if is_significant else nonsig_color
