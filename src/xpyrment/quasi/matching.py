@@ -141,6 +141,8 @@ class PropensityScoreMatcher:
         # Vectorized absolute distance computation
         dist_matrix = cdist(logits_t, logits_c, metric='cityblock')
         
+        weight_col_idx = result_df.columns.get_loc("weight")
+
         for i, idx in enumerate(treated_indices):
             # Sort controls by distance
             sorted_c_indices_local = np.argsort(dist_matrix[i])
@@ -153,8 +155,8 @@ class PropensityScoreMatcher:
                 c_idx = control_indices[local_c_idx]
                 if c_idx not in matched_controls:
                     # Assign matches weights of 1.0
-                    result_df.iloc[idx, result_df.columns.get_loc("weight")] = 1.0
-                    result_df.iloc[c_idx, result_df.columns.get_loc("weight")] = 1.0
+                    result_df.iloc[idx, weight_col_idx] = 1.0
+                    result_df.iloc[c_idx, weight_col_idx] = 1.0
                     matched_controls.add(c_idx)
                     break
 
