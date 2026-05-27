@@ -5,6 +5,7 @@ It coordinates the execution of registered metrics, handles multiple testing cor
 transitions, and constructs the unified `AnalysisResult` data layer for plotting and reporting.
 """
 
+import warnings
 from typing import Any, List, Optional
 import pandas as pd
 
@@ -113,66 +114,55 @@ class AnalysisResult:
         if not formatted:
             return df
 
-        def _safe_num(row, name, default=None):
-            val = getattr(row, name, default)
-            return default if val is None or pd.isna(val) else val
+        summary_df = pd.DataFrame()
+        summary_df["Metric"] = df["metric_name"]
+        summary_df["Type"] = df["metric_type"]
 
-        def _format_pct(val, fmt="+.2%", na="N/A"):
-            return na if val is None else f"{val:{fmt}}"
-
-        def _format_ci(lower, upper, na="N/A"):
-            if lower is None or upper is None:
-                return na
+        def _format_ci(lower: float, upper: float) -> str:
+            if pd.isna(lower) or pd.isna(upper):
+                return "N/A"
             return f"[{lower:+.2%}, {upper:+.2%}]"
 
-        def _format_p_value(p, na="N/A"):
-            if p is None:
-                return na
-            if p < 0.001:
-                stars = "***"
-            elif p < 0.01:
-                stars = "**"
-            elif p < 0.05:
-                stars = "*"
+        def _format_p_value(p_val: float) -> str:
+            if pd.isna(p_val):
+                return "N/A"
+            if p_val < 0.001:
+                sig_symbol = "***"
+            elif p_val < 0.01:
+                sig_symbol = "**"
+            elif p_val < 0.05:
+                sig_symbol = "*"
             else:
-                stars = ""
-            return f"{p:.4f}{stars}"
+                sig_symbol = ""
+            return f"{p_val:.4f}{sig_symbol}"
 
-        summary_data = []
-        for row in df.itertuples(index=False):
-            lift_val = _safe_num(row, "relative_lift")
-            p_val = _safe_num(row, "p_value")
-            lower_pct = _safe_num(row, "rel_ci_lower")
-            upper_pct = _safe_num(row, "rel_ci_upper")
-            power_val = _safe_num(row, "power")
-            cuped_applied = getattr(row, "cuped_applied", False)
-            var_red_val = _safe_num(row, "variance_reduction")
+        def _format_var_reduction(cuped: bool, var_red: float) -> str:
+            if not cuped:
+                return "-"
+            return f"{var_red:.1%}" if pd.notna(var_red) else "-"
 
-            lift_str = _format_pct(lift_val)
-            p_str = _format_p_value(p_val)
-            ci_str = _format_ci(lower_pct, upper_pct)
-            power_str = _format_pct(power_val, fmt=".1%")
-            cuped_str = "Yes" if cuped_applied else "No"
-            var_red_str = (
-                _format_pct(var_red_val, fmt=".1%", na="-") if cuped_applied else "-"
-            )
+        summary_df["Control Mean"] = df["control_mean"].map("{:.4f}".format)
+        summary_df["Treatment Mean"] = df["treatment_mean"].map("{:.4f}".format)
 
-            summary_data.append(
-                {
-                    "Metric": getattr(row, "metric_name"),
-                    "Type": getattr(row, "metric_type"),
-                    "Control Mean": f"{getattr(row, 'control_mean'):.4f}",
-                    "Treatment Mean": f"{getattr(row, 'treatment_mean'):.4f}",
-                    "Relative Lift": lift_str,
-                    "95% CI (Rel)": ci_str,
-                    "p-value": p_str,
-                    "Post-hoc Power": power_str,
-                    "CUPED": cuped_str,
-                    "Var Reduction": var_red_str,
-                }
-            )
+        summary_df["Relative Lift"] = df["relative_lift"].apply(
+            lambda x: f"{x:+.2%}" if pd.notna(x) else "N/A"
+        )
 
-        summary_df = pd.DataFrame(summary_data)
+        summary_df["95% CI (Rel)"] = [
+            _format_ci(l, u) for l, u in zip(df["rel_ci_lower"], df["rel_ci_upper"])
+        ]
+
+        summary_df["p-value"] = df["p_value"].apply(_format_p_value)
+
+        summary_df["Post-hoc Power"] = df["power"].apply(
+            lambda x: f"{x:.1%}" if pd.notna(x) else "N/A"
+        )
+
+        summary_df["CUPED"] = df["cuped_applied"].map({True: "Yes", False: "No"})
+
+        summary_df["Var Reduction"] = [
+            _format_var_reduction(c, v) for c, v in zip(df["cuped_applied"], df["variance_reduction"])
+        ]
 
         # Automatically raise an alert / print warning if covariate imbalance is detected
         if self.balance_checker is not None and self.balance_checker.diagnostics_:
@@ -181,8 +171,6 @@ class AnalysisResult:
                 if abs(stats["smd"]) > 0.1:
                     imbalanced.append(f"'{name}' (SMD={stats['smd']:+.4f})")
             if imbalanced:
-                import warnings
-
                 warnings.warn(
                     f"COVARIATE IMBALANCE DETECTED: The following baseline covariates have standardized mean "
                     f"differences (SMD) exceeding the standard 0.1 threshold: {', '.join(imbalanced)}. "
