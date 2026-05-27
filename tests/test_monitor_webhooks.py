@@ -6,10 +6,8 @@ from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
-import pytest
 
 from xpyrment.run.monitor import LiveMonitor, WebhookAlertDispatcher
-from xpyrment.core.exceptions import SRMError
 
 
 # -------------------------------------------------------------------------

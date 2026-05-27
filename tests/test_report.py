@@ -4,7 +4,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pytest
 from xpyrment.report.audit import AuditTrail
 from xpyrment.report.card import ExperimentCard
 from xpyrment.report.export import plot_forest, plot_power_curve

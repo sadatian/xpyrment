@@ -5,7 +5,7 @@ additive homomorphic secure multi-party computation (SMPC) of global covariance
 matrices, alongside the Federated Averaging (FedAvg) global model pooling algorithm.
 """
 
-from typing import List, Tuple, Union
+from typing import List, Tuple
 import numpy as np
 
 

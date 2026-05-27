@@ -1,9 +1,8 @@
 import pandas as pd
 import pytest
 import numpy as np
-import warnings
 
-from xpyrment.analyze.orchestrator import setup, run_analysis
+from xpyrment.analyze.orchestrator import setup
 from xpyrment.analyze.registry import MetricRegistry
 from xpyrment.simulation import generate_ab_data
 

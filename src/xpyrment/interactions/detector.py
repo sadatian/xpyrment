@@ -79,8 +79,6 @@ class InteractionDetector:
             dict: A dictionary grouping detected interactions, their estimated coefficients, standard errors,
                 and p-values.
         """
-        import statsmodels.formula.api as smf
-        import pandas as pd
         from xpyrment.interactions.regression import check_treatment_covariate_interaction
 
         results = {

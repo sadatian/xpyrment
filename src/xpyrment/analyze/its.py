@@ -4,7 +4,7 @@ Segments and regresses system wide policies under single chronological panels,
 computing Newey-West HAC standard errors to correct for temporal autocorrelations.
 """
 
-from typing import Dict, Union
+from typing import Dict
 import numpy as np
 
 

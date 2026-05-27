@@ -5,9 +5,6 @@ self-contained Markdown reports and dynamic HTML dashboards.
 """
 
 import os
-from typing import Any, Dict, Optional
-import numpy as np
-import pandas as pd
 from scipy.stats import chi2
 
 from xpyrment.analyze.orchestrator import AnalysisResult

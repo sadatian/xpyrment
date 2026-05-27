@@ -1,5 +1,4 @@
 import pytest
-import numpy as np
 from xpyrment.governance.meta_analysis import MetaAnalysis
 from xpyrment.governance.p_curve import PCurve
 
