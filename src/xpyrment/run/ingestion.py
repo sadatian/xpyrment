@@ -178,10 +178,14 @@ class DuckDBIngester:
 
     @staticmethod
     def _escape_identifier(val: str) -> str:
-        """Safely escapes SQL identifiers (e.g., column names) to prevent SQL injection.
+        """Safely escapes *identifiers only* (e.g., table or column names) for inclusion in SQL.
+
+        This helper is intended **solely** for quoting SQL identifiers, not values. It must not be
+        used to escape user-provided values in predicates (e.g., in WHERE clauses). For values,
+        always use parameter binding via the `params` argument to `query(...)` instead.
 
         Args:
-            val (str): The identifier name.
+            val (str): The identifier name (e.g., a table or column name).
 
         Returns:
             str: The double-quoted and escaped identifier.
