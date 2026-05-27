@@ -79,12 +79,24 @@ def check_srm(observed_counts: List[int], expected_ratios: List[float]) -> float
             Error detected!
             ```
     """
+    if len(observed_counts) != len(expected_ratios):
+        raise ValueError("Length of observed_counts and expected_ratios must be equal.")
+
+    if any(c < 0 for c in observed_counts):
+        raise ValueError("All elements in observed_counts must be non-negative.")
+
+    if any(r < 0 for r in expected_ratios):
+        raise ValueError("All elements in expected_ratios must be non-negative.")
+
     total_observed = sum(observed_counts)
     if total_observed == 0:
         logger.warning("SRM check bypassed: total observed counts is 0.")
         return 1.0
 
     sum_ratios = sum(expected_ratios)
+    if sum_ratios <= 0:
+        raise ValueError("The sum of expected_ratios must be strictly greater than zero.")
+
     expected_counts = [ratio * total_observed / sum_ratios for ratio in expected_ratios]
 
     if any(e < 5 for e in expected_counts):
