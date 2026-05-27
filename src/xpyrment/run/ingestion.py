@@ -185,17 +185,37 @@ class DuckDBIngester:
                 pass
             self._conn = None
 
-    def query(self, sql_query: str) -> pd.DataFrame:
+    @staticmethod
+    def _escape_identifier(val: str) -> str:
+        """Safely escapes *identifiers only* (e.g., table or column names) for inclusion in SQL.
+
+        This helper is intended **solely** for quoting SQL identifiers, not values. It must not be
+        used to escape user-provided values in predicates (e.g., in WHERE clauses). For values,
+        always use parameter binding via the `params` argument to `query(...)` instead.
+
+        Args:
+            val (str): The identifier name (e.g., a table or column name).
+
+        Returns:
+            str: The double-quoted and escaped identifier.
+        """
+        escaped = str(val).replace('"', '""')
+        return f'"{escaped}"'
+
+    def query(self, sql_query: str, params: list = None) -> pd.DataFrame:
         """Executes a raw SQL query against DuckDB and returns the result as a pandas DataFrame.
 
         Args:
             sql_query (str): A standard SQL query.
+            params (list, optional): Parameters to pass into the query safely.
 
         Returns:
             pd.DataFrame: The queried records.
         """
         if self._conn is None:
             raise RuntimeError("DuckDB connection is closed.")
+        if params is not None:
+            return self._conn.execute(sql_query, params).df()
         return self._conn.execute(sql_query).df()
 
     def compute_covariate_balance(
@@ -339,7 +359,7 @@ class DuckDBIngester:
                 WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
                 GROUP BY {safe_treatment_col}
             """
-            group_stats_df = self.query(sql)
+            group_stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
             
             row_0 = group_stats_df[group_stats_df[treatment_col] == comp_groups[0]].iloc[0] if comp_groups[0] in group_stats_df[treatment_col].values else None
             row_1 = group_stats_df[group_stats_df[treatment_col] == comp_groups[1]].iloc[0] if comp_groups[1] in group_stats_df[treatment_col].values else None
@@ -400,7 +420,7 @@ class DuckDBIngester:
                 WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {safe_cov} IS NOT NULL
                 GROUP BY {safe_cov}, {safe_treatment_col}
             """
-            cat_df = self.query(sql)
+            cat_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
 
             if not cat_df.empty:
                 contingency = cat_df.pivot(index=cov, columns=treatment_col, values="cnt").fillna(0)
@@ -541,7 +561,7 @@ class DuckDBIngester:
             WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
             GROUP BY {safe_treatment_col}
         """
-        stats_df = self.query(sql)
+        stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
 
         row_0 = stats_df[stats_df[treatment_col] == comp_groups[0]].iloc[0] if comp_groups[0] in stats_df[treatment_col].values else None
         row_1 = stats_df[stats_df[treatment_col] == comp_groups[1]].iloc[0] if comp_groups[1] in stats_df[treatment_col].values else None

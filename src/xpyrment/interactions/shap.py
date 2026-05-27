@@ -5,10 +5,11 @@ interaction values to decompose joint black-box predictions into main and intera
 """
 
 
-from typing import Any
+from typing import Any, Union
+import numpy as np
 
 
-def calculate_shap_interactions(model: Any, X_data: Any) -> list:
+def calculate_shap_interactions(model: Any, X_data: Any) -> Union[list, np.ndarray]:
     r"""Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).
 
     SHAP (SHapley Additive exPlanations) interaction values (Lundberg et al., 2018) are based on the coalitional game-theoretic
@@ -53,5 +54,15 @@ def calculate_shap_interactions(model: Any, X_data: Any) -> list:
         list: A nested list or 3D numpy array of shape `(num_samples, num_features, num_features)` containing
             individual Shapley interaction matrices.
     """
-    # TODO: Implement optional shap dependency check and interaction calculation
-    return []
+    try:
+        import shap
+    except ImportError as e:
+        raise ImportError(
+            "The 'shap' library is required to calculate SHAP interactions. "
+            "Please install it using: pip install shap"
+        ) from e
+
+    explainer = shap.TreeExplainer(model)
+    interaction_values = explainer.shap_interaction_values(X_data)
+
+    return interaction_values
