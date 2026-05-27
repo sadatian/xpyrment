@@ -100,6 +100,7 @@ def plot_forest(
     ax.set_title(title, fontsize=14, fontweight="bold", pad=20)
 
     import matplotlib.ticker as mtick
+
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 
     sns.despine(left=True, bottom=True)
@@ -189,10 +190,13 @@ def plot_power_curve(
         )
 
     import matplotlib.ticker as mtick
+
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax.get_yaxis().set_major_formatter(mtick.FuncFormatter(lambda x, p: f"{int(x):,}"))
 
-    ax.set_xlabel("Relative Minimum Detectable Effect (MDE)", fontsize=12, fontweight="bold")
+    ax.set_xlabel(
+        "Relative Minimum Detectable Effect (MDE)", fontsize=12, fontweight="bold"
+    )
     ax.set_ylabel("Required Sample Size (Per Variant)", fontsize=12, fontweight="bold")
     ax.set_title(title, fontsize=14, fontweight="bold", pad=20)
 

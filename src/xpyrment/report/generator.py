@@ -6,6 +6,7 @@ self-contained Markdown reports and dynamic HTML dashboards.
 
 import os
 from scipy.stats import chi2
+from dataclasses import dataclass
 
 from xpyrment.analyze.orchestrator import AnalysisResult
 
@@ -13,19 +14,21 @@ from xpyrment.analyze.orchestrator import AnalysisResult
 class ExperimentReportGenerator:
     """Generates premium standalone Markdown and HTML reports from experiment AnalysisResult instances."""
 
-    def __init__(self, result: AnalysisResult, experiment_name: str = "A/B Experiment Report"):
+    def __init__(
+        self, result: AnalysisResult, experiment_name: str = "A/B Experiment Report"
+    ):
         """Initializes the report generator.
 
         Args:
             result (AnalysisResult): The completed analysis result object.
             experiment_name (str): The logical name of the experiment.
-            
+
         Raises:
             ValueError: If the analysis results are empty or invalid.
         """
         if result is None or not hasattr(result, "df_raw") or result.df_raw is None:
             raise ValueError("Invalid AnalysisResult provided to report generator.")
-        
+
         self.result = result
         self.df_raw = result.df_raw
         self.alpha = result.alpha
@@ -46,9 +49,58 @@ class ExperimentReportGenerator:
 
             if total_n > 0:
                 expected_n = total_n / 2.0
-                chi_sq = ((self.control_n - expected_n) ** 2 / expected_n) + ((self.treatment_n - expected_n) ** 2 / expected_n)
+                chi_sq = ((self.control_n - expected_n) ** 2 / expected_n) + (
+                    (self.treatment_n - expected_n) ** 2 / expected_n
+                )
                 self.srm_p_value = float(1.0 - chi2.cdf(chi_sq, df=1))
-                self.srm_passed = self.srm_p_value >= 0.01  # Standard 0.01 SRM critical alpha
+                self.srm_passed = (
+                    self.srm_p_value >= 0.01
+                )  # Standard 0.01 SRM critical alpha
+
+    @dataclass
+    class MetricRow:
+        name: str
+        type: str
+        control_mean: float
+        treatment_mean: float
+        lift: float
+        p_value: float
+        cuped_applied: bool
+
+    def _iter_metric_rows(self):
+        for row in self.df_raw.itertuples(index=False):
+            yield self.MetricRow(
+                name=getattr(row, "metric_name"),
+                type=getattr(row, "metric_type", "mean"),
+                control_mean=getattr(row, "control_mean", 0.0),
+                treatment_mean=getattr(row, "treatment_mean", 0.0),
+                lift=getattr(row, "relative_lift", 0.0),
+                p_value=getattr(row, "p_value", 1.0),
+                cuped_applied=getattr(row, "cuped_applied", False),
+            )
+
+    def _metric_significance(self, metric) -> Dict[str, Any]:
+        is_sig = metric.p_value < self.alpha
+        return {
+            "is_sig": is_sig,
+            "sig_badge_md": "🌟 **Significant**" if is_sig else "Neutral",
+            "sig_class_html": "sig-badge" if is_sig else "neutral-badge",
+            "sig_text_html": "SIGNIFICANT" if is_sig else "NEUTRAL",
+        }
+
+    def _metric_lift_presentation(self, metric) -> Dict[str, Any]:
+        lift = metric.lift
+        return {
+            "lift_class_html": "positive-lift" if lift > 0 else "negative-lift",
+            "lift_str": f"{lift:+.2%}" if lift != 0.0 else "0.00%",
+        }
+
+    def _metric_cuped_badge_html(self, metric) -> str:
+        return (
+            '<span class="badge badge-success">CUPED Applied</span>'
+            if metric.cuped_applied
+            else '<span class="badge badge-gray">Standard</span>'
+        )
 
     def generate_markdown(self) -> str:
         """Generates a complete, beautiful GitHub-compatible Markdown summary card.
@@ -61,25 +113,41 @@ class ExperimentReportGenerator:
         lines.append("")
         lines.append("## 📌 Executive Summary")
         lines.append(f"- **Nominal Significance Level (Alpha)**: `{self.alpha}`")
-        lines.append(f"- **Total Samples**: `{self.control_n + self.treatment_n:,}` (Control: `{self.control_n:,}`, Treatment: `{self.treatment_n:,}`)")
-        
+        lines.append(
+            f"- **Total Samples**: `{self.control_n + self.treatment_n:,}` (Control: `{self.control_n:,}`, Treatment: `{self.treatment_n:,}`)"
+        )
+
         # SRM Status
-        srm_status = "🟢 **PASSED**" if self.srm_passed else "🔴 **FAILED (Potential Bias!)**"
-        lines.append(f"- **Sample Ratio Mismatch (SRM)**: {srm_status} (p-value: `{self.srm_p_value:.6f}`)")
-        
+        srm_status = (
+            "🟢 **PASSED**" if self.srm_passed else "🔴 **FAILED (Potential Bias!)**"
+        )
+        lines.append(
+            f"- **Sample Ratio Mismatch (SRM)**: {srm_status} (p-value: `{self.srm_p_value:.6f}`)"
+        )
+
         # Covariate balance
         if self.balance_checker is not None:
-            imbalanced = [name for name, diag in self.balance_checker.diagnostics_.items() if abs(diag["smd"]) > 0.1]
+            imbalanced = [
+                name
+                for name, diag in self.balance_checker.diagnostics_.items()
+                if abs(diag["smd"]) > 0.1
+            ]
             if imbalanced:
-                lines.append(f"- **Covariate Balance**: ⚠️ **IMBALANCE DETECTED** in: `{', '.join(imbalanced)}`")
+                lines.append(
+                    f"- **Covariate Balance**: ⚠️ **IMBALANCE DETECTED** in: `{', '.join(imbalanced)}`"
+                )
             else:
-                lines.append("- **Covariate Balance**: 🟢 **ALL COVARIATES BALANCED** (SMD <= 0.1)")
+                lines.append(
+                    "- **Covariate Balance**: 🟢 **ALL COVARIATES BALANCED** (SMD <= 0.1)"
+                )
         else:
             lines.append("- **Covariate Balance**: `Not Evaluated`")
 
         lines.append("")
         lines.append("## 📈 Metric Performance")
-        lines.append("| Metric | Type | Control Mean | Treatment Mean | Relative Lift | P-Value | Significance | CUPED |")
+        lines.append(
+            "| Metric | Type | Control Mean | Treatment Mean | Relative Lift | P-Value | Significance | CUPED |"
+        )
         lines.append("| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |")
 
         for row in self.df_raw.itertuples(index=False):
@@ -95,7 +163,10 @@ class ExperimentReportGenerator:
             sig_badge = "🌟 **Significant**" if is_sig else "Neutral"
 
             lines.append(
-                f"| **{m_name}** | `{m_type}` | {c_mean:.4f} | {t_mean:.4f} | **{lift:+.2%}** | `{p_val:.5f}` | {sig_badge} | {cuped} |"
+                f"| **{metric.name}** | `{metric.type}` | "
+                f"{metric.control_mean:.4f} | {metric.treatment_mean:.4f} | "
+                f"**{metric.lift:+.2%}** | `{metric.p_value:.5f}` | "
+                f"{sig['sig_badge_md']} | {'✅' if metric.cuped_applied else '❌'} |"
             )
 
         if self.balance_checker is not None:
@@ -119,8 +190,11 @@ class ExperimentReportGenerator:
         favicon_tags = []
         if svg_logo_text:
             import base64
+
             svg_b64 = base64.b64encode(svg_logo_text.encode("utf-8")).decode("utf-8")
-            favicon_tags.append(f'<link rel="icon" href="data:image/svg+xml;base64,{svg_b64}" sizes="any" type="image/svg+xml">')
+            favicon_tags.append(
+                f'<link rel="icon" href="data:image/svg+xml;base64,{svg_b64}" sizes="any" type="image/svg+xml">'
+            )
 
         favicons_html = "\n    ".join(favicon_tags)
 
@@ -130,11 +204,11 @@ class ExperimentReportGenerator:
             if cleaned_svg.startswith("<?xml"):
                 end_xml_idx = cleaned_svg.find("?>")
                 if end_xml_idx != -1:
-                    cleaned_svg = cleaned_svg[end_xml_idx + 2:].strip()
+                    cleaned_svg = cleaned_svg[end_xml_idx + 2 :].strip()
             if cleaned_svg.startswith("<!DOCTYPE"):
                 end_doc_idx = cleaned_svg.find(">")
                 if end_doc_idx != -1:
-                    cleaned_svg = cleaned_svg[end_doc_idx + 1:].strip()
+                    cleaned_svg = cleaned_svg[end_doc_idx + 1 :].strip()
             logo_html = f'<div class="header-logo-container">{cleaned_svg}</div>'
 
         # Formulate HTML metric table rows
@@ -159,13 +233,13 @@ class ExperimentReportGenerator:
 
             table_rows.append(f"""
             <tr>
-                <td><strong>{m_name}</strong></td>
-                <td><span class="badge-type">{m_type}</span></td>
-                <td>{c_mean:.4f}</td>
-                <td>{t_mean:.4f}</td>
-                <td><span class="{lift_class}">{lift_str}</span></td>
-                <td><code>{p_val:.5f}</code></td>
-                <td><span class="{sig_class}">{sig_text}</span></td>
+                <td><strong>{metric.name}</strong></td>
+                <td><span class="badge-type">{metric.type}</span></td>
+                <td>{metric.control_mean:.4f}</td>
+                <td>{metric.treatment_mean:.4f}</td>
+                <td><span class="{lift_fmt['lift_class_html']}">{lift_fmt['lift_str']}</span></td>
+                <td><code>{metric.p_value:.5f}</code></td>
+                <td><span class="{sig['sig_class_html']}">{sig['sig_text_html']}</span></td>
                 <td>{cuped_badge}</td>
             </tr>
             """)
@@ -191,13 +265,19 @@ class ExperimentReportGenerator:
                 </tr>
                 """)
         else:
-            cov_rows.append('<tr><td colspan="6" class="text-center">No baseline covariates were specified.</td></tr>')
+            cov_rows.append(
+                '<tr><td colspan="6" class="text-center">No baseline covariates were specified.</td></tr>'
+            )
 
         # SRM card rendering
         srm_class = "card-success-border" if self.srm_passed else "card-danger-border"
         srm_badge_text = "PASSED" if self.srm_passed else "ALERT"
 
-        love_plot_content = self.result.love_plot() if self.balance_checker is not None else "No covariate balance available."
+        love_plot_content = (
+            self.result.love_plot()
+            if self.balance_checker is not None
+            else "No covariate balance available."
+        )
 
         html_template = f"""<!DOCTYPE html>
 <html lang="en">

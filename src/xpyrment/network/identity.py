@@ -132,6 +132,7 @@ class IdentityRegistry:
             List[Set[str]]: A list of sets, where each set represents a connected component.
         """
         from collections import defaultdict
+
         groups = defaultdict(set)
         for node in list(self.parent.keys()):
             root = self._find(node)
@@ -172,11 +173,15 @@ class IdentityRegistry:
         """
         result_df = df.copy()
 
+        # Precompute column indices for robustness against non-identifier column names
+        col_indices = [result_df.columns.get_loc(c) for c in id_cols]
+
         # Pass 1: Build the identity graph from all row links if auto_link is enabled
         if auto_link:
-            for row in result_df[id_cols].itertuples(index=False, name=None):
+            for row in result_df.itertuples(index=False):
                 row_ids = []
-                for val in row:
+                for idx in col_indices:
+                    val = row[idx]
                     if pd.notna(val) and str(val).strip() != "":
                         row_ids.append(str(val))
                 if len(row_ids) > 1:
@@ -184,9 +189,10 @@ class IdentityRegistry:
 
         # Pass 2: Resolve identifiers for each row
         resolved_ids = []
-        for row in result_df[id_cols].itertuples(index=False, name=None):
+        for row in result_df.itertuples(index=False):
             row_ids = []
-            for val in row:
+            for idx in col_indices:
+                val = row[idx]
                 if pd.notna(val) and str(val).strip() != "":
                     row_ids.append(str(val))
 
