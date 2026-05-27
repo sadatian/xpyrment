@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2
+from dataclasses import dataclass
 
 from xpyrment.analyze.orchestrator import AnalysisResult
 
@@ -59,6 +60,51 @@ class ExperimentReportGenerator:
                     self.srm_p_value >= 0.01
                 )  # Standard 0.01 SRM critical alpha
 
+    @dataclass
+    class MetricRow:
+        name: str
+        type: str
+        control_mean: float
+        treatment_mean: float
+        lift: float
+        p_value: float
+        cuped_applied: bool
+
+    def _iter_metric_rows(self):
+        for row in self.df_raw.itertuples(index=False):
+            yield self.MetricRow(
+                name=getattr(row, "metric_name"),
+                type=getattr(row, "metric_type", "mean"),
+                control_mean=getattr(row, "control_mean", 0.0),
+                treatment_mean=getattr(row, "treatment_mean", 0.0),
+                lift=getattr(row, "relative_lift", 0.0),
+                p_value=getattr(row, "p_value", 1.0),
+                cuped_applied=getattr(row, "cuped_applied", False),
+            )
+
+    def _metric_significance(self, metric) -> Dict[str, Any]:
+        is_sig = metric.p_value < self.alpha
+        return {
+            "is_sig": is_sig,
+            "sig_badge_md": "🌟 **Significant**" if is_sig else "Neutral",
+            "sig_class_html": "sig-badge" if is_sig else "neutral-badge",
+            "sig_text_html": "SIGNIFICANT" if is_sig else "NEUTRAL",
+        }
+
+    def _metric_lift_presentation(self, metric) -> Dict[str, Any]:
+        lift = metric.lift
+        return {
+            "lift_class_html": "positive-lift" if lift > 0 else "negative-lift",
+            "lift_str": f"{lift:+.2%}" if lift != 0.0 else "0.00%",
+        }
+
+    def _metric_cuped_badge_html(self, metric) -> str:
+        return (
+            '<span class="badge badge-success">CUPED Applied</span>'
+            if metric.cuped_applied
+            else '<span class="badge badge-gray">Standard</span>'
+        )
+
     def generate_markdown(self) -> str:
         """Generates a complete, beautiful GitHub-compatible Markdown summary card.
 
@@ -107,20 +153,13 @@ class ExperimentReportGenerator:
         )
         lines.append("| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |")
 
-        for row in self.df_raw.itertuples():
-            m_name = getattr(row, "metric_name")
-            m_type = getattr(row, "metric_type", "mean")
-            c_mean = getattr(row, "control_mean", 0.0)
-            t_mean = getattr(row, "treatment_mean", 0.0)
-            lift = getattr(row, "relative_lift", 0.0)
-            p_val = getattr(row, "p_value", 1.0)
-            cuped = "✅" if getattr(row, "cuped_applied", False) else "❌"
-
-            is_sig = p_val < self.alpha
-            sig_badge = "🌟 **Significant**" if is_sig else "Neutral"
-
+        for metric in self._iter_metric_rows():
+            sig = self._metric_significance(metric)
             lines.append(
-                f"| **{m_name}** | `{m_type}` | {c_mean:.4f} | {t_mean:.4f} | **{lift:+.2%}** | `{p_val:.5f}` | {sig_badge} | {cuped} |"
+                f"| **{metric.name}** | `{metric.type}` | "
+                f"{metric.control_mean:.4f} | {metric.treatment_mean:.4f} | "
+                f"**{metric.lift:+.2%}** | `{metric.p_value:.5f}` | "
+                f"{sig['sig_badge_md']} | {'✅' if metric.cuped_applied else '❌'} |"
             )
 
         if self.balance_checker is not None:
@@ -167,37 +206,20 @@ class ExperimentReportGenerator:
 
         # Formulate HTML metric table rows
         table_rows = []
-        for row in self.df_raw.itertuples():
-            m_name = getattr(row, "metric_name")
-            m_type = getattr(row, "metric_type", "mean")
-            c_mean = getattr(row, "control_mean", 0.0)
-            t_mean = getattr(row, "treatment_mean", 0.0)
-            lift = getattr(row, "relative_lift", 0.0)
-            p_val = getattr(row, "p_value", 1.0)
-            cuped_applied = getattr(row, "cuped_applied", False)
-
-            is_sig = p_val < self.alpha
-            sig_class = "sig-badge" if is_sig else "neutral-badge"
-            sig_text = "SIGNIFICANT" if is_sig else "NEUTRAL"
-
-            lift_class = "positive-lift" if lift > 0 else "negative-lift"
-            lift_str = f"{lift:+.2%}" if lift != 0.0 else "0.00%"
-
-            cuped_badge = (
-                '<span class="badge badge-success">CUPED Applied</span>'
-                if cuped_applied
-                else '<span class="badge badge-gray">Standard</span>'
-            )
+        for metric in self._iter_metric_rows():
+            sig = self._metric_significance(metric)
+            lift_fmt = self._metric_lift_presentation(metric)
+            cuped_badge = self._metric_cuped_badge_html(metric)
 
             table_rows.append(f"""
             <tr>
-                <td><strong>{m_name}</strong></td>
-                <td><span class="badge-type">{m_type}</span></td>
-                <td>{c_mean:.4f}</td>
-                <td>{t_mean:.4f}</td>
-                <td><span class="{lift_class}">{lift_str}</span></td>
-                <td><code>{p_val:.5f}</code></td>
-                <td><span class="{sig_class}">{sig_text}</span></td>
+                <td><strong>{metric.name}</strong></td>
+                <td><span class="badge-type">{metric.type}</span></td>
+                <td>{metric.control_mean:.4f}</td>
+                <td>{metric.treatment_mean:.4f}</td>
+                <td><span class="{lift_fmt['lift_class_html']}">{lift_fmt['lift_str']}</span></td>
+                <td><code>{metric.p_value:.5f}</code></td>
+                <td><span class="{sig['sig_class_html']}">{sig['sig_text_html']}</span></td>
                 <td>{cuped_badge}</td>
             </tr>
             """)

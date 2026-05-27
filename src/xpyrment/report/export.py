@@ -61,7 +61,7 @@ def plot_forest(
     sig_color = "#009688"
     nonsig_color = "#78909c"
 
-    for idx, row in enumerate(df.itertuples()):
+    for idx, row in enumerate(df.itertuples(index=False)):
         lift = getattr(row, "relative_lift")
         ci_lower = getattr(row, "rel_ci_lower")
         ci_upper = getattr(row, "rel_ci_upper")

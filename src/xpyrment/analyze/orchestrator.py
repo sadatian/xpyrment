@@ -113,56 +113,48 @@ class AnalysisResult:
         if not formatted:
             return df
 
+        def _safe_num(row, name, default=None):
+            val = getattr(row, name, default)
+            return default if val is None or pd.isna(val) else val
+
+        def _format_pct(val, fmt="+.2%", na="N/A"):
+            return na if val is None else f"{val:{fmt}}"
+
+        def _format_ci(lower, upper, na="N/A"):
+            if lower is None or upper is None:
+                return na
+            return f"[{lower:+.2%}, {upper:+.2%}]"
+
+        def _format_p_value(p, na="N/A"):
+            if p is None:
+                return na
+            if p < 0.001:
+                stars = "***"
+            elif p < 0.01:
+                stars = "**"
+            elif p < 0.05:
+                stars = "*"
+            else:
+                stars = ""
+            return f"{p:.4f}{stars}"
+
         summary_data = []
-        for row in df.itertuples():
-            lift_val = getattr(row, "relative_lift", None)
-            lift_str = (
-                f"{lift_val:+.2%}"
-                if lift_val is not None and not pd.isna(lift_val)
-                else "N/A"
-            )
-
-            p_val = getattr(row, "p_value", None)
-            sig_symbol = ""
-            if p_val is not None and not pd.isna(p_val):
-                if p_val < 0.001:
-                    sig_symbol = "***"
-                elif p_val < 0.01:
-                    sig_symbol = "**"
-                elif p_val < 0.05:
-                    sig_symbol = "*"
-
-            p_str = (
-                f"{p_val:.4f}{sig_symbol}"
-                if p_val is not None and not pd.isna(p_val)
-                else "N/A"
-            )
-
-            lower_pct = getattr(row, "rel_ci_lower", None)
-            upper_pct = getattr(row, "rel_ci_upper", None)
-            ci_str = (
-                f"[{lower_pct:+.2%}, {upper_pct:+.2%}]"
-                if (lower_pct is not None and upper_pct is not None)
-                and not (pd.isna(lower_pct) or pd.isna(upper_pct))
-                else "N/A"
-            )
-
-            power_val = getattr(row, "power", None)
-            power_str = (
-                f"{power_val:.1%}"
-                if power_val is not None and not pd.isna(power_val)
-                else "N/A"
-            )
-
+        for row in df.itertuples(index=False):
+            lift_val = _safe_num(row, "relative_lift")
+            p_val = _safe_num(row, "p_value")
+            lower_pct = _safe_num(row, "rel_ci_lower")
+            upper_pct = _safe_num(row, "rel_ci_upper")
+            power_val = _safe_num(row, "power")
             cuped_applied = getattr(row, "cuped_applied", False)
+            var_red_val = _safe_num(row, "variance_reduction")
+
+            lift_str = _format_pct(lift_val)
+            p_str = _format_p_value(p_val)
+            ci_str = _format_ci(lower_pct, upper_pct)
+            power_str = _format_pct(power_val, fmt=".1%")
             cuped_str = "Yes" if cuped_applied else "No"
-            var_red_val = getattr(row, "variance_reduction", None)
             var_red_str = (
-                f"{var_red_val:.1%}"
-                if cuped_applied
-                and var_red_val is not None
-                and not pd.isna(var_red_val)
-                else "-"
+                _format_pct(var_red_val, fmt=".1%", na="-") if cuped_applied else "-"
             )
 
             summary_data.append(
