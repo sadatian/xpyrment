@@ -31,6 +31,7 @@ def estimate_duration_days(required_sample_size: int, daily_traffic: int) -> flo
         float: Estimated run duration in decimal calendar days.
 
     Raises:
+        TypeError: If `required_sample_size` or `daily_traffic` is not an integer or float.
         ValueError: If `required_sample_size` or `daily_traffic` is less than or equal to zero.
 
     Examples:
@@ -41,6 +42,11 @@ def estimate_duration_days(required_sample_size: int, daily_traffic: int) -> flo
             10.0
             ```
     """
+    if not isinstance(required_sample_size, (int, float)):
+        raise TypeError("required_sample_size must be an integer or float.")
+    if not isinstance(daily_traffic, (int, float)):
+        raise TypeError("daily_traffic must be an integer or float.")
+
     if required_sample_size <= 0:
         raise ValueError("required_sample_size must be greater than zero.")
     if daily_traffic <= 0:
