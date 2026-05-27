@@ -5,7 +5,9 @@ from xpyrment.interactions.anova import run_factorial_anova
 from xpyrment.interactions.regression import check_treatment_covariate_interaction
 from xpyrment.interactions.hstat import compute_friedman_h_statistic
 from xpyrment.interactions.detector import InteractionDetector
+from xpyrment.interactions.plots import plot_interaction_heatmap, plot_interaction_effects
 from xpyrment.analyze.orchestrator import setup
+import matplotlib.pyplot as plt
 
 def test_factorial_anova_interaction():
     """Asserts that factorial ANOVA correctly identifies interaction effects in a 2x2 design."""
@@ -82,3 +84,51 @@ def test_interaction_detector_integration():
     assert match['metric'] == 'revenue'
     assert match['covariate'] == 'age'
     assert match['p_value'] < 0.05
+
+
+def test_plot_interaction_heatmap():
+    """Validates that plot_interaction_heatmap creates a valid matplotlib figure and axes."""
+    # Test with positive values
+    df_pos = pd.DataFrame(np.random.rand(5, 5), columns=list('ABCDE'), index=list('ABCDE'))
+    fig, ax = plot_interaction_heatmap(df_pos)
+
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    assert ax.get_title() == "Factor Interaction Heatmap"
+    plt.close(fig)
+
+    # Test with negative values
+    df_neg = pd.DataFrame(np.random.randn(5, 5), columns=list('ABCDE'), index=list('ABCDE'))
+    fig_neg, ax_neg = plot_interaction_heatmap(df_neg)
+
+    assert isinstance(fig_neg, plt.Figure)
+    assert isinstance(ax_neg, plt.Axes)
+    assert ax_neg.get_title() == "Factor Interaction Heatmap"
+    plt.close(fig_neg)
+
+
+def test_plot_interaction_effects():
+    """Validates plot_interaction_effects for categorical/discrete and continuous covariates."""
+    # Test with categorical/discrete covariate
+    df_cat = pd.DataFrame({
+        'treatment': ['A', 'A', 'B', 'B'] * 10,
+        'country': ['US', 'UK'] * 20,
+        'revenue': np.random.randn(40)
+    })
+
+    fig, ax = plot_interaction_effects(df_cat, 'treatment', 'revenue', 'country')
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close('all')
+
+    # Test with continuous numeric covariate
+    df_cont = pd.DataFrame({
+        'treatment': ['A', 'B'] * 20,
+        'age': np.random.rand(40) * 50 + 20,
+        'revenue': np.random.randn(40) * 10 + 100
+    })
+
+    fig_cont, ax_cont = plot_interaction_effects(df_cont, 'treatment', 'revenue', 'age')
+    assert isinstance(fig_cont, plt.Figure)
+    assert isinstance(ax_cont, plt.Axes)
+    plt.close('all')
