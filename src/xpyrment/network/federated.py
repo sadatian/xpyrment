@@ -13,7 +13,7 @@ def gcd(a: int, b: int) -> int:
     """Computes the Greatest Common Divisor of a and b."""
     while b:
         a, b = b, a % b
-    return a
+    return abs(a)
 
 
 def lcm(a: int, b: int) -> int:

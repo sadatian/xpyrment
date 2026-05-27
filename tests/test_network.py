@@ -130,6 +130,32 @@ def test_identity_resolution():
     assert registry.get_component("user_2") == {"cookie_x", "cookie_y", "user_1", "user_2"}
 
 
+def test_gcd():
+    """Validates the Greatest Common Divisor (GCD) calculation for positive, negative, and zero inputs."""
+    from xpyrment.network.federated import gcd
+
+    # Standard positive inputs
+    assert gcd(48, 18) == 6
+    assert gcd(18, 48) == 6
+
+    # Negative inputs should return positive GCD
+    assert gcd(-48, 18) == 6
+    assert gcd(48, -18) == 6
+    assert gcd(-48, -18) == 6
+
+    # Zero handling
+    assert gcd(5, 0) == 5
+    assert gcd(0, 5) == 5
+    assert gcd(0, 0) == 0
+
+    # Prime numbers
+    assert gcd(13, 17) == 1
+
+    # Same numbers
+    assert gcd(7, 7) == 7
+    assert gcd(-7, 7) == 7
+
+
 def test_federated_pooling():
     """Validates from-scratch Paillier cryptosystem, SMPC covariance pooling, and FedAvg pooling."""
     from xpyrment.network.federated import PaillierCryptosystem, federated_averaging, federated_secure_covariance_pooling
