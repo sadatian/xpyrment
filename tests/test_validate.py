@@ -35,20 +35,32 @@ def test_check_srm_extreme_low_counts():
 def test_check_srm_invalid_inputs():
     """Asserts that check_srm raises ValueError for invalid inputs."""
     # Mismatched lengths
-    with pytest.raises(ValueError, match="Length of observed_counts and expected_ratios must be equal."):
+    with pytest.raises(ValueError, match="observed_counts and expected_ratios must be equal"):
         check_srm(observed_counts=[100, 100], expected_ratios=[0.5])
 
     # Negative observed counts
-    with pytest.raises(ValueError, match="All elements in observed_counts must be non-negative."):
+    with pytest.raises(ValueError, match="observed_counts must be non-negative"):
         check_srm(observed_counts=[100, -5], expected_ratios=[0.5, 0.5])
 
     # Negative expected ratios
-    with pytest.raises(ValueError, match="All elements in expected_ratios must be non-negative."):
+    with pytest.raises(ValueError, match="expected_ratios must be non-negative"):
         check_srm(observed_counts=[100, 100], expected_ratios=[0.5, -0.5])
 
     # Sum of expected ratios is zero
-    with pytest.raises(ValueError, match="The sum of expected_ratios must be strictly greater than zero."):
+    with pytest.raises(ValueError, match="sum of expected_ratios must be strictly greater than zero"):
         check_srm(observed_counts=[100, 100], expected_ratios=[0.0, 0.0])
+
+    # NaN / Inf in observed_counts
+    with pytest.raises(ValueError, match="observed_counts must be finite"):
+        check_srm(observed_counts=[100, np.nan], expected_ratios=[0.5, 0.5])
+    with pytest.raises(ValueError, match="observed_counts must be finite"):
+        check_srm(observed_counts=[100, np.inf], expected_ratios=[0.5, 0.5])
+
+    # NaN / Inf in expected_ratios
+    with pytest.raises(ValueError, match="expected_ratios must be finite"):
+        check_srm(observed_counts=[100, 100], expected_ratios=[0.5, np.nan])
+    with pytest.raises(ValueError, match="expected_ratios must be finite"):
+        check_srm(observed_counts=[100, 100], expected_ratios=[0.5, np.inf])
 
 
 def test_check_covariate_balance():
