@@ -4,9 +4,10 @@ This module provides tools to estimate the temporal duration of an experiment ru
 conceptually abstract "required sample size" derived from statistical power analysis into physical
 calendar time (days) using observed traffic rates and ramp-up schedules.
 """
+import numbers
 
 
-def estimate_duration_days(required_sample_size: int, daily_traffic: int) -> float:
+def estimate_duration_days(required_sample_size: numbers.Real, daily_traffic: numbers.Real) -> float:
     r"""Estimates the required experiment run duration in days.
 
     Translates the calculated target sample size ($N_{\text{required}}$) into the estimated calendar days
@@ -22,16 +23,16 @@ def estimate_duration_days(required_sample_size: int, daily_traffic: int) -> flo
         (control + treatment arms) or the single-arm requirement multiplied by the number of arms.
 
     Args:
-        required_sample_size (int): The total sample size needed across all arms combined
+        required_sample_size (numbers.Real): The total sample size needed across all arms combined
             (e.g., control $n$ + treatment $n$). Must be greater than zero.
-        daily_traffic (int): The expected number of unique qualifying experimental units (e.g., users,
+        daily_traffic (numbers.Real): The expected number of unique qualifying experimental units (e.g., users,
             sessions, or pageviews) entering the experiment pipeline per day. Must be greater than zero.
 
     Returns:
         float: Estimated run duration in decimal calendar days.
 
     Raises:
-        TypeError: If `required_sample_size` or `daily_traffic` is not an integer or float.
+        TypeError: If `required_sample_size` or `daily_traffic` is not a real number.
         ValueError: If `required_sample_size` or `daily_traffic` is less than or equal to zero.
 
     Examples:
@@ -42,10 +43,10 @@ def estimate_duration_days(required_sample_size: int, daily_traffic: int) -> flo
             10.0
             ```
     """
-    if not isinstance(required_sample_size, (int, float)):
-        raise TypeError("required_sample_size must be an integer or float.")
-    if not isinstance(daily_traffic, (int, float)):
-        raise TypeError("daily_traffic must be an integer or float.")
+    if not isinstance(required_sample_size, numbers.Real):
+        raise TypeError("required_sample_size must be a real number.")
+    if not isinstance(daily_traffic, numbers.Real):
+        raise TypeError("daily_traffic must be a real number.")
 
     if required_sample_size <= 0:
         raise ValueError("required_sample_size must be greater than zero.")
