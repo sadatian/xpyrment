@@ -82,3 +82,26 @@ def test_interaction_detector_integration():
     assert match['metric'] == 'revenue'
     assert match['covariate'] == 'age'
     assert match['p_value'] < 0.05
+
+from unittest.mock import patch, MagicMock
+from xpyrment.interactions.shap import calculate_shap_interactions
+
+def test_calculate_shap_interactions_import_error():
+    """Validates that an ImportError is raised if 'shap' is not installed."""
+    with patch.dict('sys.modules', {'shap': None}):
+        with pytest.raises(ImportError, match="The 'shap' library is required to calculate SHAP interactions"):
+            calculate_shap_interactions("dummy_model", "dummy_data")
+
+def test_calculate_shap_interactions_success():
+    """Validates that shap interaction values are calculated correctly."""
+    mock_shap = MagicMock()
+    mock_explainer = MagicMock()
+    mock_explainer.shap_interaction_values.return_value = [[1, 2], [3, 4]]
+    mock_shap.TreeExplainer.return_value = mock_explainer
+
+    with patch.dict('sys.modules', {'shap': mock_shap}):
+        result = calculate_shap_interactions("dummy_model", "dummy_data")
+
+    mock_shap.TreeExplainer.assert_called_once_with("dummy_model")
+    mock_explainer.shap_interaction_values.assert_called_once_with("dummy_data")
+    assert result == [[1, 2], [3, 4]]
