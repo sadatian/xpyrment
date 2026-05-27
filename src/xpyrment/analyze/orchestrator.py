@@ -5,7 +5,9 @@ It coordinates the execution of registered metrics, handles multiple testing cor
 transitions, and constructs the unified `AnalysisResult` data layer for plotting and reporting.
 """
 
+import warnings
 from typing import Any, List, Optional
+import numpy as np
 import pandas as pd
 
 from xpyrment.core.state import ExperimentState
@@ -102,49 +104,65 @@ class AnalysisResult:
         if not formatted:
             return df
 
-        summary_data = []
-        for _, row in df.iterrows():
-            lift_val = row["relative_lift"]
-            lift_str = f"{lift_val:+.2%}" if not pd.isna(lift_val) else "N/A"
+        summary_df = pd.DataFrame()
+        summary_df["Metric"] = df["metric_name"]
+        summary_df["Type"] = df["metric_type"]
 
-            p_val = row["p_value"]
-            sig_symbol = ""
-            if p_val < 0.001:
-                sig_symbol = "***"
-            elif p_val < 0.01:
-                sig_symbol = "**"
-            elif p_val < 0.05:
-                sig_symbol = "*"
+        summary_df["Control Mean"] = df["control_mean"].map("{:.4f}".format)
+        summary_df["Treatment Mean"] = df["treatment_mean"].map("{:.4f}".format)
 
-            p_str = f"{p_val:.4f}{sig_symbol}" if not pd.isna(p_val) else "N/A"
+        lift_mask = df["relative_lift"].notna()
+        summary_df["Relative Lift"] = np.where(
+            lift_mask,
+            df["relative_lift"].map(lambda x: f"{x:+.2%}" if pd.notna(x) else "N/A"),
+            "N/A"
+        )
 
-            lower_pct = row["rel_ci_lower"]
-            upper_pct = row["rel_ci_upper"]
-            ci_str = f"[{lower_pct:+.2%}, {upper_pct:+.2%}]" if not (pd.isna(lower_pct) or pd.isna(upper_pct)) else "N/A"
+        ci_mask = df["rel_ci_lower"].notna() & df["rel_ci_upper"].notna()
+        lower_str = df["rel_ci_lower"].map(lambda x: f"{x:+.2%}" if pd.notna(x) else "")
+        upper_str = df["rel_ci_upper"].map(lambda x: f"{x:+.2%}" if pd.notna(x) else "")
+        summary_df["95% CI (Rel)"] = np.where(
+            ci_mask,
+            "[" + lower_str + ", " + upper_str + "]",
+            "N/A"
+        )
 
-            power_val = row["power"]
-            power_str = f"{power_val:.1%}" if not pd.isna(power_val) else "N/A"
+        p_mask = df["p_value"].notna()
+        p_vals = df["p_value"]
+        p_str = p_vals.map(lambda x: f"{x:.4f}" if pd.notna(x) else "")
 
-            cuped_str = "Yes" if row["cuped_applied"] else "No"
-            var_red_val = row["variance_reduction"]
-            var_red_str = f"{var_red_val:.1%}" if row["cuped_applied"] and not pd.isna(var_red_val) else "-"
+        conditions = [
+            p_vals < 0.001,
+            p_vals < 0.01,
+            p_vals < 0.05
+        ]
+        choices = ["***", "**", "*"]
 
-            summary_data.append(
-                {
-                    "Metric": row["metric_name"],
-                    "Type": row["metric_type"],
-                    "Control Mean": f"{row['control_mean']:.4f}",
-                    "Treatment Mean": f"{row['treatment_mean']:.4f}",
-                    "Relative Lift": lift_str,
-                    "95% CI (Rel)": ci_str,
-                    "p-value": p_str,
-                    "Post-hoc Power": power_str,
-                    "CUPED": cuped_str,
-                    "Var Reduction": var_red_str,
-                }
-            )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            syms = np.select(conditions, choices, default="")
 
-        summary_df = pd.DataFrame(summary_data)
+        summary_df["p-value"] = np.where(
+            p_mask,
+            p_str + syms,
+            "N/A"
+        )
+
+        pow_mask = df["power"].notna()
+        summary_df["Post-hoc Power"] = np.where(
+            pow_mask,
+            df["power"].map(lambda x: f"{x:.1%}" if pd.notna(x) else ""),
+            "N/A"
+        )
+
+        summary_df["CUPED"] = np.where(df["cuped_applied"], "Yes", "No")
+
+        var_mask = df["cuped_applied"] & df["variance_reduction"].notna()
+        summary_df["Var Reduction"] = np.where(
+            var_mask,
+            df["variance_reduction"].map(lambda x: f"{x:.1%}" if pd.notna(x) else ""),
+            "-"
+        )
 
         # Automatically raise an alert / print warning if covariate imbalance is detected
         if self.balance_checker is not None and self.balance_checker.diagnostics_:
@@ -153,7 +171,6 @@ class AnalysisResult:
                 if abs(stats["smd"]) > 0.1:
                     imbalanced.append(f"'{name}' (SMD={stats['smd']:+.4f})")
             if imbalanced:
-                import warnings
                 warnings.warn(
                     f"COVARIATE IMBALANCE DETECTED: The following baseline covariates have standardized mean "
                     f"differences (SMD) exceeding the standard 0.1 threshold: {', '.join(imbalanced)}. "
