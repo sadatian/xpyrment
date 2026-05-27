@@ -1,7 +1,10 @@
 """Unit tests for Covariate Balance Checking & Love Plots (Block 42)."""
 
 import numpy as np
+import pandas as pd
+import pytest
 from xpyrment.quasi.balance import CovariateBalanceChecker
+from xpyrment.validate.balance import check_covariate_balance
 
 
 def test_covariate_balance_checker():
@@ -36,9 +39,6 @@ def test_covariate_balance_checker():
 
 def test_balance_ks_and_mahalanobis():
     """Validates Kolmogorov-Smirnov distance and Mahalanobis joint balance diagnostics."""
-    from xpyrment.validate.balance import check_covariate_balance
-    import pandas as pd
-    
     # Create unbalanced data
     np.random.seed(42)
     n = 100
@@ -57,3 +57,22 @@ def test_balance_ks_and_mahalanobis():
     assert "_multivariate" in results
     assert "mahalanobis_distance" in results["_multivariate"]
     assert results["_multivariate"]["n_covariates"] == 2
+
+def test_check_covariate_balance_insufficient_groups():
+    """Validates that check_covariate_balance raises ValueError when there are < 2 distinct groups."""
+    df_missing_groups = pd.DataFrame({
+        "treatment": [1, 1, 1],
+        "cov1": [1.0, 2.0, 3.0]
+    })
+    with pytest.raises(ValueError, match=r"Balance check requires at least 2 distinct groups"):
+        check_covariate_balance(df_missing_groups, "treatment", ["cov1"])
+
+
+def test_check_covariate_balance_missing_covariate():
+    """Validates that check_covariate_balance raises KeyError when a covariate is missing from the DataFrame."""
+    df_missing_cov = pd.DataFrame({
+        "treatment": [0, 0, 1, 1],
+        "cov1": [1.0, 2.0, 3.0, 4.0]
+    })
+    with pytest.raises(KeyError, match=r"Covariate column .* not found in DataFrame"):
+        check_covariate_balance(df_missing_cov, "treatment", ["cov_missing"])
