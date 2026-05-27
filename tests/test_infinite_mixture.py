@@ -1,7 +1,6 @@
 """Unit tests for Infinite Dirichlet Process Mixture Clustering (Block 39)."""
 
 import numpy as np
-import pytest
 from xpyrment.personalize.infinite_mixture import InfiniteDirichletClusterer
 
 

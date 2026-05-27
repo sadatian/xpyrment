@@ -4,7 +4,7 @@ Groups user response signals into latent clusters without manually specifying th
 size K beforehand, using a collapsed Gibbs sampler over Dirichlet Process conjugates.
 """
 
-from typing import Dict, List, Tuple
+from typing import List
 import numpy as np
 from scipy.stats import norm
 

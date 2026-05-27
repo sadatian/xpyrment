@@ -5,7 +5,6 @@ every possible combination of factor levels. It is the gold standard for explora
 studies where estimation of high-order interaction terms is required.
 """
 
-from typing import Dict, List
 import pandas as pd
 from xpyrment.design.doe.base import DesignMatrix
 

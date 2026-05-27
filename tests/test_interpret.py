@@ -28,7 +28,6 @@ def test_cohens_d_calculation():
 def test_subgroup_hte_scan():
     """Validates subgroup interaction detection and lift reporting."""
     rng = np.random.default_rng(42)
-    n = 200
     df = pd.DataFrame({
         'variant': [0, 1] * 100,
         'platform': ['iOS'] * 100 + ['Android'] * 100,

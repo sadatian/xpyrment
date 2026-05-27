@@ -5,7 +5,7 @@ additive homomorphic secure multi-party computation (SMPC) of global covariance
 matrices, alongside the Federated Averaging (FedAvg) global model pooling algorithm.
 """
 
-from typing import List, Tuple, Union
+from typing import List, Tuple
 import numpy as np
 
 
@@ -13,7 +13,7 @@ def gcd(a: int, b: int) -> int:
     """Computes the Greatest Common Divisor of a and b."""
     while b:
         a, b = b, a % b
-    return a
+    return abs(a)
 
 
 def lcm(a: int, b: int) -> int:

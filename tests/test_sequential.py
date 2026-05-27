@@ -1,6 +1,5 @@
 """Unit tests for Group Sequential Lan-DeMets Alpha Spending (Block 36)."""
 
-import numpy as np
 import pytest
 from xpyrment.analyze.sequential import GroupSequentialMonitor
 

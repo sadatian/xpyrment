@@ -1,10 +1,9 @@
 import json
 import numpy as np
 import pandas as pd
-import pytest
 
-from xpyrment.core.serialization import make_serializable, serialize_to_json
-from xpyrment.analyze.orchestrator import setup, run_analysis
+from xpyrment.core.serialization import make_serializable
+from xpyrment.analyze.orchestrator import setup
 from xpyrment.quasi.diff_in_diff import DifferenceInDifferences, ParallelTrendsPlaceboTest
 from xpyrment.quasi.instrumental_variables import InstrumentalVariables2SLS
 
@@ -101,7 +100,7 @@ def test_estimator_serialization():
     p_dict = placebo.to_dict()
     assert "alpha" in p_dict
     assert "results" in p_dict
-    assert p_dict["results"]["trends_parallel"] == True
+    assert p_dict["results"]["trends_parallel"]
 
     p_json = placebo.to_json()
     assert "trends_parallel" in p_json

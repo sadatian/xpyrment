@@ -1,13 +1,11 @@
 import json
 import logging
 import threading
-import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 import numpy as np
 import pandas as pd
 from xpyrment.simulation import generate_ab_data
-import os
 
 logger = logging.getLogger(__name__)
 
