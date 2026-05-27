@@ -85,7 +85,7 @@ class ExperimentReportGenerator:
         lines.append("| Metric | Type | Control Mean | Treatment Mean | Relative Lift | P-Value | Significance | CUPED |")
         lines.append("| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |")
 
-        for row in self.df_raw.itertuples():
+        for row in self.df_raw.itertuples(index=False):
             m_name = getattr(row, "metric_name")
             m_type = getattr(row, "metric_type", "mean")
             c_mean = getattr(row, "control_mean", 0.0)
@@ -142,7 +142,7 @@ class ExperimentReportGenerator:
 
         # Formulate HTML metric table rows
         table_rows = []
-        for row in self.df_raw.itertuples():
+        for row in self.df_raw.itertuples(index=False):
             m_name = getattr(row, "metric_name")
             m_type = getattr(row, "metric_type", "mean")
             c_mean = getattr(row, "control_mean", 0.0)

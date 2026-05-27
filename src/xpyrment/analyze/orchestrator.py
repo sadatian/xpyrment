@@ -103,7 +103,7 @@ class AnalysisResult:
             return df
 
         summary_data = []
-        for row in df.itertuples():
+        for row in df.itertuples(index=False):
             lift_val = getattr(row, "relative_lift")
             lift_str = f"{lift_val:+.2%}" if not pd.isna(lift_val) else "N/A"
 
@@ -125,9 +125,10 @@ class AnalysisResult:
             power_val = getattr(row, "power")
             power_str = f"{power_val:.1%}" if not pd.isna(power_val) else "N/A"
 
-            cuped_str = "Yes" if getattr(row, "cuped_applied") else "No"
+            cuped_applied = getattr(row, "cuped_applied")
+            cuped_str = "Yes" if cuped_applied else "No"
             var_red_val = getattr(row, "variance_reduction")
-            var_red_str = f"{var_red_val:.1%}" if getattr(row, "cuped_applied") and not pd.isna(var_red_val) else "-"
+            var_red_str = f"{var_red_val:.1%}" if cuped_applied and not pd.isna(var_red_val) else "-"
 
             summary_data.append(
                 {
