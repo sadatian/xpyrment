@@ -176,17 +176,20 @@ class DuckDBIngester:
                 pass
             self._conn = None
 
-    def query(self, sql_query: str) -> pd.DataFrame:
+    def query(self, sql_query: str, params: list = None) -> pd.DataFrame:
         """Executes a raw SQL query against DuckDB and returns the result as a pandas DataFrame.
 
         Args:
             sql_query (str): A standard SQL query.
+            params (list, optional): A list of parameters to bind to the query.
 
         Returns:
             pd.DataFrame: The queried records.
         """
         if self._conn is None:
             raise RuntimeError("DuckDB connection is closed.")
+        if params is not None:
+            return self._conn.execute(sql_query, params).df()
         return self._conn.execute(sql_query).df()
 
     def compute_covariate_balance(
@@ -234,7 +237,7 @@ class DuckDBIngester:
 
         # 2. Schema pre-validation & column presence verification
         try:
-            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet('{path_str}')")
+            schema_df = self.query("DESCRIBE SELECT * FROM read_parquet(?)", [path_str])
         except Exception as e:
             raise ValueError(f"Failed to parse Parquet schema at {parquet_path}: {e}")
 
@@ -248,13 +251,14 @@ class DuckDBIngester:
                 raise KeyError(f"Covariate column '{cov}' not found in Parquet schema.")
 
         # 3. Check if dataset is empty and get total row count
-        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet('{path_str}')")
+        count_df = self.query("SELECT COUNT(*) as cnt FROM read_parquet(?)", [path_str])
         if count_df.empty or count_df.iloc[0]["cnt"] == 0:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
         groups_df = self.query(
-            f"SELECT DISTINCT {treatment_col} FROM read_parquet('{path_str}') WHERE {treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {treatment_col} FROM read_parquet(?) WHERE {treatment_col} IS NOT NULL",
+            [path_str]
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -317,11 +321,11 @@ class DuckDBIngester:
                 SELECT
                     {treatment_col},
                     {', '.join(select_parts)}
-                FROM read_parquet('{path_str}')
-                WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
+                FROM read_parquet(?)
+                WHERE {treatment_col} IN (?, ?)
                 GROUP BY {treatment_col}
             """
-            group_stats_df = self.query(sql)
+            group_stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
             
             row_0 = group_stats_df[group_stats_df[treatment_col] == comp_groups[0]].iloc[0] if comp_groups[0] in group_stats_df[treatment_col].values else None
             row_1 = group_stats_df[group_stats_df[treatment_col] == comp_groups[1]].iloc[0] if comp_groups[1] in group_stats_df[treatment_col].values else None
@@ -376,11 +380,11 @@ class DuckDBIngester:
                     {cov},
                     {treatment_col},
                     COUNT(*) as cnt
-                FROM read_parquet('{path_str}')
-                WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {cov} IS NOT NULL
+                FROM read_parquet(?)
+                WHERE {treatment_col} IN (?, ?) AND {cov} IS NOT NULL
                 GROUP BY {cov}, {treatment_col}
             """
-            cat_df = self.query(sql)
+            cat_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
 
             if not cat_df.empty:
                 contingency = cat_df.pivot(index=cov, columns=treatment_col, values="cnt").fillna(0)
@@ -448,7 +452,7 @@ class DuckDBIngester:
 
         # 2. Schema pre-validation & column presence verification
         try:
-            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet('{path_str}')")
+            schema_df = self.query("DESCRIBE SELECT * FROM read_parquet(?)", [path_str])
         except Exception as e:
             raise ValueError(f"Failed to parse Parquet schema at {parquet_path}: {e}")
 
@@ -462,13 +466,14 @@ class DuckDBIngester:
                 raise KeyError(f"Metric column '{m}' not found in Parquet schema.")
 
         # 3. Check if dataset is empty
-        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet('{path_str}')")
+        count_df = self.query("SELECT COUNT(*) as cnt FROM read_parquet(?)", [path_str])
         if count_df.empty or count_df.iloc[0]["cnt"] == 0:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
         groups_df = self.query(
-            f"SELECT DISTINCT {treatment_col} FROM read_parquet('{path_str}') WHERE {treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {treatment_col} FROM read_parquet(?) WHERE {treatment_col} IS NOT NULL",
+            [path_str]
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -508,11 +513,11 @@ class DuckDBIngester:
             SELECT
                 {treatment_col},
                 {', '.join(select_parts)}
-            FROM read_parquet('{path_str}')
-            WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
+            FROM read_parquet(?)
+            WHERE {treatment_col} IN (?, ?)
             GROUP BY {treatment_col}
         """
-        stats_df = self.query(sql)
+        stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
 
         row_0 = stats_df[stats_df[treatment_col] == comp_groups[0]].iloc[0] if comp_groups[0] in stats_df[treatment_col].values else None
         row_1 = stats_df[stats_df[treatment_col] == comp_groups[1]].iloc[0] if comp_groups[1] in stats_df[treatment_col].values else None
