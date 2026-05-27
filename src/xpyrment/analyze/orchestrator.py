@@ -7,7 +7,6 @@ transitions, and constructs the unified `AnalysisResult` data layer for plotting
 
 import warnings
 from typing import Any, List, Optional
-import numpy as np
 import pandas as pd
 
 from xpyrment.core.state import ExperimentState
@@ -108,61 +107,51 @@ class AnalysisResult:
         summary_df["Metric"] = df["metric_name"]
         summary_df["Type"] = df["metric_type"]
 
+        def _format_ci(lower: float, upper: float) -> str:
+            if pd.isna(lower) or pd.isna(upper):
+                return "N/A"
+            return f"[{lower:+.2%}, {upper:+.2%}]"
+
+        def _format_p_value(p_val: float) -> str:
+            if pd.isna(p_val):
+                return "N/A"
+            if p_val < 0.001:
+                sig_symbol = "***"
+            elif p_val < 0.01:
+                sig_symbol = "**"
+            elif p_val < 0.05:
+                sig_symbol = "*"
+            else:
+                sig_symbol = ""
+            return f"{p_val:.4f}{sig_symbol}"
+
+        def _format_var_reduction(cuped: bool, var_red: float) -> str:
+            if not cuped:
+                return "-"
+            return f"{var_red:.1%}" if pd.notna(var_red) else "-"
+
         summary_df["Control Mean"] = df["control_mean"].map("{:.4f}".format)
         summary_df["Treatment Mean"] = df["treatment_mean"].map("{:.4f}".format)
 
-        lift_mask = df["relative_lift"].notna()
-        summary_df["Relative Lift"] = np.where(
-            lift_mask,
-            df["relative_lift"].map(lambda x: f"{x:+.2%}" if pd.notna(x) else "N/A"),
-            "N/A"
+        summary_df["Relative Lift"] = df["relative_lift"].apply(
+            lambda x: f"{x:+.2%}" if pd.notna(x) else "N/A"
         )
 
-        ci_mask = df["rel_ci_lower"].notna() & df["rel_ci_upper"].notna()
-        lower_str = df["rel_ci_lower"].map(lambda x: f"{x:+.2%}" if pd.notna(x) else "")
-        upper_str = df["rel_ci_upper"].map(lambda x: f"{x:+.2%}" if pd.notna(x) else "")
-        summary_df["95% CI (Rel)"] = np.where(
-            ci_mask,
-            "[" + lower_str + ", " + upper_str + "]",
-            "N/A"
-        )
-
-        p_mask = df["p_value"].notna()
-        p_vals = df["p_value"]
-        p_str = p_vals.map(lambda x: f"{x:.4f}" if pd.notna(x) else "")
-
-        conditions = [
-            p_vals < 0.001,
-            p_vals < 0.01,
-            p_vals < 0.05
+        summary_df["95% CI (Rel)"] = [
+            _format_ci(l, u) for l, u in zip(df["rel_ci_lower"], df["rel_ci_upper"])
         ]
-        choices = ["***", "**", "*"]
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            syms = np.select(conditions, choices, default="")
+        summary_df["p-value"] = df["p_value"].apply(_format_p_value)
 
-        summary_df["p-value"] = np.where(
-            p_mask,
-            p_str + syms,
-            "N/A"
+        summary_df["Post-hoc Power"] = df["power"].apply(
+            lambda x: f"{x:.1%}" if pd.notna(x) else "N/A"
         )
 
-        pow_mask = df["power"].notna()
-        summary_df["Post-hoc Power"] = np.where(
-            pow_mask,
-            df["power"].map(lambda x: f"{x:.1%}" if pd.notna(x) else ""),
-            "N/A"
-        )
+        summary_df["CUPED"] = df["cuped_applied"].map({True: "Yes", False: "No"})
 
-        summary_df["CUPED"] = np.where(df["cuped_applied"], "Yes", "No")
-
-        var_mask = df["cuped_applied"] & df["variance_reduction"].notna()
-        summary_df["Var Reduction"] = np.where(
-            var_mask,
-            df["variance_reduction"].map(lambda x: f"{x:.1%}" if pd.notna(x) else ""),
-            "-"
-        )
+        summary_df["Var Reduction"] = [
+            _format_var_reduction(c, v) for c, v in zip(df["cuped_applied"], df["variance_reduction"])
+        ]
 
         # Automatically raise an alert / print warning if covariate imbalance is detected
         if self.balance_checker is not None and self.balance_checker.diagnostics_:
