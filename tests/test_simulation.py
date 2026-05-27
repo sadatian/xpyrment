@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from xpyrment.simulation import generate_ab_data, ExperimentSimulator
 

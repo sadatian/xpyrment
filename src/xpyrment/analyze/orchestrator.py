@@ -264,7 +264,6 @@ def run_analysis(
             from xpyrment.quasi.balance import CovariateBalanceChecker
             sub_df = experiment.data[experiment.data[experiment.treatment_col].isin([control, treatment])].dropna(subset=valid_covs)
             if len(sub_df) > 0:
-                import numpy as np
                 X = sub_df[valid_covs].to_numpy()
                 T = (sub_df[experiment.treatment_col] == treatment).astype(int).to_numpy()
                 balance_checker = CovariateBalanceChecker(covariate_names=valid_covs)

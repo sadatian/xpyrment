@@ -109,7 +109,6 @@ class DOptimalDesign(DesignMatrix):
                 D_current[:, j] = rng.choice(candidates[j], size=self.num_runs)
 
             # 2. Iterate Coordinate Exchange sweeps until convergence
-            converged = False
             max_iter = 5
             for _ in range(max_iter):
                 changed = False
@@ -143,7 +142,6 @@ class DOptimalDesign(DesignMatrix):
                             D_current[i, j] = current_val
 
                 if not changed:
-                    converged = True
                     break
 
             # 3. Assess final determinant for this start

@@ -6,7 +6,6 @@ without recomputing covariance inverses from scratch.
 # TODO: Support dynamic forgetting factors (exponential decay weighting) to allow the streaming model to track non-stationary regimes in high-frequency event streams.
 """
 
-from typing import Union
 import numpy as np
 
 

@@ -1,6 +1,5 @@
 """Unit tests for Multiple Hypothesis Testing (Block 47)."""
 
-import pytest
 from xpyrment.analyze.corrections import apply_multiple_testing_correction
 
 

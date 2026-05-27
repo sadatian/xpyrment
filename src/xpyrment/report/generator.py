@@ -5,9 +5,6 @@ self-contained Markdown reports and dynamic HTML dashboards.
 """
 
 import os
-from typing import Any, Dict, Optional
-import numpy as np
-import pandas as pd
 from scipy.stats import chi2
 
 from xpyrment.analyze.orchestrator import AnalysisResult
@@ -198,7 +195,6 @@ class ExperimentReportGenerator:
 
         # SRM card rendering
         srm_class = "card-success-border" if self.srm_passed else "card-danger-border"
-        srm_badge_class = "badge-success" if self.srm_passed else "badge-danger"
         srm_badge_text = "PASSED" if self.srm_passed else "ALERT"
 
         love_plot_content = self.result.love_plot() if self.balance_checker is not None else "No covariate balance available."

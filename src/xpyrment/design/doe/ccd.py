@@ -91,7 +91,6 @@ class CentralCompositeDesign(DesignMatrix):
             pd.DataFrame: A pandas DataFrame containing the complete CCD matrix.
         """
         import itertools
-        import numpy as np
 
         k = len(self.factors)
         keys = list(self.factors.keys())

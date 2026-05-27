@@ -4,7 +4,7 @@ Jointly models multiple correlated non-Gaussian experimental metrics (e.g. Conve
 using empirical copulas to compute joint covariance structures and run robust joint Wald hypothesis tests.
 """
 
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Union
 import numpy as np
 import pandas as pd
 from scipy.stats import norm, chi2

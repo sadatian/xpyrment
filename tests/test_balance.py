@@ -1,7 +1,6 @@
 """Unit tests for Covariate Balance Checking & Love Plots (Block 42)."""
 
 import numpy as np
-import pytest
 from xpyrment.quasi.balance import CovariateBalanceChecker
 
 
