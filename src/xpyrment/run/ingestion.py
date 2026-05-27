@@ -253,8 +253,9 @@ class DuckDBIngester:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
+        safe_treatment_col = '"' + treatment_col.replace('"', '""') + '"'
         groups_df = self.query(
-            f"SELECT DISTINCT {treatment_col} FROM read_parquet('{path_str}') WHERE {treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet('{path_str}') WHERE {safe_treatment_col} IS NOT NULL"
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -280,8 +281,14 @@ class DuckDBIngester:
         # Helper to convert python value to SQL literal
         def to_sql_val(val):
             if isinstance(val, str):
-                return f"'{val}'"
+                # Escape single quotes by doubling them in SQL strings
+                safe_val = val.replace("'", "''")
+                return f"'{safe_val}'"
             return str(val)
+
+        # Helper to quote identifiers for DuckDB to prevent SQL injection
+        def quote_identifier(col_name: str) -> str:
+            return '"' + col_name.replace('"', '""') + '"'
 
         # 5. Partition covariates into numeric vs categorical
         def is_duckdb_numeric(col_name: str) -> bool:
@@ -309,17 +316,24 @@ class DuckDBIngester:
             # Build and run optimized group aggregation SQL query for all numeric covariates in a single scan
             select_parts = []
             for cov in numeric_covs:
-                select_parts.append(f"COUNT({cov}) as count_{cov}")
-                select_parts.append(f"AVG({cov}) as mean_{cov}")
-                select_parts.append(f"VAR_SAMP({cov}) as var_{cov}")
+                safe_cov = quote_identifier(cov)
+                # We also need to quote the aliases so we can reliably fetch them
+                safe_count_alias = quote_identifier(f"count_{cov}")
+                safe_mean_alias = quote_identifier(f"mean_{cov}")
+                safe_var_alias = quote_identifier(f"var_{cov}")
+                select_parts.append(f"COUNT({safe_cov}) as {safe_count_alias}")
+                select_parts.append(f"AVG({safe_cov}) as {safe_mean_alias}")
+                select_parts.append(f"VAR_SAMP({safe_cov}) as {safe_var_alias}")
+
+            safe_treatment_col = quote_identifier(treatment_col)
 
             sql = f"""
                 SELECT
-                    {treatment_col},
+                    {safe_treatment_col},
                     {', '.join(select_parts)}
                 FROM read_parquet('{path_str}')
-                WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
-                GROUP BY {treatment_col}
+                WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
+                GROUP BY {safe_treatment_col}
             """
             group_stats_df = self.query(sql)
             
@@ -371,14 +385,16 @@ class DuckDBIngester:
 
         # 7. Compute statistics for categorical covariates
         for cov in categorical_covs:
+            safe_cov = quote_identifier(cov)
+            safe_treatment_col = quote_identifier(treatment_col)
             sql = f"""
                 SELECT
-                    {cov},
-                    {treatment_col},
+                    {safe_cov},
+                    {safe_treatment_col},
                     COUNT(*) as cnt
                 FROM read_parquet('{path_str}')
-                WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {cov} IS NOT NULL
-                GROUP BY {cov}, {treatment_col}
+                WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {safe_cov} IS NOT NULL
+                GROUP BY {safe_cov}, {safe_treatment_col}
             """
             cat_df = self.query(sql)
 
@@ -467,8 +483,9 @@ class DuckDBIngester:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
+        safe_treatment_col = '"' + treatment_col.replace('"', '""') + '"'
         groups_df = self.query(
-            f"SELECT DISTINCT {treatment_col} FROM read_parquet('{path_str}') WHERE {treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet('{path_str}') WHERE {safe_treatment_col} IS NOT NULL"
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -494,23 +511,35 @@ class DuckDBIngester:
         # Helper to convert python value to SQL literal
         def to_sql_val(val):
             if isinstance(val, str):
-                return f"'{val}'"
+                safe_val = val.replace("'", "''")
+                return f"'{safe_val}'"
             return str(val)
+
+        # Helper to quote identifiers for DuckDB to prevent SQL injection
+        def quote_identifier(col_name: str) -> str:
+            return '"' + col_name.replace('"', '""') + '"'
 
         # 5. Construct SQL query to aggregate all metrics at once
         select_parts = []
         for m in metric_cols:
-            select_parts.append(f"COUNT({m}) as count_{m}")
-            select_parts.append(f"AVG({m}) as mean_{m}")
-            select_parts.append(f"VAR_SAMP({m}) as var_{m}")
+            safe_m = quote_identifier(m)
+            safe_count_alias = quote_identifier(f"count_{m}")
+            safe_mean_alias = quote_identifier(f"mean_{m}")
+            safe_var_alias = quote_identifier(f"var_{m}")
+
+            select_parts.append(f"COUNT({safe_m}) as {safe_count_alias}")
+            select_parts.append(f"AVG({safe_m}) as {safe_mean_alias}")
+            select_parts.append(f"VAR_SAMP({safe_m}) as {safe_var_alias}")
+
+        safe_treatment_col = quote_identifier(treatment_col)
 
         sql = f"""
             SELECT
-                {treatment_col},
+                {safe_treatment_col},
                 {', '.join(select_parts)}
             FROM read_parquet('{path_str}')
-            WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
-            GROUP BY {treatment_col}
+            WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
+            GROUP BY {safe_treatment_col}
         """
         stats_df = self.query(sql)
 
