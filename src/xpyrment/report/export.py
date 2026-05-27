@@ -61,11 +61,11 @@ def plot_forest(
     sig_color = "#009688"
     nonsig_color = "#78909c"
 
-    for idx, (_, row) in enumerate(df.iterrows()):
-        lift = row["relative_lift"]
-        ci_lower = row["rel_ci_lower"]
-        ci_upper = row["rel_ci_upper"]
-        p_val = row["p_value"]
+    for idx, row in enumerate(df.itertuples()):
+        lift = getattr(row, "relative_lift")
+        ci_lower = getattr(row, "rel_ci_lower")
+        ci_upper = getattr(row, "rel_ci_upper")
+        p_val = getattr(row, "p_value")
 
         is_significant = p_val < alpha
         color = sig_color if is_significant else nonsig_color
@@ -100,6 +100,7 @@ def plot_forest(
     ax.set_title(title, fontsize=14, fontweight="bold", pad=20)
 
     import matplotlib.ticker as mtick
+
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 
     sns.despine(left=True, bottom=True)
@@ -189,10 +190,13 @@ def plot_power_curve(
         )
 
     import matplotlib.ticker as mtick
+
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax.get_yaxis().set_major_formatter(mtick.FuncFormatter(lambda x, p: f"{int(x):,}"))
 
-    ax.set_xlabel("Relative Minimum Detectable Effect (MDE)", fontsize=12, fontweight="bold")
+    ax.set_xlabel(
+        "Relative Minimum Detectable Effect (MDE)", fontsize=12, fontweight="bold"
+    )
     ax.set_ylabel("Required Sample Size (Per Variant)", fontsize=12, fontweight="bold")
     ax.set_title(title, fontsize=14, fontweight="bold", pad=20)
 

@@ -27,7 +27,12 @@ class AnalysisResult:
         balance_checker (Optional[Any]): Fitted balance checker object if covariates were present.
     """
 
-    def __init__(self, raw_results: List[dict], alpha: float = 0.05, balance_checker: Optional[Any] = None):
+    def __init__(
+        self,
+        raw_results: List[dict],
+        alpha: float = 0.05,
+        balance_checker: Optional[Any] = None,
+    ):
         """Initializes an AnalysisResult.
 
         Args:
@@ -59,10 +64,15 @@ class AnalysisResult:
             dict: A nested dictionary with native Python types, guaranteed to be JSON serializable.
         """
         from xpyrment.core.serialization import make_serializable
+
         state = {
             "alpha": self.alpha,
             "metrics": self.raw_results,
-            "covariate_balance": self.balance_checker.diagnostics_ if (self.balance_checker is not None) else None,
+            "covariate_balance": (
+                self.balance_checker.diagnostics_
+                if (self.balance_checker is not None)
+                else None
+            ),
         }
         return make_serializable(state)
 
@@ -76,6 +86,7 @@ class AnalysisResult:
             str: Standardized JSON representation of the analysis results.
         """
         from xpyrment.core.serialization import serialize_to_json
+
         return serialize_to_json(self.to_dict(), indent=indent)
 
     def summary(self, formatted: bool = True) -> pd.DataFrame:
@@ -103,38 +114,63 @@ class AnalysisResult:
             return df
 
         summary_data = []
-        for _, row in df.iterrows():
-            lift_val = row["relative_lift"]
-            lift_str = f"{lift_val:+.2%}" if not pd.isna(lift_val) else "N/A"
+        for row in df.itertuples():
+            lift_val = getattr(row, "relative_lift", None)
+            lift_str = (
+                f"{lift_val:+.2%}"
+                if lift_val is not None and not pd.isna(lift_val)
+                else "N/A"
+            )
 
-            p_val = row["p_value"]
+            p_val = getattr(row, "p_value", None)
             sig_symbol = ""
-            if p_val < 0.001:
-                sig_symbol = "***"
-            elif p_val < 0.01:
-                sig_symbol = "**"
-            elif p_val < 0.05:
-                sig_symbol = "*"
+            if p_val is not None and not pd.isna(p_val):
+                if p_val < 0.001:
+                    sig_symbol = "***"
+                elif p_val < 0.01:
+                    sig_symbol = "**"
+                elif p_val < 0.05:
+                    sig_symbol = "*"
 
-            p_str = f"{p_val:.4f}{sig_symbol}" if not pd.isna(p_val) else "N/A"
+            p_str = (
+                f"{p_val:.4f}{sig_symbol}"
+                if p_val is not None and not pd.isna(p_val)
+                else "N/A"
+            )
 
-            lower_pct = row["rel_ci_lower"]
-            upper_pct = row["rel_ci_upper"]
-            ci_str = f"[{lower_pct:+.2%}, {upper_pct:+.2%}]" if not (pd.isna(lower_pct) or pd.isna(upper_pct)) else "N/A"
+            lower_pct = getattr(row, "rel_ci_lower", None)
+            upper_pct = getattr(row, "rel_ci_upper", None)
+            ci_str = (
+                f"[{lower_pct:+.2%}, {upper_pct:+.2%}]"
+                if (lower_pct is not None and upper_pct is not None)
+                and not (pd.isna(lower_pct) or pd.isna(upper_pct))
+                else "N/A"
+            )
 
-            power_val = row["power"]
-            power_str = f"{power_val:.1%}" if not pd.isna(power_val) else "N/A"
+            power_val = getattr(row, "power", None)
+            power_str = (
+                f"{power_val:.1%}"
+                if power_val is not None and not pd.isna(power_val)
+                else "N/A"
+            )
 
-            cuped_str = "Yes" if row["cuped_applied"] else "No"
-            var_red_val = row["variance_reduction"]
-            var_red_str = f"{var_red_val:.1%}" if row["cuped_applied"] and not pd.isna(var_red_val) else "-"
+            cuped_applied = getattr(row, "cuped_applied", False)
+            cuped_str = "Yes" if cuped_applied else "No"
+            var_red_val = getattr(row, "variance_reduction", None)
+            var_red_str = (
+                f"{var_red_val:.1%}"
+                if cuped_applied
+                and var_red_val is not None
+                and not pd.isna(var_red_val)
+                else "-"
+            )
 
             summary_data.append(
                 {
-                    "Metric": row["metric_name"],
-                    "Type": row["metric_type"],
-                    "Control Mean": f"{row['control_mean']:.4f}",
-                    "Treatment Mean": f"{row['treatment_mean']:.4f}",
+                    "Metric": getattr(row, "metric_name"),
+                    "Type": getattr(row, "metric_type"),
+                    "Control Mean": f"{getattr(row, 'control_mean'):.4f}",
+                    "Treatment Mean": f"{getattr(row, 'treatment_mean'):.4f}",
                     "Relative Lift": lift_str,
                     "95% CI (Rel)": ci_str,
                     "p-value": p_str,
@@ -154,6 +190,7 @@ class AnalysisResult:
                     imbalanced.append(f"'{name}' (SMD={stats['smd']:+.4f})")
             if imbalanced:
                 import warnings
+
                 warnings.warn(
                     f"COVARIATE IMBALANCE DETECTED: The following baseline covariates have standardized mean "
                     f"differences (SMD) exceeding the standard 0.1 threshold: {', '.join(imbalanced)}. "
@@ -175,6 +212,7 @@ class AnalysisResult:
         """
         # Re-routed to the reporting/export layer dynamically
         from xpyrment.report.export import plot_forest
+
         return plot_forest(self.df_raw, alpha=self.alpha, **kwargs)
 
 
@@ -222,16 +260,20 @@ def run_analysis(
         for node_name, node_info in registry.nodes.items():
             if node_info["type"] == "raw" and node_name in experiment.data.columns:
                 raw_inputs[node_name] = experiment.data[node_name].to_numpy()
-        
+
         evaluated_cache = registry.evaluate(raw_inputs)
         for key, val in evaluated_cache.items():
-            if key not in experiment.data.columns or registry.nodes.get(key, {}).get("type") == "derived":
+            if (
+                key not in experiment.data.columns
+                or registry.nodes.get(key, {}).get("type") == "derived"
+            ):
                 if len(val) == len(experiment.data):
                     experiment.data[key] = val
 
         # Auto-populate metrics from DAG if metrics list is currently empty
         if not experiment.metrics:
             from xpyrment.metrics.taxonomy import MeanMetric
+
             for name in evaluated_cache.keys():
                 experiment.metrics.append(MeanMetric(name, value_col=name))
 
@@ -239,13 +281,18 @@ def run_analysis(
         raise ValueError("No metrics have been added to the experiment.")
 
     # Resolve global and method-specific covariates
-    covs_to_check = covariates if covariates is not None else getattr(experiment, "covariates", [])
+    covs_to_check = (
+        covariates if covariates is not None else getattr(experiment, "covariates", [])
+    )
 
     # 2. Automated Covariate-adjusted CUPED routing
     if covs_to_check:
         for metric in experiment.metrics:
             from xpyrment.metrics.taxonomy import MeanMetric
-            if isinstance(metric, MeanMetric) and not getattr(metric, "pre_period_col", None):
+
+            if isinstance(metric, MeanMetric) and not getattr(
+                metric, "pre_period_col", None
+            ):
                 possible_candidates = [
                     f"pre_{metric.value_col}",
                     f"{metric.value_col}_pre",
@@ -262,11 +309,19 @@ def run_analysis(
         valid_covs = [c for c in covs_to_check if c in experiment.data.columns]
         if valid_covs:
             from xpyrment.quasi.balance import CovariateBalanceChecker
-            sub_df = experiment.data[experiment.data[experiment.treatment_col].isin([control, treatment])].dropna(subset=valid_covs)
+
+            sub_df = experiment.data[
+                experiment.data[experiment.treatment_col].isin([control, treatment])
+            ].dropna(subset=valid_covs)
             if len(sub_df) > 0:
                 import numpy as np
+
                 X = sub_df[valid_covs].to_numpy()
-                T = (sub_df[experiment.treatment_col] == treatment).astype(int).to_numpy()
+                T = (
+                    (sub_df[experiment.treatment_col] == treatment)
+                    .astype(int)
+                    .to_numpy()
+                )
                 balance_checker = CovariateBalanceChecker(covariate_names=valid_covs)
                 balance_checker.fit(X, T)
 
@@ -285,7 +340,9 @@ def run_analysis(
     # Apply multiple testing corrections if requested
     if multi_test_correction and len(results) > 1:
         p_vals = [res["p_value"] for res in results]
-        adjusted_p = apply_multiple_testing_correction(p_vals, alpha=alpha, method=multi_test_correction)
+        adjusted_p = apply_multiple_testing_correction(
+            p_vals, alpha=alpha, method=multi_test_correction
+        )
         for i, val in enumerate(adjusted_p):
             results[i]["p_value"] = val
 
