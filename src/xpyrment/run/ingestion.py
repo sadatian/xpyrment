@@ -97,6 +97,15 @@ def ingest_dataframe(
     return df_clean
 
 
+def _quote_identifier(col_name: str) -> str:
+    """Safely quotes identifiers for DuckDB to prevent SQL injection."""
+    return '"' + col_name.replace('"', '""') + '"'
+
+def _quote_string(val: str) -> str:
+    """Safely escapes single quotes for string literals in DuckDB."""
+    safe_val = val.replace("'", "''")
+    return f"'{safe_val}'"
+
 class DuckDBIngester:
     r"""High-performance out-of-core data ingestion and computation adapter using DuckDB.
 
@@ -233,8 +242,9 @@ class DuckDBIngester:
         path_str = str(Path(parquet_path).resolve()).replace("\\", "/")
 
         # 2. Schema pre-validation & column presence verification
+        safe_path_str = _quote_string(path_str)
         try:
-            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet('{path_str}')")
+            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet({safe_path_str})")
         except Exception as e:
             raise ValueError(f"Failed to parse Parquet schema at {parquet_path}: {e}")
 
@@ -248,14 +258,14 @@ class DuckDBIngester:
                 raise KeyError(f"Covariate column '{cov}' not found in Parquet schema.")
 
         # 3. Check if dataset is empty and get total row count
-        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet('{path_str}')")
+        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet({safe_path_str})")
         if count_df.empty or count_df.iloc[0]["cnt"] == 0:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
-        safe_treatment_col = '"' + treatment_col.replace('"', '""') + '"'
+        safe_treatment_col = _quote_identifier(treatment_col)
         groups_df = self.query(
-            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet('{path_str}') WHERE {safe_treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet({safe_path_str}) WHERE {safe_treatment_col} IS NOT NULL"
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -281,14 +291,8 @@ class DuckDBIngester:
         # Helper to convert python value to SQL literal
         def to_sql_val(val):
             if isinstance(val, str):
-                # Escape single quotes by doubling them in SQL strings
-                safe_val = val.replace("'", "''")
-                return f"'{safe_val}'"
+                return _quote_string(val)
             return str(val)
-
-        # Helper to quote identifiers for DuckDB to prevent SQL injection
-        def quote_identifier(col_name: str) -> str:
-            return '"' + col_name.replace('"', '""') + '"'
 
         # 5. Partition covariates into numeric vs categorical
         def is_duckdb_numeric(col_name: str) -> bool:
@@ -316,22 +320,22 @@ class DuckDBIngester:
             # Build and run optimized group aggregation SQL query for all numeric covariates in a single scan
             select_parts = []
             for cov in numeric_covs:
-                safe_cov = quote_identifier(cov)
+                safe_cov = _quote_identifier(cov)
                 # We also need to quote the aliases so we can reliably fetch them
-                safe_count_alias = quote_identifier(f"count_{cov}")
-                safe_mean_alias = quote_identifier(f"mean_{cov}")
-                safe_var_alias = quote_identifier(f"var_{cov}")
+                safe_count_alias = _quote_identifier(f"count_{cov}")
+                safe_mean_alias = _quote_identifier(f"mean_{cov}")
+                safe_var_alias = _quote_identifier(f"var_{cov}")
                 select_parts.append(f"COUNT({safe_cov}) as {safe_count_alias}")
                 select_parts.append(f"AVG({safe_cov}) as {safe_mean_alias}")
                 select_parts.append(f"VAR_SAMP({safe_cov}) as {safe_var_alias}")
 
-            safe_treatment_col = quote_identifier(treatment_col)
+            safe_treatment_col = _quote_identifier(treatment_col)
 
             sql = f"""
                 SELECT
                     {safe_treatment_col},
                     {', '.join(select_parts)}
-                FROM read_parquet('{path_str}')
+                FROM read_parquet({safe_path_str})
                 WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
                 GROUP BY {safe_treatment_col}
             """
@@ -385,14 +389,14 @@ class DuckDBIngester:
 
         # 7. Compute statistics for categorical covariates
         for cov in categorical_covs:
-            safe_cov = quote_identifier(cov)
-            safe_treatment_col = quote_identifier(treatment_col)
+            safe_cov = _quote_identifier(cov)
+            safe_treatment_col = _quote_identifier(treatment_col)
             sql = f"""
                 SELECT
                     {safe_cov},
                     {safe_treatment_col},
                     COUNT(*) as cnt
-                FROM read_parquet('{path_str}')
+                FROM read_parquet({safe_path_str})
                 WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {safe_cov} IS NOT NULL
                 GROUP BY {safe_cov}, {safe_treatment_col}
             """
@@ -463,8 +467,9 @@ class DuckDBIngester:
         path_str = str(Path(parquet_path).resolve()).replace("\\", "/")
 
         # 2. Schema pre-validation & column presence verification
+        safe_path_str = _quote_string(path_str)
         try:
-            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet('{path_str}')")
+            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet({safe_path_str})")
         except Exception as e:
             raise ValueError(f"Failed to parse Parquet schema at {parquet_path}: {e}")
 
@@ -478,14 +483,14 @@ class DuckDBIngester:
                 raise KeyError(f"Metric column '{m}' not found in Parquet schema.")
 
         # 3. Check if dataset is empty
-        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet('{path_str}')")
+        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet({safe_path_str})")
         if count_df.empty or count_df.iloc[0]["cnt"] == 0:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
-        safe_treatment_col = '"' + treatment_col.replace('"', '""') + '"'
+        safe_treatment_col = _quote_identifier(treatment_col)
         groups_df = self.query(
-            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet('{path_str}') WHERE {safe_treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet({safe_path_str}) WHERE {safe_treatment_col} IS NOT NULL"
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -511,33 +516,28 @@ class DuckDBIngester:
         # Helper to convert python value to SQL literal
         def to_sql_val(val):
             if isinstance(val, str):
-                safe_val = val.replace("'", "''")
-                return f"'{safe_val}'"
+                return _quote_string(val)
             return str(val)
-
-        # Helper to quote identifiers for DuckDB to prevent SQL injection
-        def quote_identifier(col_name: str) -> str:
-            return '"' + col_name.replace('"', '""') + '"'
 
         # 5. Construct SQL query to aggregate all metrics at once
         select_parts = []
         for m in metric_cols:
-            safe_m = quote_identifier(m)
-            safe_count_alias = quote_identifier(f"count_{m}")
-            safe_mean_alias = quote_identifier(f"mean_{m}")
-            safe_var_alias = quote_identifier(f"var_{m}")
+            safe_m = _quote_identifier(m)
+            safe_count_alias = _quote_identifier(f"count_{m}")
+            safe_mean_alias = _quote_identifier(f"mean_{m}")
+            safe_var_alias = _quote_identifier(f"var_{m}")
 
             select_parts.append(f"COUNT({safe_m}) as {safe_count_alias}")
             select_parts.append(f"AVG({safe_m}) as {safe_mean_alias}")
             select_parts.append(f"VAR_SAMP({safe_m}) as {safe_var_alias}")
 
-        safe_treatment_col = quote_identifier(treatment_col)
+        safe_treatment_col = _quote_identifier(treatment_col)
 
         sql = f"""
             SELECT
                 {safe_treatment_col},
                 {', '.join(select_parts)}
-            FROM read_parquet('{path_str}')
+            FROM read_parquet({safe_path_str})
             WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
             GROUP BY {safe_treatment_col}
         """
