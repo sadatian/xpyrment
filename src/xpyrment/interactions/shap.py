@@ -5,10 +5,11 @@ interaction values to decompose joint black-box predictions into main and intera
 """
 
 
-from typing import Any
+from typing import Any, Union
+import numpy as np
 
 
-def calculate_shap_interactions(model: Any, X_data: Any) -> list:
+def calculate_shap_interactions(model: Any, X_data: Any) -> Union[list, np.ndarray]:
     r"""Computes SHAP interaction values to decompose multi-factor combinations (computationally expensive).
 
     SHAP (SHapley Additive exPlanations) interaction values (Lundberg et al., 2018) are based on the coalitional game-theoretic

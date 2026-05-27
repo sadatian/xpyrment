@@ -86,11 +86,21 @@ def test_interaction_detector_integration():
 from unittest.mock import patch, MagicMock
 from xpyrment.interactions.shap import calculate_shap_interactions
 
-def test_calculate_shap_interactions_import_error():
+import builtins
+
+def test_calculate_shap_interactions_import_error(monkeypatch):
     """Validates that an ImportError is raised if 'shap' is not installed."""
-    with patch.dict('sys.modules', {'shap': None}):
-        with pytest.raises(ImportError, match="The 'shap' library is required to calculate SHAP interactions"):
-            calculate_shap_interactions("dummy_model", "dummy_data")
+    original_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "shap":
+            raise ImportError("No module named 'shap'")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    with pytest.raises(ImportError, match="The 'shap' library is required to calculate SHAP interactions"):
+        calculate_shap_interactions("dummy_model", "dummy_data")
 
 def test_calculate_shap_interactions_success():
     """Validates that shap interaction values are calculated correctly."""
