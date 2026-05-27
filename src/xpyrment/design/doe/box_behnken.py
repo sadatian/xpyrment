@@ -75,7 +75,6 @@ class BoxBehnkenDesign(DesignMatrix):
             pd.DataFrame: A pandas DataFrame containing the BBD matrix.
         """
         import itertools
-        import numpy as np
 
         k = len(self.factors)
         keys = list(self.factors.keys())

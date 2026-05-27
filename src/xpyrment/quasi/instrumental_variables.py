@@ -4,7 +4,7 @@ Estimates Complier Average Causal Effects (CACE) when non-compliance violates
 standard randomization assumptions.
 """
 
-from typing import Dict, Union, Optional
+from typing import Dict, Optional
 import numpy as np
 
 

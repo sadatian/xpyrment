@@ -4,7 +4,7 @@ Estimates unbiased causal treatment effects under high-dimensional nuisance para
 using Robinson's residual-on-residual OLS regression.
 """
 
-from typing import Type, Any, Tuple
+from typing import Type, Any
 import numpy as np
 from scipy.stats import norm
 from xpyrment.personalize.meta_learners import RidgeRegressor

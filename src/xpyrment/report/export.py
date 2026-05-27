@@ -5,7 +5,7 @@ for treatment lifts and confidence intervals, and required sample size curves co
 standard designs to variance-reduced (CUPED) designs.
 """
 
-from typing import Optional, Dict
+from typing import Dict
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

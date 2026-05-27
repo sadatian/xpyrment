@@ -7,7 +7,7 @@ regression (L1 + L2) solved via Coordinate Descent.
 # TODO: Implement cyclic coordinate descent path optimization (warm starts over a regularization grid lambda) to compute the complete Elastic Net path efficiently.
 """
 
-from typing import Optional, Type, Any
+from typing import Type, Any
 import numpy as np
 
 

@@ -5,7 +5,7 @@ large-scale network graphs into size-balanced communities to prevent giant clust
 collapse and minimize normalized cut leakage.
 """
 
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Union
 import numpy as np
 
 

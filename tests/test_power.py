@@ -1,6 +1,5 @@
 """Unit tests for Analytical Power Analysis & Sample Size Estimator (Block 44)."""
 
-import numpy as np
 import pytest
 from xpyrment.design.power import AnalyticalPowerCalculator
 

@@ -1,7 +1,6 @@
 """Unit tests for High-Performance Parquet & DuckDB Ingestion (Block 62)."""
 
 import os
-from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest

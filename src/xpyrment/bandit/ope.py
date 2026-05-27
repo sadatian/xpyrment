@@ -4,7 +4,7 @@ Estimates counterfactual expected rewards of a target policy using logs of histo
 interaction sequences without deploying the policy online. Implements IPS, SN-IPS, and DR.
 """
 
-from typing import Callable, Dict, Union
+from typing import Callable, Dict
 import numpy as np
 
 

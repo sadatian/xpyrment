@@ -6,7 +6,7 @@ Mahalanobis Distance Matching (MDM) to optimize covariate balance.
 # TODO: Support high-performance KD-Tree indexing to accelerate nearest-neighbor caliper searches on multi-million row observational datasets.
 """
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List
 import numpy as np
 import pandas as pd
 
