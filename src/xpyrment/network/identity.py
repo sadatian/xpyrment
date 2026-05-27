@@ -174,10 +174,9 @@ class IdentityRegistry:
 
         # Pass 1: Build the identity graph from all row links if auto_link is enabled
         if auto_link:
-            for _, row in result_df.iterrows():
+            for row in result_df[id_cols].itertuples(index=False, name=None):
                 row_ids = []
-                for col in id_cols:
-                    val = row[col]
+                for val in row:
                     if pd.notna(val) and str(val).strip() != "":
                         row_ids.append(str(val))
                 if len(row_ids) > 1:
@@ -185,10 +184,9 @@ class IdentityRegistry:
 
         # Pass 2: Resolve identifiers for each row
         resolved_ids = []
-        for _, row in result_df.iterrows():
+        for row in result_df[id_cols].itertuples(index=False, name=None):
             row_ids = []
-            for col in id_cols:
-                val = row[col]
+            for val in row:
                 if pd.notna(val) and str(val).strip() != "":
                     row_ids.append(str(val))
 

@@ -108,6 +108,15 @@ def ingest_dataframe(
     return df_clean
 
 
+def _quote_identifier(col_name: str) -> str:
+    """Safely quotes identifiers for DuckDB to prevent SQL injection."""
+    return '"' + col_name.replace('"', '""') + '"'
+
+def _quote_string(val: str) -> str:
+    """Safely escapes single quotes for string literals in DuckDB."""
+    safe_val = val.replace("'", "''")
+    return f"'{safe_val}'"
+
 class DuckDBIngester:
     r"""High-performance out-of-core data ingestion and computation adapter using DuckDB.
 
@@ -187,17 +196,37 @@ class DuckDBIngester:
                 pass
             self._conn = None
 
-    def query(self, sql_query: str) -> pd.DataFrame:
+    @staticmethod
+    def _escape_identifier(val: str) -> str:
+        """Safely escapes *identifiers only* (e.g., table or column names) for inclusion in SQL.
+
+        This helper is intended **solely** for quoting SQL identifiers, not values. It must not be
+        used to escape user-provided values in predicates (e.g., in WHERE clauses). For values,
+        always use parameter binding via the `params` argument to `query(...)` instead.
+
+        Args:
+            val (str): The identifier name (e.g., a table or column name).
+
+        Returns:
+            str: The double-quoted and escaped identifier.
+        """
+        escaped = str(val).replace('"', '""')
+        return f'"{escaped}"'
+
+    def query(self, sql_query: str, params: list = None) -> pd.DataFrame:
         """Executes a raw SQL query against DuckDB and returns the result as a pandas DataFrame.
 
         Args:
             sql_query (str): A standard SQL query.
+            params (list, optional): Parameters to pass into the query safely.
 
         Returns:
             pd.DataFrame: The queried records.
         """
         if self._conn is None:
             raise RuntimeError("DuckDB connection is closed.")
+        if params is not None:
+            return self._conn.execute(sql_query, params).df()
         return self._conn.execute(sql_query).df()
 
     def compute_covariate_balance(
@@ -248,8 +277,9 @@ class DuckDBIngester:
         )
 
         # 2. Schema pre-validation & column presence verification
+        safe_path_str = _quote_string(path_str)
         try:
-            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet('{path_str}')")
+            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet({safe_path_str})")
         except Exception as e:
             raise ValueError(f"Failed to parse Parquet schema at {parquet_path}: {e}")
 
@@ -265,13 +295,14 @@ class DuckDBIngester:
                 raise KeyError(f"Covariate column '{cov}' not found in Parquet schema.")
 
         # 3. Check if dataset is empty and get total row count
-        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet('{path_str}')")
+        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet({safe_path_str})")
         if count_df.empty or count_df.iloc[0]["cnt"] == 0:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
+        safe_treatment_col = _quote_identifier(treatment_col)
         groups_df = self.query(
-            f"SELECT DISTINCT {treatment_col} FROM read_parquet('{path_str}') WHERE {treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet({safe_path_str}) WHERE {safe_treatment_col} IS NOT NULL"
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -297,7 +328,7 @@ class DuckDBIngester:
         # Helper to convert python value to SQL literal
         def to_sql_val(val):
             if isinstance(val, str):
-                return f"'{val}'"
+                return _quote_string(val)
             return str(val)
 
         # 5. Partition covariates into numeric vs categorical
@@ -326,17 +357,24 @@ class DuckDBIngester:
             # Build and run optimized group aggregation SQL query for all numeric covariates in a single scan
             select_parts = []
             for cov in numeric_covs:
-                select_parts.append(f"COUNT({cov}) as count_{cov}")
-                select_parts.append(f"AVG({cov}) as mean_{cov}")
-                select_parts.append(f"VAR_SAMP({cov}) as var_{cov}")
+                safe_cov = _quote_identifier(cov)
+                # We also need to quote the aliases so we can reliably fetch them
+                safe_count_alias = _quote_identifier(f"count_{cov}")
+                safe_mean_alias = _quote_identifier(f"mean_{cov}")
+                safe_var_alias = _quote_identifier(f"var_{cov}")
+                select_parts.append(f"COUNT({safe_cov}) as {safe_count_alias}")
+                select_parts.append(f"AVG({safe_cov}) as {safe_mean_alias}")
+                select_parts.append(f"VAR_SAMP({safe_cov}) as {safe_var_alias}")
+
+            safe_treatment_col = _quote_identifier(treatment_col)
 
             sql = f"""
                 SELECT
-                    {treatment_col},
+                    {safe_treatment_col},
                     {', '.join(select_parts)}
-                FROM read_parquet('{path_str}')
-                WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
-                GROUP BY {treatment_col}
+                FROM read_parquet({safe_path_str})
+                WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
+                GROUP BY {safe_treatment_col}
             """
             group_stats_df = self.query(sql)
 
@@ -428,16 +466,18 @@ class DuckDBIngester:
 
         # 7. Compute statistics for categorical covariates
         for cov in categorical_covs:
+            safe_cov = _quote_identifier(cov)
+            safe_treatment_col = _quote_identifier(treatment_col)
             sql = f"""
                 SELECT
-                    {cov},
-                    {treatment_col},
+                    {safe_cov},
+                    {safe_treatment_col},
                     COUNT(*) as cnt
-                FROM read_parquet('{path_str}')
-                WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {cov} IS NOT NULL
-                GROUP BY {cov}, {treatment_col}
+                FROM read_parquet({safe_path_str})
+                WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {safe_cov} IS NOT NULL
+                GROUP BY {safe_cov}, {safe_treatment_col}
             """
-            cat_df = self.query(sql)
+            cat_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
 
             if not cat_df.empty:
                 contingency = cat_df.pivot(
@@ -511,8 +551,9 @@ class DuckDBIngester:
         )
 
         # 2. Schema pre-validation & column presence verification
+        safe_path_str = _quote_string(path_str)
         try:
-            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet('{path_str}')")
+            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet({safe_path_str})")
         except Exception as e:
             raise ValueError(f"Failed to parse Parquet schema at {parquet_path}: {e}")
 
@@ -528,13 +569,14 @@ class DuckDBIngester:
                 raise KeyError(f"Metric column '{m}' not found in Parquet schema.")
 
         # 3. Check if dataset is empty
-        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet('{path_str}')")
+        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet({safe_path_str})")
         if count_df.empty or count_df.iloc[0]["cnt"] == 0:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
+        safe_treatment_col = _quote_identifier(treatment_col)
         groups_df = self.query(
-            f"SELECT DISTINCT {treatment_col} FROM read_parquet('{path_str}') WHERE {treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet({safe_path_str}) WHERE {safe_treatment_col} IS NOT NULL"
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -560,25 +602,32 @@ class DuckDBIngester:
         # Helper to convert python value to SQL literal
         def to_sql_val(val):
             if isinstance(val, str):
-                return f"'{val}'"
+                return _quote_string(val)
             return str(val)
 
         # 5. Construct SQL query to aggregate all metrics at once
         select_parts = []
         for m in metric_cols:
-            select_parts.append(f"COUNT({m}) as count_{m}")
-            select_parts.append(f"AVG({m}) as mean_{m}")
-            select_parts.append(f"VAR_SAMP({m}) as var_{m}")
+            safe_m = _quote_identifier(m)
+            safe_count_alias = _quote_identifier(f"count_{m}")
+            safe_mean_alias = _quote_identifier(f"mean_{m}")
+            safe_var_alias = _quote_identifier(f"var_{m}")
+
+            select_parts.append(f"COUNT({safe_m}) as {safe_count_alias}")
+            select_parts.append(f"AVG({safe_m}) as {safe_mean_alias}")
+            select_parts.append(f"VAR_SAMP({safe_m}) as {safe_var_alias}")
+
+        safe_treatment_col = _quote_identifier(treatment_col)
 
         sql = f"""
             SELECT
-                {treatment_col},
+                {safe_treatment_col},
                 {', '.join(select_parts)}
-            FROM read_parquet('{path_str}')
-            WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
-            GROUP BY {treatment_col}
+            FROM read_parquet({safe_path_str})
+            WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
+            GROUP BY {safe_treatment_col}
         """
-        stats_df = self.query(sql)
+        stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
 
         row_0 = (
             stats_df[stats_df[treatment_col] == comp_groups[0]].iloc[0]
