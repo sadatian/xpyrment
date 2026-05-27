@@ -31,6 +31,36 @@ def test_check_srm_extreme_low_counts():
     p_val_low = check_srm(observed_counts=[2, 1], expected_ratios=[0.5, 0.5])
     assert p_val_low >= 0.0
 
+
+def test_check_srm_invalid_inputs():
+    """Asserts that check_srm raises ValueError for invalid inputs."""
+    # Mismatched lengths
+    with pytest.raises(ValueError, match="observed_counts and expected_ratios must be equal"):
+        check_srm(observed_counts=[100, 100], expected_ratios=[0.5])
+
+    # Negative observed counts
+    with pytest.raises(ValueError, match="observed_counts must be non-negative"):
+        check_srm(observed_counts=[100, -5], expected_ratios=[0.5, 0.5])
+
+    # Non-positive expected ratios
+    with pytest.raises(ValueError, match="expected_ratios must be strictly positive"):
+        check_srm(observed_counts=[100, 100], expected_ratios=[0.5, -0.5])
+    with pytest.raises(ValueError, match="expected_ratios must be strictly positive"):
+        check_srm(observed_counts=[100, 100], expected_ratios=[0.5, 0.0])
+
+    # NaN / Inf in observed_counts
+    with pytest.raises(ValueError, match="observed_counts must be finite"):
+        check_srm(observed_counts=[100, np.nan], expected_ratios=[0.5, 0.5])
+    with pytest.raises(ValueError, match="observed_counts must be finite"):
+        check_srm(observed_counts=[100, np.inf], expected_ratios=[0.5, 0.5])
+
+    # NaN / Inf in expected_ratios
+    with pytest.raises(ValueError, match="expected_ratios must be finite"):
+        check_srm(observed_counts=[100, 100], expected_ratios=[0.5, np.nan])
+    with pytest.raises(ValueError, match="expected_ratios must be finite"):
+        check_srm(observed_counts=[100, 100], expected_ratios=[0.5, np.inf])
+
+
 def test_check_covariate_balance():
     """Tests SMD and p-value computations for continuous and categorical covariate balance."""
     rng = np.random.default_rng(42)

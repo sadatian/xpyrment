@@ -7,6 +7,7 @@ or redirection bugs).
 
 from typing import List
 import logging
+import math
 from scipy import stats
 from xpyrment.core.exceptions import SRMError
 
@@ -79,6 +80,21 @@ def check_srm(observed_counts: List[int], expected_ratios: List[float]) -> float
             Error detected!
             ```
     """
+    if len(observed_counts) != len(expected_ratios):
+        raise ValueError("Length of observed_counts and expected_ratios must be equal.")
+
+    if any(c < 0 for c in observed_counts):
+        raise ValueError("All elements in observed_counts must be non-negative.")
+
+    if any(r <= 0 for r in expected_ratios):
+        raise ValueError("All elements in expected_ratios must be strictly positive.")
+
+    if any(not math.isfinite(float(c)) for c in observed_counts):
+        raise ValueError("All elements in observed_counts must be finite (no NaN or infinity).")
+
+    if any(not math.isfinite(float(r)) for r in expected_ratios):
+        raise ValueError("All elements in expected_ratios must be finite (no NaN or infinity).")
+
     total_observed = sum(observed_counts)
     if total_observed == 0:
         logger.warning("SRM check bypassed: total observed counts is 0.")
