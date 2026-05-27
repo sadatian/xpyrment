@@ -4,7 +4,7 @@ This module provides the `ClusterRandomizer` class to execute cluster-level trea
 randomization over network nodes, reducing network spillover/leakage effects.
 """
 
-from typing import List, Optional
+from typing import Optional
 import numpy as np
 
 

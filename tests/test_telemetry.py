@@ -4,7 +4,7 @@ import logging
 import time
 import pytest
 
-from xpyrment.core.telemetry import configure_telemetry, get_logger, ExecutionProfiler
+from xpyrment.core.telemetry import configure_telemetry, ExecutionProfiler
 
 
 def test_json_formatter_and_configuration():

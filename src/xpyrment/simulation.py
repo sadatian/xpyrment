@@ -4,7 +4,7 @@ This module provides the `generate_ab_data` utility, which generates realistic e
 binary, and ratio variables across pre-period and post-period windows with stochastic correlation structures.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import numpy as np
 import pandas as pd
 

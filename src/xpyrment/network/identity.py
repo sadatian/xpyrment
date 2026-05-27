@@ -6,7 +6,7 @@ mobile advertising IDs, server-side login events) to eliminate cross-arm user le
 # TODO: Implement parallelized union-find component graph traversal using multi-threaded batch resolution for large-scale production logs.
 """
 
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Set
 import pandas as pd
 
 
@@ -132,6 +132,7 @@ class IdentityRegistry:
             List[Set[str]]: A list of sets, where each set represents a connected component.
         """
         from collections import defaultdict
+
         groups = defaultdict(set)
         for node in list(self.parent.keys()):
             root = self._find(node)
@@ -172,12 +173,15 @@ class IdentityRegistry:
         """
         result_df = df.copy()
 
+        # Precompute column indices for robustness against non-identifier column names
+        col_indices = [result_df.columns.get_loc(c) for c in id_cols]
+
         # Pass 1: Build the identity graph from all row links if auto_link is enabled
         if auto_link:
-            for _, row in result_df.iterrows():
+            for row in result_df.itertuples(index=False):
                 row_ids = []
-                for col in id_cols:
-                    val = row[col]
+                for idx in col_indices:
+                    val = row[idx]
                     if pd.notna(val) and str(val).strip() != "":
                         row_ids.append(str(val))
                 if len(row_ids) > 1:
@@ -185,10 +189,10 @@ class IdentityRegistry:
 
         # Pass 2: Resolve identifiers for each row
         resolved_ids = []
-        for _, row in result_df.iterrows():
+        for row in result_df.itertuples(index=False):
             row_ids = []
-            for col in id_cols:
-                val = row[col]
+            for idx in col_indices:
+                val = row[idx]
                 if pd.notna(val) and str(val).strip() != "":
                     row_ids.append(str(val))
 

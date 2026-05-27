@@ -5,7 +5,7 @@ and booleans) into plain Python representations recursively, avoiding JSON seria
 """
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 
 def make_serializable(obj: Any) -> Any:

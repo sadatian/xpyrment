@@ -4,7 +4,7 @@ Estimates personalized multi-stage sequential treatment regimes using backward-i
 Q-learning to optimize long-term causal outcomes.
 """
 
-from typing import List, Tuple, Union
+from typing import Tuple
 import numpy as np
 
 

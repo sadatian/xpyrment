@@ -1,7 +1,6 @@
 """Unit tests for Subgroup Heterogeneity Segment Discovery (Block 48)."""
 
 import numpy as np
-import pytest
 from xpyrment.personalize.subgroup import SubgroupHeterogeneityDiscoverer
 
 

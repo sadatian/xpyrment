@@ -28,7 +28,12 @@ class AnalysisResult:
         balance_checker (Optional[Any]): Fitted balance checker object if covariates were present.
     """
 
-    def __init__(self, raw_results: List[dict], alpha: float = 0.05, balance_checker: Optional[Any] = None):
+    def __init__(
+        self,
+        raw_results: List[dict],
+        alpha: float = 0.05,
+        balance_checker: Optional[Any] = None,
+    ):
         """Initializes an AnalysisResult.
 
         Args:
@@ -60,10 +65,15 @@ class AnalysisResult:
             dict: A nested dictionary with native Python types, guaranteed to be JSON serializable.
         """
         from xpyrment.core.serialization import make_serializable
+
         state = {
             "alpha": self.alpha,
             "metrics": self.raw_results,
-            "covariate_balance": self.balance_checker.diagnostics_ if (self.balance_checker is not None) else None,
+            "covariate_balance": (
+                self.balance_checker.diagnostics_
+                if (self.balance_checker is not None)
+                else None
+            ),
         }
         return make_serializable(state)
 
@@ -77,6 +87,7 @@ class AnalysisResult:
             str: Standardized JSON representation of the analysis results.
         """
         from xpyrment.core.serialization import serialize_to_json
+
         return serialize_to_json(self.to_dict(), indent=indent)
 
     def summary(self, formatted: bool = True) -> pd.DataFrame:
@@ -181,6 +192,7 @@ class AnalysisResult:
         """
         # Re-routed to the reporting/export layer dynamically
         from xpyrment.report.export import plot_forest
+
         return plot_forest(self.df_raw, alpha=self.alpha, **kwargs)
 
 
@@ -228,16 +240,20 @@ def run_analysis(
         for node_name, node_info in registry.nodes.items():
             if node_info["type"] == "raw" and node_name in experiment.data.columns:
                 raw_inputs[node_name] = experiment.data[node_name].to_numpy()
-        
+
         evaluated_cache = registry.evaluate(raw_inputs)
         for key, val in evaluated_cache.items():
-            if key not in experiment.data.columns or registry.nodes.get(key, {}).get("type") == "derived":
+            if (
+                key not in experiment.data.columns
+                or registry.nodes.get(key, {}).get("type") == "derived"
+            ):
                 if len(val) == len(experiment.data):
                     experiment.data[key] = val
 
         # Auto-populate metrics from DAG if metrics list is currently empty
         if not experiment.metrics:
             from xpyrment.metrics.taxonomy import MeanMetric
+
             for name in evaluated_cache.keys():
                 experiment.metrics.append(MeanMetric(name, value_col=name))
 
@@ -245,13 +261,18 @@ def run_analysis(
         raise ValueError("No metrics have been added to the experiment.")
 
     # Resolve global and method-specific covariates
-    covs_to_check = covariates if covariates is not None else getattr(experiment, "covariates", [])
+    covs_to_check = (
+        covariates if covariates is not None else getattr(experiment, "covariates", [])
+    )
 
     # 2. Automated Covariate-adjusted CUPED routing
     if covs_to_check:
         for metric in experiment.metrics:
             from xpyrment.metrics.taxonomy import MeanMetric
-            if isinstance(metric, MeanMetric) and not getattr(metric, "pre_period_col", None):
+
+            if isinstance(metric, MeanMetric) and not getattr(
+                metric, "pre_period_col", None
+            ):
                 possible_candidates = [
                     f"pre_{metric.value_col}",
                     f"{metric.value_col}_pre",
@@ -268,11 +289,19 @@ def run_analysis(
         valid_covs = [c for c in covs_to_check if c in experiment.data.columns]
         if valid_covs:
             from xpyrment.quasi.balance import CovariateBalanceChecker
-            sub_df = experiment.data[experiment.data[experiment.treatment_col].isin([control, treatment])].dropna(subset=valid_covs)
+
+            sub_df = experiment.data[
+                experiment.data[experiment.treatment_col].isin([control, treatment])
+            ].dropna(subset=valid_covs)
             if len(sub_df) > 0:
                 import numpy as np
+
                 X = sub_df[valid_covs].to_numpy()
-                T = (sub_df[experiment.treatment_col] == treatment).astype(int).to_numpy()
+                T = (
+                    (sub_df[experiment.treatment_col] == treatment)
+                    .astype(int)
+                    .to_numpy()
+                )
                 balance_checker = CovariateBalanceChecker(covariate_names=valid_covs)
                 balance_checker.fit(X, T)
 
@@ -291,7 +320,9 @@ def run_analysis(
     # Apply multiple testing corrections if requested
     if multi_test_correction and len(results) > 1:
         p_vals = [res["p_value"] for res in results]
-        adjusted_p = apply_multiple_testing_correction(p_vals, alpha=alpha, method=multi_test_correction)
+        adjusted_p = apply_multiple_testing_correction(
+            p_vals, alpha=alpha, method=multi_test_correction
+        )
         for i, val in enumerate(adjusted_p):
             results[i]["p_value"] = val
 

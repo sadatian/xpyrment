@@ -4,7 +4,7 @@ Fits Generalized Pareto Distributions (GPD) over exceedance thresholds to analyz
 extreme conversion lift and tail hazard ratios.
 """
 
-from typing import Dict, Tuple, Union
+from typing import Dict
 import numpy as np
 
 

@@ -4,7 +4,7 @@ Provides algebraic assessment of sample randomized balances across multi-dimensi
 covariates, exporting standardized SMD scores and printable Love Plot visualizations.
 """
 
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List
 import numpy as np
 
 

@@ -4,7 +4,7 @@ Computes point estimates, delta method standard errors, and Wald hypothesis sign
 for ratio metrics where numerator and denominator components are correlated.
 """
 
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple
 import numpy as np
 from scipy.stats import norm
 
