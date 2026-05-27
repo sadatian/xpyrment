@@ -103,11 +103,11 @@ class AnalysisResult:
             return df
 
         summary_data = []
-        for _, row in df.iterrows():
-            lift_val = row["relative_lift"]
+        for row in df.itertuples(index=False):
+            lift_val = getattr(row, "relative_lift")
             lift_str = f"{lift_val:+.2%}" if not pd.isna(lift_val) else "N/A"
 
-            p_val = row["p_value"]
+            p_val = getattr(row, "p_value")
             sig_symbol = ""
             if p_val < 0.001:
                 sig_symbol = "***"
@@ -118,23 +118,24 @@ class AnalysisResult:
 
             p_str = f"{p_val:.4f}{sig_symbol}" if not pd.isna(p_val) else "N/A"
 
-            lower_pct = row["rel_ci_lower"]
-            upper_pct = row["rel_ci_upper"]
+            lower_pct = getattr(row, "rel_ci_lower")
+            upper_pct = getattr(row, "rel_ci_upper")
             ci_str = f"[{lower_pct:+.2%}, {upper_pct:+.2%}]" if not (pd.isna(lower_pct) or pd.isna(upper_pct)) else "N/A"
 
-            power_val = row["power"]
+            power_val = getattr(row, "power")
             power_str = f"{power_val:.1%}" if not pd.isna(power_val) else "N/A"
 
-            cuped_str = "Yes" if row["cuped_applied"] else "No"
-            var_red_val = row["variance_reduction"]
-            var_red_str = f"{var_red_val:.1%}" if row["cuped_applied"] and not pd.isna(var_red_val) else "-"
+            cuped_applied = getattr(row, "cuped_applied")
+            cuped_str = "Yes" if cuped_applied else "No"
+            var_red_val = getattr(row, "variance_reduction")
+            var_red_str = f"{var_red_val:.1%}" if cuped_applied and not pd.isna(var_red_val) else "-"
 
             summary_data.append(
                 {
-                    "Metric": row["metric_name"],
-                    "Type": row["metric_type"],
-                    "Control Mean": f"{row['control_mean']:.4f}",
-                    "Treatment Mean": f"{row['treatment_mean']:.4f}",
+                    "Metric": getattr(row, "metric_name"),
+                    "Type": getattr(row, "metric_type"),
+                    "Control Mean": f"{getattr(row, 'control_mean'):.4f}",
+                    "Treatment Mean": f"{getattr(row, 'treatment_mean'):.4f}",
                     "Relative Lift": lift_str,
                     "95% CI (Rel)": ci_str,
                     "p-value": p_str,

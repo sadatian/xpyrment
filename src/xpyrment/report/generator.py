@@ -82,14 +82,14 @@ class ExperimentReportGenerator:
         lines.append("| Metric | Type | Control Mean | Treatment Mean | Relative Lift | P-Value | Significance | CUPED |")
         lines.append("| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |")
 
-        for _, row in self.df_raw.iterrows():
-            m_name = row["metric_name"]
-            m_type = row.get("metric_type", "mean")
-            c_mean = row.get("control_mean", 0.0)
-            t_mean = row.get("treatment_mean", 0.0)
-            lift = row.get("relative_lift", 0.0)
-            p_val = row.get("p_value", 1.0)
-            cuped = "✅" if row.get("cuped_applied", False) else "❌"
+        for row in self.df_raw.itertuples(index=False):
+            m_name = getattr(row, "metric_name")
+            m_type = getattr(row, "metric_type", "mean")
+            c_mean = getattr(row, "control_mean", 0.0)
+            t_mean = getattr(row, "treatment_mean", 0.0)
+            lift = getattr(row, "relative_lift", 0.0)
+            p_val = getattr(row, "p_value", 1.0)
+            cuped = "✅" if getattr(row, "cuped_applied", False) else "❌"
 
             is_sig = p_val < self.alpha
             sig_badge = "🌟 **Significant**" if is_sig else "Neutral"
@@ -139,14 +139,14 @@ class ExperimentReportGenerator:
 
         # Formulate HTML metric table rows
         table_rows = []
-        for _, row in self.df_raw.iterrows():
-            m_name = row["metric_name"]
-            m_type = row.get("metric_type", "mean")
-            c_mean = row.get("control_mean", 0.0)
-            t_mean = row.get("treatment_mean", 0.0)
-            lift = row.get("relative_lift", 0.0)
-            p_val = row.get("p_value", 1.0)
-            cuped_applied = row.get("cuped_applied", False)
+        for row in self.df_raw.itertuples(index=False):
+            m_name = getattr(row, "metric_name")
+            m_type = getattr(row, "metric_type", "mean")
+            c_mean = getattr(row, "control_mean", 0.0)
+            t_mean = getattr(row, "treatment_mean", 0.0)
+            lift = getattr(row, "relative_lift", 0.0)
+            p_val = getattr(row, "p_value", 1.0)
+            cuped_applied = getattr(row, "cuped_applied", False)
 
             is_sig = p_val < self.alpha
             sig_class = "sig-badge" if is_sig else "neutral-badge"
