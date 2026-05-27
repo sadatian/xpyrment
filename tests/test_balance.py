@@ -58,3 +58,25 @@ def test_balance_ks_and_mahalanobis():
     assert "_multivariate" in results
     assert "mahalanobis_distance" in results["_multivariate"]
     assert results["_multivariate"]["n_covariates"] == 2
+
+def test_check_covariate_balance_errors():
+    """Validates that check_covariate_balance handles missing columns and missing groups correctly."""
+    from xpyrment.validate.balance import check_covariate_balance
+    import pandas as pd
+    import pytest
+
+    # Test for < 2 distinct groups
+    df_missing_groups = pd.DataFrame({
+        "treatment": [1, 1, 1],
+        "cov1": [1.0, 2.0, 3.0]
+    })
+    with pytest.raises(ValueError, match="Balance check requires at least 2 distinct groups"):
+        check_covariate_balance(df_missing_groups, "treatment", ["cov1"])
+
+    # Test for missing covariate
+    df_missing_cov = pd.DataFrame({
+        "treatment": [0, 0, 1, 1],
+        "cov1": [1.0, 2.0, 3.0, 4.0]
+    })
+    with pytest.raises(KeyError, match="Covariate column 'cov_missing' not found in DataFrame"):
+        check_covariate_balance(df_missing_cov, "treatment", ["cov_missing"])
