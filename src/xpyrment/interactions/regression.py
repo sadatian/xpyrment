@@ -59,7 +59,6 @@ def check_treatment_covariate_interaction(df: pd.DataFrame, treatment_col: str, 
     Returns:
         float: The calculated p-value of the Likelihood Ratio Test. A value $< 0.05$ indicates a significant interaction.
     """
-    import statsmodels.api as sm
     import statsmodels.formula.api as smf
     from scipy.stats import chi2
 

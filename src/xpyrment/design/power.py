@@ -4,7 +4,6 @@ Estimates statistical power, required sample sizes, and Minimum Detectable Effec
 for standard as well as cluster randomized experimental designs.
 """
 
-from typing import Dict, Union
 import numpy as np
 from scipy.stats import norm
 

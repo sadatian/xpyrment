@@ -5,12 +5,11 @@ neural network architecture for predicting individual treatment effects (ITE) an
 conditional average treatment effects (CATE) using pure NumPy.
 """
 
-from typing import Dict, Tuple, Optional, Union
+from typing import Dict, Tuple, Optional
 import logging
 import numpy as np
 
 from xpyrment.core.exceptions import PhaseOrderError
-from xpyrment.core.telemetry import ExecutionProfiler
 
 logger = logging.getLogger(__name__)
 

@@ -4,14 +4,12 @@ This module provides logging formatters, custom structured logging routines, and
 profilers to measure execution stages, high-resolution times, and peak memory allocations.
 """
 
-from contextlib import contextmanager
 import json
 import logging
-import os
 import sys
 import time
 import tracemalloc
-from typing import Any, Dict, Generator, Optional
+from typing import Any, Optional
 
 
 class JSONFormatter(logging.Formatter):

@@ -4,7 +4,7 @@ Capping metrics within percentile bounds to reduce treatment estimator variance 
 distributions.
 """
 
-from typing import Tuple, Union
+from typing import Tuple
 import numpy as np
 
 

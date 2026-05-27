@@ -1,7 +1,6 @@
 """Unit tests for Difference-in-Differences Parallel Trends Placebo Tests (Block 46)."""
 
 import numpy as np
-import pytest
 from xpyrment.quasi.diff_in_diff import ParallelTrendsPlaceboTest
 
 

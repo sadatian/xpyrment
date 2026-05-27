@@ -4,7 +4,7 @@ Applies Laplace and Gaussian privacy mechanisms to protect experiment metrics an
 summary statistics before external sharing or pooling.
 """
 
-from typing import Tuple, Union
+from typing import Tuple
 import numpy as np
 
 

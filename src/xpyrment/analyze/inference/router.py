@@ -5,7 +5,6 @@ of the analysis layer. It maps the combination of metric characteristics (contin
 and user-selected statistical methodologies to the exact mathematical execution engine.
 """
 
-from typing import Any
 from xpyrment.metrics.taxonomy import BaseMetric
 
 

@@ -4,7 +4,6 @@ Combines unit weights (Synthetic Controls) and time weights (Difference-in-Diffe
 to compute a regularized, doubly weighted treatment effect estimator.
 """
 
-from typing import Tuple
 import numpy as np
 from scipy.optimize import minimize
 

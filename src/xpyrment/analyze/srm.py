@@ -4,7 +4,7 @@ Implements retrospective Chi-Squared tests and sequential binomial likelihood ra
 (Wald's SPRT) to detect user assignment imbalances and selection biases.
 """
 
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Tuple, Union
 import logging
 import numpy as np
 from scipy.stats import chi2

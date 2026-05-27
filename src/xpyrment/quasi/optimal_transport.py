@@ -4,7 +4,7 @@ Uncovers distribution-wide treatment shifts (quantile treatment effects) and com
 1D Wasserstein optimal transport distance metrics.
 """
 
-from typing import Dict, Union
+from typing import Dict
 import numpy as np
 
 

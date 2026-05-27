@@ -4,7 +4,6 @@ Fits rolling-horizon synthetic controls with L1/L2 simplex constrained optimizat
 to adaptively trace treated trajectories in the presence of policy structural breaks.
 """
 
-from typing import Dict, Union
 import numpy as np
 from scipy.optimize import minimize
 
