@@ -42,13 +42,11 @@ def test_check_srm_invalid_inputs():
     with pytest.raises(ValueError, match="observed_counts must be non-negative"):
         check_srm(observed_counts=[100, -5], expected_ratios=[0.5, 0.5])
 
-    # Negative expected ratios
-    with pytest.raises(ValueError, match="expected_ratios must be non-negative"):
+    # Non-positive expected ratios
+    with pytest.raises(ValueError, match="expected_ratios must be strictly positive"):
         check_srm(observed_counts=[100, 100], expected_ratios=[0.5, -0.5])
-
-    # Sum of expected ratios is zero
-    with pytest.raises(ValueError, match="sum of expected_ratios must be strictly greater than zero"):
-        check_srm(observed_counts=[100, 100], expected_ratios=[0.0, 0.0])
+    with pytest.raises(ValueError, match="expected_ratios must be strictly positive"):
+        check_srm(observed_counts=[100, 100], expected_ratios=[0.5, 0.0])
 
     # NaN / Inf in observed_counts
     with pytest.raises(ValueError, match="observed_counts must be finite"):

@@ -86,8 +86,8 @@ def check_srm(observed_counts: List[int], expected_ratios: List[float]) -> float
     if any(c < 0 for c in observed_counts):
         raise ValueError("All elements in observed_counts must be non-negative.")
 
-    if any(r < 0 for r in expected_ratios):
-        raise ValueError("All elements in expected_ratios must be non-negative.")
+    if any(r <= 0 for r in expected_ratios):
+        raise ValueError("All elements in expected_ratios must be strictly positive.")
 
     if any(not math.isfinite(float(c)) for c in observed_counts):
         raise ValueError("All elements in observed_counts must be finite (no NaN or infinity).")
@@ -101,9 +101,6 @@ def check_srm(observed_counts: List[int], expected_ratios: List[float]) -> float
         return 1.0
 
     sum_ratios = sum(expected_ratios)
-    if sum_ratios <= 0:
-        raise ValueError("The sum of expected_ratios must be strictly greater than zero.")
-
     expected_counts = [ratio * total_observed / sum_ratios for ratio in expected_ratios]
 
     if any(e < 5 for e in expected_counts):
