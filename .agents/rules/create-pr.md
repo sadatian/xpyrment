@@ -45,3 +45,9 @@ Once the branch is pushed (`git push origin <branch-name>`), use the GitHub CLI 
   ```bash
   GH_TOKEN="<token>" gh pr create --title "<title>" --body-file "<path-to-body-markdown-file>" --base main --head <branch-name>
   ```
+
+---
+
+## 5. Switch Back to Main Branch
+Once the PR has been successfully opened on GitHub, clean up the active workspace state by checking out the main/master branch again:
+`git checkout main`
