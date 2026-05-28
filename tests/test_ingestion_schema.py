@@ -6,7 +6,7 @@ from xpyrment.run.ingestion import ingest_dataframe
 
 def test_ingest_dataframe_schema_success():
     """Test dynamic schema enforcement with valid data types."""
-    pytest.importorskip("pandera")
+    pytest.importorskip("pandera.pandas")
     df = pd.DataFrame({
         "id": ["u1", "u2"],
         "joined": ["2026-05-01", "2026-05-02"],
@@ -32,7 +32,7 @@ def test_ingest_dataframe_schema_success():
 
 def test_ingest_dataframe_schema_type_error():
     """Test that schema validation fails when types are incorrect."""
-    pytest.importorskip("pandera")
+    pytest.importorskip("pandera.pandas")
     df = pd.DataFrame({
         "id": ["u1", "u2"],
         "metric": ["not_a_number", "20.0"] # This should fail since we expect a float

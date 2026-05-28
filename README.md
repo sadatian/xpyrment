@@ -1,7 +1,7 @@
 # ![xpyrment](https://raw.githubusercontent.com/sadatian/xpyrment/refs/heads/main/src/xpyrment/assets/images/xpyrment_logo_mini.svg) xpyrment
 
 <p align="left">
-  <img src="https://img.shields.io/badge/pypi-v1.6.1.2-800020?style=flat&logo=pypi&logoColor=black&labelColor=e1dae3" alt="PyPI version" />
+  <img src="https://img.shields.io/badge/pypi-v1.6.1.0-800020?style=flat&logo=pypi&logoColor=black&labelColor=e1dae3" alt="PyPI version" />
   <img src="https://img.shields.io/badge/release-v1.6.1.2%20stable-5c0632?style=flat&logo=git&logoColor=black&labelColor=e1dae3" alt="Release" />
   <img src="https://img.shields.io/badge/python-3.11%20%7C%20...%20%7C%203.14-4a0e4e?style=flat&logo=python&logoColor=black&labelColor=e1dae3" alt="Python Support" />
   <img src="https://img.shields.io/badge/tests-291%20passed-6a0dad?style=flat&logo=pytest&logoColor=black&labelColor=e1dae3" alt="Tests" />
