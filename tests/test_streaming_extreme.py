@@ -61,11 +61,27 @@ def test_streaming_ols_batch_update():
     rng = np.random.default_rng(42)
     X = rng.normal(size=(20, 2))
     y = 1.0 + 2.0 * X[:, 0] + X[:, 1]
-    
-    model = StreamingOLS(n_features=2, l2_penalty=0.1)
-    model.update_batch(X, y)
-    
-    assert model.n_samples == 20
+
+    # Batch update model
+    batch_model = StreamingOLS(n_features=2, l2_penalty=0.1)
+    batch_model.update_batch(X, y)
+
+    # Sequentially updated model
+    seq_model = StreamingOLS(n_features=2, l2_penalty=0.1)
+    for xi, yi in zip(X, y):
+        seq_model.update(xi, yi)
+
+    # Both paths should have seen the same number of samples
+    assert batch_model.n_samples == X.shape[0]
+    assert seq_model.n_samples == X.shape[0]
+
+    # Coefficients from batch and sequential updates should match
+    assert np.allclose(
+        batch_model.coefficients,
+        seq_model.coefficients,
+        rtol=1e-6,
+        atol=1e-6,
+    )
 
 
 def test_streaming_ols_exceptions():

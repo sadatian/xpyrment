@@ -56,10 +56,14 @@ class ExtremeValueTailEstimator:
         # Enforce physical constraints for heavy tails
         if self.scale_ <= 1e-5:
             self.scale_ = 1e-5
-        if self.shape_ >= 0.5:
-            self.shape_ = 0.49  # Stabilize boundary
+        self._clip_shape()
 
         return self
+
+    def _clip_shape(self) -> None:
+        """Enforces physical boundaries on the shape parameter."""
+        if self.shape_ >= 0.5:
+            self.shape_ = 0.49
 
     def expected_shortfall(self) -> float:
         """Calculates Expected Shortfall (conditional tail expectation) for fitted GPD.

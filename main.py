@@ -302,6 +302,13 @@ if __name__ == "__main__":
     import argparse
     import shutil
     
+    # Check if Poetry CLI is available on PATH
+    if not shutil.which("poetry"):
+        print("❌ Error: Poetry CLI is not available on PATH.")
+        print("   This project utilizes Poetry for dependency resolution, building, and publishing.")
+        print("   Please install Poetry (https://python-poetry.org) or add it to your environment variables.")
+        sys.exit(1)
+        
     parser = argparse.ArgumentParser(description="Automate building and publishing the xpyrment package.")
     parser.add_argument("--build", action="store_true", help="Build source distribution and wheel.")
     parser.add_argument("--testpypi", action="store_true", help="Publish the package to TestPyPI.")
@@ -502,15 +509,15 @@ if __name__ == "__main__":
             # Configure TestPyPI repository in Poetry
             subprocess.run(["poetry", "config", "repositories.testpypi", "https://test.pypi.org/legacy/"], check=True)
             
-            publish_cmd = ["poetry", "publish", "-r", "testpypi"]
             if pypi_token:
-                print(f"🔑 Using API Token for TestPyPI authentication ({'TESTPYPI_TOKEN' if env_vars.get('TESTPYPI_TOKEN') else 'PYPI_TOKEN'}).")
-                # Configure poetry API token for TestPyPI
-                subprocess.run(["poetry", "config", "pypi-token.testpypi", pypi_token], check=True)
+                token_source = "TESTPYPI_TOKEN" if env_vars.get("TESTPYPI_TOKEN") else "PYPI_TOKEN"
+                print(f"🔑 Using API Token for TestPyPI authentication ({token_source}).")
+                # Pass token via environment to avoid persisting credentials in Poetry config
+                env_vars["POETRY_PYPI_TOKEN_TESTPYPI"] = pypi_token
             else:
                 print("⚠️ No API Token found for TestPyPI. Poetry may prompt for credentials.")
             
-            result = subprocess.run(publish_cmd, cwd=root_dir)
+            result = subprocess.run(["poetry", "publish", "-r", "testpypi"], cwd=root_dir, env=env_vars)
             
             if result.returncode != 0:
                 print("❌ Upload to TestPyPI failed! Reverting PyPI badge in README.md to latest available version...")
@@ -524,14 +531,14 @@ if __name__ == "__main__":
             env_vars = os.environ.copy()
             pypi_token = env_vars.get("PYPI_TOKEN")
             
-            publish_cmd = ["poetry", "publish"]
             if pypi_token:
                 print("🔑 Using API Token for PyPI authentication (PYPI_TOKEN).")
-                subprocess.run(["poetry", "config", "pypi-token.pypi", pypi_token], check=True)
+                # Pass token via environment to avoid persisting credentials in Poetry config
+                env_vars["POETRY_PYPI_TOKEN_PYPI"] = pypi_token
             else:
                 print("⚠️ No PYPI_TOKEN found. Poetry may prompt for credentials.")
                 
-            result = subprocess.run(publish_cmd, cwd=root_dir)
+            result = subprocess.run(["poetry", "publish"], cwd=root_dir, env=env_vars)
             
             if result.returncode != 0:
                 print("❌ Upload to PyPI failed! Reverting PyPI badge in README.md to latest available version...")

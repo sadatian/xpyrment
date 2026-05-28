@@ -93,14 +93,14 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
    - Inject new features cleanly via opt-in parameters, separate utility functions, or isolated submodules.
 3. **Preserve LaTeX & docstrings**:
    - Maintain all LaTeX mathematical notations in docstrings.
-    - Ensure code edits do not introduce docstring format violations that break MkDocs builds.
+   - Ensure code edits do not introduce docstring format violations that break MkDocs builds.
 4. **No Broken Skeletons**:
    - All newly added files, helpers, or hooks must be fully implemented, documented, and covered with unit tests before declaring the task finished.
 5. **No Automated Documentation Serving**:
    - Do NOT run the `mkdocs serve` command directly on behalf of the user.
    - If a live-served documentation preview is required, only compile the documentation locally via `mkdocs build` to check for compilation issues, and ask the user to run `mkdocs serve` separately in their own terminal.
 6. **Context & Token Optimization**:
-   - Make sure to use built in search functionality when possible to reduce context size and token expenditure.
+   - Make sure to use built-in search functionality when possible to reduce context size and token expenditure.
    - Consider all other possible measures to reduce context size and token use during operations.
 7. Virtual Environment & Command Execution:
    - Always run terminal commands using `poetry run <command>` (e.g. `poetry run pytest` or `poetry run python main.py --sync`) to guarantee execution under the correct environment and lockfile dependencies.
@@ -110,3 +110,6 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
    - Run `poetry install` to synchronize local virtual environments, and use `poetry add <dependency>` to add new packages.
    - Never run raw `pip install` or manual package mutations.
    - Keep the dependency lockfile updated by running `poetry lock` whenever `pyproject.toml` dependencies change.
+9. **Pull Request Submission & Commits**:
+   - Once a large portion of activities is completed, go through the process of creating a Pull Request (PR) and submitting it with the respective commits.
+   - Adhere strictly to the dedicated, granular PR creation rules defined in `.agents/rules/create-pr.md`.

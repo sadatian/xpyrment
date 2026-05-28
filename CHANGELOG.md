@@ -4,7 +4,7 @@
 
 ### Added
 - **5 New High-Fidelity Test Suites**: Created dedicated unit/integration test suites for `shap.py`, `validate_novelty.py`, `network_identity.py`, `streaming_extreme.py`, and `frequentist.py` achieving near 100% code coverage.
-- **Dependency Clean-Rebuild (Poetry Integration)**: Configured and migrated the local virtual environment to use Poetry as the single source of truth based on `pyproject.toml`, resolving dynamic dependency resolving conflicts. Added clean-rebuild guidelines to `.agents/rules/implenmentation-guide.md` to prevent future python dependency issues.
+- **Dependency Clean-Rebuild (Poetry Integration)**: Configured and migrated the local virtual environment to use Poetry as the single source of truth based on `pyproject.toml`, resolving dependency resolution conflicts. Added clean-rebuild guidelines to `.agents/rules/implementation-guide.md` to prevent future Python dependency issues.
 
 ### Fixed
 - **SPA Dashboard Server Bugs**: Fully resolved three key runtime bugs in `src/xpyrment/run/hub.py`:
