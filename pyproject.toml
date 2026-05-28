@@ -76,6 +76,9 @@ dev = [
     "duckdb>=0.8.0",
     "pyarrow>=10.0.0",
 ]
+schema = [
+    "pandera>=0.15.0",
+]
 
 
 [tool.black]
