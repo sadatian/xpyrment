@@ -302,13 +302,8 @@ if __name__ == "__main__":
     import argparse
     import shutil
     
-    # Check if Poetry CLI is available on PATH
-    if not shutil.which("poetry"):
-        print("❌ Error: Poetry CLI is not available on PATH.")
-        print("   This project utilizes Poetry for dependency resolution, building, and publishing.")
-        print("   Please install Poetry (https://python-poetry.org) or add it to your environment variables.")
-        sys.exit(1)
-        
+    
+
     parser = argparse.ArgumentParser(description="Automate building and publishing the xpyrment package.")
     parser.add_argument("--build", action="store_true", help="Build source distribution and wheel.")
     parser.add_argument("--testpypi", action="store_true", help="Publish the package to TestPyPI.")
@@ -347,6 +342,13 @@ if __name__ == "__main__":
 
     # Ensure everything is in sync before any build or publish action
     if args.build or args.pypi or args.testpypi or args.sync:
+        # Check if Poetry CLI is available on PATH
+        if not shutil.which("poetry"):
+            print("❌ Error: Poetry CLI is not available on PATH.")
+            print("   This project utilizes Poetry for dependency resolution, building, and publishing.")
+            print("   Please install Poetry (https://python-poetry.org) or add it to your environment variables.")
+            sys.exit(1)
+            
         print(f"🔄 Synchronizing versions and badges (Target: v{version})...")
         # For build/publish, we force the PyPI badge to the version being released
         force_v = version if (args.build or args.pypi or args.testpypi) else None

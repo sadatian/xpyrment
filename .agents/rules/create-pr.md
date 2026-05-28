@@ -35,15 +35,14 @@ The agent must draft a highly detailed, professional Markdown PR description det
 ---
 
 ## 4. Automated PR Creation via GitHub CLI (`gh`)
-Once the branch is pushed (`git push origin <branch-name>`), use the GitHub CLI (`gh`) inline with the personal access token to automatically create the PR without interactive prompt blocks:
-- **Token Location**: Retrieve the `GITHUB_TOKEN` or `GH_TOKEN` from `.env` or system environment variables.
+Once the branch is pushed (`git push origin <branch-name>`), use the GitHub CLI (`gh`) directly to automatically create the PR without interactive prompt blocks, leveraging the system's global authentication state:
 - **PowerShell Invocation**:
   ```powershell
-  $env:GH_TOKEN="<token>"; gh pr create --title "<title>" --body-file "<path-to-body-markdown-file>" --base main --head <branch-name>
+  gh pr create --title "<title>" --body-file "<path-to-body-markdown-file>" --base main --head <branch-name>
   ```
 - **Bash/Sh Invocation**:
   ```bash
-  GH_TOKEN="<token>" gh pr create --title "<title>" --body-file "<path-to-body-markdown-file>" --base main --head <branch-name>
+  gh pr create --title "<title>" --body-file "<path-to-body-markdown-file>" --base main --head <branch-name>
   ```
 
 ---

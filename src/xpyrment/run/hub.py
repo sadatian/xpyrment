@@ -38,12 +38,16 @@ def get_doe_design_summaries() -> list[dict]:
         return []
         
     designs = {}
-    if hasattr(doe_pkg, "__all__"):
-        for name in doe_pkg.__all__:
-            if name in ("DesignMatrix", "CarryoverDecomposition"):
-                continue
-            cls = getattr(doe_pkg, name, None)
-            if cls is not None and inspect.isclass(cls):
+    names = doe_pkg.__all__ if hasattr(doe_pkg, "__all__") else dir(doe_pkg)
+    for name in names:
+        if name.startswith("_"):
+            continue
+        if name in ("DesignMatrix", "CarryoverDecomposition"):
+            continue
+        cls = getattr(doe_pkg, name, None)
+        if cls is not None and inspect.isclass(cls):
+            # Filter out any classes imported from other modules
+            if cls.__module__.startswith("xpyrment.design.doe"):
                 doc = inspect.getdoc(cls) or ""
                 first_line = doc.split("\n")[0] if doc else "No description available."
                 first_line = first_line.replace("$", "").replace("|", "\\|")
