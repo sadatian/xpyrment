@@ -22,8 +22,16 @@ def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
     """
     import sqlite3
 
-    if ":memory:" in connection_string or "sqlite" in connection_string or connection_string == "":
-        db_path = ":memory:" if (connection_string == "" or ":memory:" in connection_string) else connection_string.replace("sqlite:///", "")
+    if (
+        ":memory:" in connection_string
+        or "sqlite" in connection_string
+        or connection_string == ""
+    ):
+        db_path = (
+            ":memory:"
+            if (connection_string == "" or ":memory:" in connection_string)
+            else connection_string.replace("sqlite:///", "")
+        )
         conn = sqlite3.connect(db_path)
         try:
             df = pd.read_sql_query(query, conn)
@@ -35,11 +43,14 @@ def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
     else:
         try:
             import sqlalchemy
+
             engine = sqlalchemy.create_engine(connection_string)
             df = pd.read_sql_query(query, engine)
             return df
         except ImportError:
-            raise ImportError("sqlalchemy is required to connect to non-SQLite databases.")
+            raise ImportError(
+                "sqlalchemy is required to connect to non-SQLite databases."
+            )
 
 
 def ingest_dataframe(
@@ -47,7 +58,7 @@ def ingest_dataframe(
     unit_id_col: str = None,
     time_col: str = None,
     metric_cols: list = None,
-    categorical_cols: list = None
+    categorical_cols: list = None,
 ) -> pd.DataFrame:
     """Ingests, validates, and copies an in-memory pandas DataFrame into the xpyrment lifecycle.
 
@@ -96,6 +107,15 @@ def ingest_dataframe(
     # TODO: Implement out-of-core chunked ingestion or Dask integration for datasets exceeding local RAM capacities.
     return df_clean
 
+
+def _quote_identifier(col_name: str) -> str:
+    """Safely quotes identifiers for DuckDB to prevent SQL injection."""
+    return '"' + col_name.replace('"', '""') + '"'
+
+def _quote_string(val: str) -> str:
+    """Safely escapes single quotes for string literals in DuckDB."""
+    safe_val = val.replace("'", "''")
+    return f"'{safe_val}'"
 
 class DuckDBIngester:
     r"""High-performance out-of-core data ingestion and computation adapter using DuckDB.
@@ -176,17 +196,37 @@ class DuckDBIngester:
                 pass
             self._conn = None
 
-    def query(self, sql_query: str) -> pd.DataFrame:
+    @staticmethod
+    def _escape_identifier(val: str) -> str:
+        """Safely escapes *identifiers only* (e.g., table or column names) for inclusion in SQL.
+
+        This helper is intended **solely** for quoting SQL identifiers, not values. It must not be
+        used to escape user-provided values in predicates (e.g., in WHERE clauses). For values,
+        always use parameter binding via the `params` argument to `query(...)` instead.
+
+        Args:
+            val (str): The identifier name (e.g., a table or column name).
+
+        Returns:
+            str: The double-quoted and escaped identifier.
+        """
+        escaped = str(val).replace('"', '""')
+        return f'"{escaped}"'
+
+    def query(self, sql_query: str, params: list = None) -> pd.DataFrame:
         """Executes a raw SQL query against DuckDB and returns the result as a pandas DataFrame.
 
         Args:
             sql_query (str): A standard SQL query.
+            params (list, optional): Parameters to pass into the query safely.
 
         Returns:
             pd.DataFrame: The queried records.
         """
         if self._conn is None:
             raise RuntimeError("DuckDB connection is closed.")
+        if params is not None:
+            return self._conn.execute(sql_query, params).df()
         return self._conn.execute(sql_query).df()
 
     def compute_covariate_balance(
@@ -195,7 +235,7 @@ class DuckDBIngester:
         treatment_col: str,
         covariate_cols: list,
         control_group: str = None,
-        treatment_group: str = None
+        treatment_group: str = None,
     ) -> dict:
         r"""Computes covariate balance statistics out-of-core using DuckDB.
 
@@ -228,33 +268,41 @@ class DuckDBIngester:
 
         # 1. Verify file existence
         if not os.path.exists(parquet_path):
-            raise FileNotFoundError(f"Parquet file/directory not found at path: {parquet_path}")
+            raise FileNotFoundError(
+                f"Parquet file/directory not found at path: {parquet_path}"
+            )
 
-        path_str = str(Path(parquet_path).resolve()).replace("\\", "/")
+        path_str = (
+            str(Path(parquet_path).resolve()).replace("\\", "/").replace("'", "''")
+        )
 
         # 2. Schema pre-validation & column presence verification
+        safe_path_str = _quote_string(path_str)
         try:
-            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet('{path_str}')")
+            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet({safe_path_str})")
         except Exception as e:
             raise ValueError(f"Failed to parse Parquet schema at {parquet_path}: {e}")
 
         col_types = dict(zip(schema_df["column_name"], schema_df["column_type"]))
 
         if treatment_col not in col_types:
-            raise KeyError(f"Treatment column '{treatment_col}' not found in Parquet schema.")
+            raise KeyError(
+                f"Treatment column '{treatment_col}' not found in Parquet schema."
+            )
 
         for cov in covariate_cols:
             if cov not in col_types:
                 raise KeyError(f"Covariate column '{cov}' not found in Parquet schema.")
 
         # 3. Check if dataset is empty and get total row count
-        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet('{path_str}')")
+        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet({safe_path_str})")
         if count_df.empty or count_df.iloc[0]["cnt"] == 0:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
+        safe_treatment_col = _quote_identifier(treatment_col)
         groups_df = self.query(
-            f"SELECT DISTINCT {treatment_col} FROM read_parquet('{path_str}') WHERE {treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet({safe_path_str}) WHERE {safe_treatment_col} IS NOT NULL"
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -280,7 +328,7 @@ class DuckDBIngester:
         # Helper to convert python value to SQL literal
         def to_sql_val(val):
             if isinstance(val, str):
-                return f"'{val}'"
+                return _quote_string(val)
             return str(val)
 
         # 5. Partition covariates into numeric vs categorical
@@ -309,41 +357,86 @@ class DuckDBIngester:
             # Build and run optimized group aggregation SQL query for all numeric covariates in a single scan
             select_parts = []
             for cov in numeric_covs:
-                select_parts.append(f"COUNT({cov}) as count_{cov}")
-                select_parts.append(f"AVG({cov}) as mean_{cov}")
-                select_parts.append(f"VAR_SAMP({cov}) as var_{cov}")
+                safe_cov = _quote_identifier(cov)
+                # We also need to quote the aliases so we can reliably fetch them
+                safe_count_alias = _quote_identifier(f"count_{cov}")
+                safe_mean_alias = _quote_identifier(f"mean_{cov}")
+                safe_var_alias = _quote_identifier(f"var_{cov}")
+                select_parts.append(f"COUNT({safe_cov}) as {safe_count_alias}")
+                select_parts.append(f"AVG({safe_cov}) as {safe_mean_alias}")
+                select_parts.append(f"VAR_SAMP({safe_cov}) as {safe_var_alias}")
+
+            safe_treatment_col = _quote_identifier(treatment_col)
 
             sql = f"""
                 SELECT
-                    {treatment_col},
+                    {safe_treatment_col},
                     {', '.join(select_parts)}
-                FROM read_parquet('{path_str}')
-                WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
-                GROUP BY {treatment_col}
+                FROM read_parquet({safe_path_str})
+                WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
+                GROUP BY {safe_treatment_col}
             """
             group_stats_df = self.query(sql)
-            
-            row_0 = group_stats_df[group_stats_df[treatment_col] == comp_groups[0]].iloc[0] if comp_groups[0] in group_stats_df[treatment_col].values else None
-            row_1 = group_stats_df[group_stats_df[treatment_col] == comp_groups[1]].iloc[0] if comp_groups[1] in group_stats_df[treatment_col].values else None
+
+            row_0 = (
+                group_stats_df[group_stats_df[treatment_col] == comp_groups[0]].iloc[0]
+                if comp_groups[0] in group_stats_df[treatment_col].values
+                else None
+            )
+            row_1 = (
+                group_stats_df[group_stats_df[treatment_col] == comp_groups[1]].iloc[0]
+                if comp_groups[1] in group_stats_df[treatment_col].values
+                else None
+            )
 
             for cov in numeric_covs:
-                n_0 = int(row_0[f"count_{cov}"]) if (row_0 is not None and not pd.isna(row_0[f"count_{cov}"])) else 0
-                mean_0 = float(row_0[f"mean_{cov}"]) if (row_0 is not None and not pd.isna(row_0[f"mean_{cov}"])) else 0.0
-                var_0 = float(row_0[f"var_{cov}"]) if (row_0 is not None and not pd.isna(row_0[f"var_{cov}"])) else 0.0
+                n_0 = (
+                    int(row_0[f"count_{cov}"])
+                    if (row_0 is not None and not pd.isna(row_0[f"count_{cov}"]))
+                    else 0
+                )
+                mean_0 = (
+                    float(row_0[f"mean_{cov}"])
+                    if (row_0 is not None and not pd.isna(row_0[f"mean_{cov}"]))
+                    else 0.0
+                )
+                var_0 = (
+                    float(row_0[f"var_{cov}"])
+                    if (row_0 is not None and not pd.isna(row_0[f"var_{cov}"]))
+                    else 0.0
+                )
 
-                n_1 = int(row_1[f"count_{cov}"]) if (row_1 is not None and not pd.isna(row_1[f"count_{cov}"])) else 0
-                mean_1 = float(row_1[f"mean_{cov}"]) if (row_1 is not None and not pd.isna(row_1[f"mean_{cov}"])) else 0.0
-                var_1 = float(row_1[f"var_{cov}"]) if (row_1 is not None and not pd.isna(row_1[f"var_{cov}"])) else 0.0
+                n_1 = (
+                    int(row_1[f"count_{cov}"])
+                    if (row_1 is not None and not pd.isna(row_1[f"count_{cov}"]))
+                    else 0
+                )
+                mean_1 = (
+                    float(row_1[f"mean_{cov}"])
+                    if (row_1 is not None and not pd.isna(row_1[f"mean_{cov}"]))
+                    else 0.0
+                )
+                var_1 = (
+                    float(row_1[f"var_{cov}"])
+                    if (row_1 is not None and not pd.isna(row_1[f"var_{cov}"]))
+                    else 0.0
+                )
 
                 # Guard against degenerate / small sample size edge cases
                 if n_0 < 2 or n_1 < 2:
-                    raise ValueError(f"Sample size too small for covariate '{cov}': control_N={n_0}, treatment_N={n_1}. Must be >= 2.")
+                    raise ValueError(
+                        f"Sample size too small for covariate '{cov}': control_N={n_0}, treatment_N={n_1}. Must be >= 2."
+                    )
 
                 if var_0 < 0.0 or var_1 < 0.0:
-                    raise ValueError(f"Negative variance detected for covariate '{cov}'.")
+                    raise ValueError(
+                        f"Negative variance detected for covariate '{cov}'."
+                    )
 
                 if var_0 == 0.0 and var_1 == 0.0:
-                    raise ValueError(f"Degenerate variance (zero variance) in treatment arms for covariate '{cov}'.")
+                    raise ValueError(
+                        f"Degenerate variance (zero variance) in treatment arms for covariate '{cov}'."
+                    )
 
                 pooled_sd = np.sqrt((var_0 + var_1) / 2.0)
                 if pooled_sd == 0.0:
@@ -357,7 +450,9 @@ class DuckDBIngester:
                 if se_diff > 0.0:
                     t_stat = diff / se_diff
                     num = (var_0 / n_0 + var_1 / n_1) ** 2
-                    den = ((var_0 / n_0) ** 2) / (n_0 - 1) + ((var_1 / n_1) ** 2) / (n_1 - 1)
+                    den = ((var_0 / n_0) ** 2) / (n_0 - 1) + ((var_1 / n_1) ** 2) / (
+                        n_1 - 1
+                    )
                     df_val = num / den if den > 0 else (n_0 + n_1 - 2)
                     p_val = 2 * (1.0 - stats.t.cdf(np.abs(t_stat), df=df_val))
                 else:
@@ -366,30 +461,38 @@ class DuckDBIngester:
                 results[cov] = {
                     "type": "numeric",
                     "smd": float(smd),
-                    "p_value": float(p_val)
+                    "p_value": float(p_val),
                 }
 
         # 7. Compute statistics for categorical covariates
         for cov in categorical_covs:
+            safe_cov = _quote_identifier(cov)
+            safe_treatment_col = _quote_identifier(treatment_col)
             sql = f"""
                 SELECT
-                    {cov},
-                    {treatment_col},
+                    {safe_cov},
+                    {safe_treatment_col},
                     COUNT(*) as cnt
-                FROM read_parquet('{path_str}')
-                WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {cov} IS NOT NULL
-                GROUP BY {cov}, {treatment_col}
+                FROM read_parquet({safe_path_str})
+                WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {safe_cov} IS NOT NULL
+                GROUP BY {safe_cov}, {safe_treatment_col}
             """
-            cat_df = self.query(sql)
+            cat_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
 
             if not cat_df.empty:
-                contingency = cat_df.pivot(index=cov, columns=treatment_col, values="cnt").fillna(0)
+                contingency = cat_df.pivot(
+                    index=cov, columns=treatment_col, values="cnt"
+                ).fillna(0)
                 for g in [comp_groups[0], comp_groups[1]]:
                     if g not in contingency.columns:
                         contingency[g] = 0.0
-                
+
                 # CRITICAL: chi2_contingency requires df > 0 -> shape must be >= (2, 2)
-                if contingency.shape[0] >= 2 and contingency.shape[1] >= 2 and contingency.values.sum() > 0:
+                if (
+                    contingency.shape[0] >= 2
+                    and contingency.shape[1] >= 2
+                    and contingency.values.sum() > 0
+                ):
                     chi2_res = stats.chi2_contingency(contingency.values)
                     p_val = chi2_res.pvalue
                 else:
@@ -397,10 +500,7 @@ class DuckDBIngester:
             else:
                 p_val = 1.0
 
-            results[cov] = {
-                "type": "categorical",
-                "p_value": float(p_val)
-            }
+            results[cov] = {"type": "categorical", "p_value": float(p_val)}
 
         return results
 
@@ -411,7 +511,7 @@ class DuckDBIngester:
         metric_cols: list,
         control_group: str = None,
         treatment_group: str = None,
-        alpha: float = 0.05
+        alpha: float = 0.05,
     ) -> dict:
         r"""Computes Welch's t-test statistics for experimental metrics out-of-core using DuckDB.
 
@@ -442,33 +542,41 @@ class DuckDBIngester:
 
         # 1. Verify file existence
         if not os.path.exists(parquet_path):
-            raise FileNotFoundError(f"Parquet file/directory not found at path: {parquet_path}")
+            raise FileNotFoundError(
+                f"Parquet file/directory not found at path: {parquet_path}"
+            )
 
-        path_str = str(Path(parquet_path).resolve()).replace("\\", "/")
+        path_str = (
+            str(Path(parquet_path).resolve()).replace("\\", "/").replace("'", "''")
+        )
 
         # 2. Schema pre-validation & column presence verification
+        safe_path_str = _quote_string(path_str)
         try:
-            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet('{path_str}')")
+            schema_df = self.query(f"DESCRIBE SELECT * FROM read_parquet({safe_path_str})")
         except Exception as e:
             raise ValueError(f"Failed to parse Parquet schema at {parquet_path}: {e}")
 
         col_types = dict(zip(schema_df["column_name"], schema_df["column_type"]))
 
         if treatment_col not in col_types:
-            raise KeyError(f"Treatment column '{treatment_col}' not found in Parquet schema.")
+            raise KeyError(
+                f"Treatment column '{treatment_col}' not found in Parquet schema."
+            )
 
         for m in metric_cols:
             if m not in col_types:
                 raise KeyError(f"Metric column '{m}' not found in Parquet schema.")
 
         # 3. Check if dataset is empty
-        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet('{path_str}')")
+        count_df = self.query(f"SELECT COUNT(*) as cnt FROM read_parquet({safe_path_str})")
         if count_df.empty or count_df.iloc[0]["cnt"] == 0:
             raise ValueError("Dataset is empty.")
 
         # 4. Retrieve distinct treatment arms and validate groups
+        safe_treatment_col = _quote_identifier(treatment_col)
         groups_df = self.query(
-            f"SELECT DISTINCT {treatment_col} FROM read_parquet('{path_str}') WHERE {treatment_col} IS NOT NULL"
+            f"SELECT DISTINCT {safe_treatment_col} FROM read_parquet({safe_path_str}) WHERE {safe_treatment_col} IS NOT NULL"
         )
         groups = sorted(groups_df[treatment_col].tolist())
         if len(groups) < 2:
@@ -494,48 +602,91 @@ class DuckDBIngester:
         # Helper to convert python value to SQL literal
         def to_sql_val(val):
             if isinstance(val, str):
-                return f"'{val}'"
+                return _quote_string(val)
             return str(val)
 
         # 5. Construct SQL query to aggregate all metrics at once
         select_parts = []
         for m in metric_cols:
-            select_parts.append(f"COUNT({m}) as count_{m}")
-            select_parts.append(f"AVG({m}) as mean_{m}")
-            select_parts.append(f"VAR_SAMP({m}) as var_{m}")
+            safe_m = _quote_identifier(m)
+            safe_count_alias = _quote_identifier(f"count_{m}")
+            safe_mean_alias = _quote_identifier(f"mean_{m}")
+            safe_var_alias = _quote_identifier(f"var_{m}")
+
+            select_parts.append(f"COUNT({safe_m}) as {safe_count_alias}")
+            select_parts.append(f"AVG({safe_m}) as {safe_mean_alias}")
+            select_parts.append(f"VAR_SAMP({safe_m}) as {safe_var_alias}")
+
+        safe_treatment_col = _quote_identifier(treatment_col)
 
         sql = f"""
             SELECT
-                {treatment_col},
+                {safe_treatment_col},
                 {', '.join(select_parts)}
-            FROM read_parquet('{path_str}')
-            WHERE {treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
-            GROUP BY {treatment_col}
+            FROM read_parquet({safe_path_str})
+            WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
+            GROUP BY {safe_treatment_col}
         """
-        stats_df = self.query(sql)
+        stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
 
-        row_0 = stats_df[stats_df[treatment_col] == comp_groups[0]].iloc[0] if comp_groups[0] in stats_df[treatment_col].values else None
-        row_1 = stats_df[stats_df[treatment_col] == comp_groups[1]].iloc[0] if comp_groups[1] in stats_df[treatment_col].values else None
+        row_0 = (
+            stats_df[stats_df[treatment_col] == comp_groups[0]].iloc[0]
+            if comp_groups[0] in stats_df[treatment_col].values
+            else None
+        )
+        row_1 = (
+            stats_df[stats_df[treatment_col] == comp_groups[1]].iloc[0]
+            if comp_groups[1] in stats_df[treatment_col].values
+            else None
+        )
 
         results = {}
         for m in metric_cols:
-            n_0 = int(row_0[f"count_{m}"]) if (row_0 is not None and not pd.isna(row_0[f"count_{m}"])) else 0
-            mean_0 = float(row_0[f"mean_{m}"]) if (row_0 is not None and not pd.isna(row_0[f"mean_{m}"])) else 0.0
-            var_0 = float(row_0[f"var_{m}"]) if (row_0 is not None and not pd.isna(row_0[f"var_{m}"])) else 0.0
+            n_0 = (
+                int(row_0[f"count_{m}"])
+                if (row_0 is not None and not pd.isna(row_0[f"count_{m}"]))
+                else 0
+            )
+            mean_0 = (
+                float(row_0[f"mean_{m}"])
+                if (row_0 is not None and not pd.isna(row_0[f"mean_{m}"]))
+                else 0.0
+            )
+            var_0 = (
+                float(row_0[f"var_{m}"])
+                if (row_0 is not None and not pd.isna(row_0[f"var_{m}"]))
+                else 0.0
+            )
 
-            n_1 = int(row_1[f"count_{m}"]) if (row_1 is not None and not pd.isna(row_1[f"count_{m}"])) else 0
-            mean_1 = float(row_1[f"mean_{m}"]) if (row_1 is not None and not pd.isna(row_1[f"mean_{m}"])) else 0.0
-            var_1 = float(row_1[f"var_{m}"]) if (row_1 is not None and not pd.isna(row_1[f"var_{m}"])) else 0.0
+            n_1 = (
+                int(row_1[f"count_{m}"])
+                if (row_1 is not None and not pd.isna(row_1[f"count_{m}"]))
+                else 0
+            )
+            mean_1 = (
+                float(row_1[f"mean_{m}"])
+                if (row_1 is not None and not pd.isna(row_1[f"mean_{m}"]))
+                else 0.0
+            )
+            var_1 = (
+                float(row_1[f"var_{m}"])
+                if (row_1 is not None and not pd.isna(row_1[f"var_{m}"]))
+                else 0.0
+            )
 
             # Guard against degenerate / small sample sizes
             if n_0 < 2 or n_1 < 2:
-                raise ValueError(f"Sample size too small for metric '{m}': control_N={n_0}, treatment_N={n_1}. Must be >= 2.")
+                raise ValueError(
+                    f"Sample size too small for metric '{m}': control_N={n_0}, treatment_N={n_1}. Must be >= 2."
+                )
 
             if var_0 < 0.0 or var_1 < 0.0:
                 raise ValueError(f"Negative variance detected for metric '{m}'.")
 
             if var_0 == 0.0 and var_1 == 0.0:
-                raise ValueError(f"Degenerate variance (zero variance) in treatment arms for metric '{m}'.")
+                raise ValueError(
+                    f"Degenerate variance (zero variance) in treatment arms for metric '{m}'."
+                )
 
             diff = mean_1 - mean_0
             se_diff = np.sqrt(var_0 / n_0 + var_1 / n_1)
@@ -543,7 +694,9 @@ class DuckDBIngester:
             if se_diff > 0.0:
                 t_stat = diff / se_diff
                 num = (var_0 / n_0 + var_1 / n_1) ** 2
-                den = ((var_0 / n_0) ** 2) / (n_0 - 1) + ((var_1 / n_1) ** 2) / (n_1 - 1)
+                den = ((var_0 / n_0) ** 2) / (n_0 - 1) + ((var_1 / n_1) ** 2) / (
+                    n_1 - 1
+                )
                 df_val = num / den if den > 0 else (n_0 + n_1 - 2)
                 p_val = 2 * (1.0 - stats.t.cdf(np.abs(t_stat), df=df_val))
 
@@ -573,8 +726,7 @@ class DuckDBIngester:
                 "difference": float(diff),
                 "ci_lower": float(ci_lower),
                 "ci_upper": float(ci_upper),
-                "significant": significant
+                "significant": significant,
             }
 
         return results
-

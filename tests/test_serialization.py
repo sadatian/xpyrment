@@ -100,7 +100,7 @@ def test_estimator_serialization():
     p_dict = placebo.to_dict()
     assert "alpha" in p_dict
     assert "results" in p_dict
-    assert p_dict["results"]["trends_parallel"] == True
+    assert p_dict["results"]["trends_parallel"]
 
     p_json = placebo.to_json()
     assert "trends_parallel" in p_json

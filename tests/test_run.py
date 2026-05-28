@@ -118,8 +118,19 @@ def test_stopping_rules_msprt():
 def test_estimate_duration_days():
     """Tests duration estimations based on traffic and sample size requirements."""
     assert estimate_duration_days(50000, 5000) == 10.0
+    assert estimate_duration_days(50000.0, 5000.0) == 10.0
+
     with pytest.raises(ValueError):
         estimate_duration_days(0, 5000)
+
+    with pytest.raises(ValueError):
+        estimate_duration_days(50000, 0)
+
+    with pytest.raises(TypeError):
+        estimate_duration_days("50000", 5000)
+
+    with pytest.raises(TypeError):
+        estimate_duration_days(50000, "5000")
 
 
 def test_load_from_sql_mock():

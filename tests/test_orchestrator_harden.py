@@ -31,7 +31,7 @@ def test_fluent_and_covariates():
 
     # Check automated CUPED routing was applied because "pre_revenue" matched "revenue"
     rev_row = res.df_raw[res.df_raw["metric_name"] == "revenue"].iloc[0]
-    assert rev_row["cuped_applied"] == True
+    assert rev_row["cuped_applied"]
 
     # Assert Love Plot generation works
     love = res.love_plot()

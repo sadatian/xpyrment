@@ -345,3 +345,42 @@ def test_multi_arm_handling(mock_dataset_paths):
         assert "metric" in stats_res
         assert stats_res["metric"]["control_n"] > 0
         assert stats_res["metric"]["treatment_n"] > 0
+
+def test_sql_injection_safety(tmp_path):
+    """Verifies that malicious or spaced column names are handled safely using identifier quoting."""
+    import pandas as pd
+    from xpyrment.run.ingestion import DuckDBIngester
+
+    # "malicious" column names with quotes, spaces, and SQL keywords
+    malicious_cov = 'DROP TABLE users; --'
+    malicious_metric = 'space " quote'
+    treatment_col = 't"reatment'
+
+    df = pd.DataFrame({
+        treatment_col: ["control", "treatment", "control", "treatment", "control", "treatment"],
+        malicious_cov: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+        malicious_metric: [10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
+    })
+
+    path = tmp_path / "sql_injection.parquet"
+    df.to_parquet(path)
+
+    with DuckDBIngester() as ingester:
+        # If quoting is incorrect, this will throw a syntax error from DuckDB
+        cov_res = ingester.compute_covariate_balance(
+            parquet_path=str(path),
+            treatment_col=treatment_col,
+            covariate_cols=[malicious_cov],
+            control_group="control",
+            treatment_group="treatment"
+        )
+        assert malicious_cov in cov_res
+
+        stat_res = ingester.compute_welch_statistics(
+            parquet_path=str(path),
+            treatment_col=treatment_col,
+            metric_cols=[malicious_metric],
+            control_group="control",
+            treatment_group="treatment"
+        )
+        assert malicious_metric in stat_res
