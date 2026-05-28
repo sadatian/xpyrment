@@ -1,5 +1,9 @@
 import pytest
-import duckdb
+import pytest
+try:
+    import duckdb
+except ImportError:
+    pytest.skip("duckdb not installed", allow_module_level=True)
 import pandas as pd
 from xpyrment.run.ingestion import DuckDBIngester
 import os
