@@ -38,16 +38,18 @@ def get_doe_design_summaries() -> list[dict]:
         return []
         
     designs = {}
-    if hasattr(doe_pkg, "__all__"):
-        for name in doe_pkg.__all__:
-            if name in ("DesignMatrix", "CarryoverDecomposition"):
-                continue
-            cls = getattr(doe_pkg, name, None)
-            if cls is not None and inspect.isclass(cls):
-                doc = inspect.getdoc(cls) or ""
-                first_line = doc.split("\n")[0] if doc else "No description available."
-                first_line = first_line.replace("$", "").replace("|", "\\|")
-                designs[name] = {"summary": first_line}
+    names = doe_pkg.__all__ if hasattr(doe_pkg, "__all__") else dir(doe_pkg)
+    for name in names:
+        if name.startswith("_"):
+            continue
+        if name in ("DesignMatrix", "CarryoverDecomposition"):
+            continue
+        cls = getattr(doe_pkg, name, None)
+        if cls is not None and inspect.isclass(cls):
+            doc = inspect.getdoc(cls) or ""
+            first_line = doc.split("\n")[0] if doc else "No description available."
+            first_line = first_line.replace("$", "").replace("|", "\\|")
+            designs[name] = {"summary": first_line}
     return [{"name": k, "desc": v["summary"]} for k, v in sorted(designs.items())]
 
 

@@ -142,10 +142,16 @@
   - Renamed the agent rules guide to `implementation-guide.md` and corrected all codebase and archive plan references.
   - Expanded OLS batch updating verification and updated ingestion cleansings tests.
   - Successfully verified the entire 291-test suite with a 100% green pass and synchronized all dynamic badges to 94% coverage.
+- **Sprint 1.6.1.2 Post-Merge Review Refactoring & Verification (Completed)**:
+  - Updated the agent rules guide `.agents/rules/implementation-guide.md` to explicitly specify the time-tagged branch naming convention (`agy-YYMMDD-HHMM`) for Rule 9.
+  - Gracefully updated `get_doe_design_summaries()` inside `src/xpyrment/run/hub.py` to fall back to `dir(doe_pkg)` (with robust filtering of private elements, internal modules, and non-class objects) when the `__all__` list is not defined in `xpyrment.design.doe`.
+  - Moved the unconditional Poetry CLI check at startup in `main.py` to the command execution branch (when `--sync`, `--build`, `--pypi`, or `--testpypi` is run), allowing `--help` and basic usage to run cleanly without Poetry on the PATH.
+  - Strengthened OLS batch updating verification in `tests/test_streaming_extreme.py` by asserting that the learned coefficients match the known ground-truth generating parameters (`intercept=1.0`, `beta_1=2.0`, `beta_2=1.0`) within a tight `1e-2` absolute/relative tolerance.
+  - Successfully verified the entire 291 unit tests with a 100% green pass.
 
 ### Next Steps
-- **New PR Creation**: Push the refactored branch `coverage-improvements-260527` and open a brand-new Pull Request on GitHub for final merge into the master/main branch.
-- **Continuous Monitoring**: Adhere strictly to Poetry-native environment workflows for all future release and testing pipelines.
+- **Push & Submit Pull Request**: Stage all modified files, commit the changes to branch `agy-260528-0049`, push the branch, and create the Pull Request with the detailed PR description artifact on GitHub.
+- **Switch Workspace Branch**: Switch back to `main` once the PR is successfully opened on GitHub.
 
 
 

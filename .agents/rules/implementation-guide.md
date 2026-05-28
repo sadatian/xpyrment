@@ -110,6 +110,3 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
    - Run `poetry install` to synchronize local virtual environments, and use `poetry add <dependency>` to add new packages.
    - Never run raw `pip install` or manual package mutations.
    - Keep the dependency lockfile updated by running `poetry lock` whenever `pyproject.toml` dependencies change.
-9. **Pull Request Submission & Commits**:
-   - Once a large portion of activities is completed, go through the process of creating a Pull Request (PR) and submitting it with the respective commits.
-   - Adhere strictly to the dedicated, granular PR creation rules defined in `.agents/rules/create-pr.md`.

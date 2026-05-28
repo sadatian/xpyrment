@@ -83,6 +83,16 @@ def test_streaming_ols_batch_update():
         atol=1e-6,
     )
 
+    # Learned coefficients should match the known ground-truth generating parameters:
+    # intercept = 1.0, beta_1 = 2.0, beta_2 = 1.0
+    true_coefficients = np.array([1.0, 2.0, 1.0])
+    assert np.allclose(
+        batch_model.coefficients,
+        true_coefficients,
+        rtol=1e-2,
+        atol=1e-2,
+    )
+
 
 def test_streaming_ols_exceptions():
     """Asserts StreamingOLS raises errors for invalid shapes and parameters."""
