@@ -77,8 +77,8 @@ def sync_versions(force_pypi_version=None):
         # 4. Dynamically run pytest and coverage to sync test count and coverage badges
         print("🧪 Running test suite and coverage analysis...")
         try:
-            # We use sys.executable to run pytest under the current active environment
-            cmd = [sys.executable, "-m", "pytest", "--cov=src", "--cov-report=term"]
+            # We use Poetry to execute pytest to ensure lockfile compliance
+            cmd = ["poetry", "run", "pytest", "--cov=src", "--cov-report=term"]
             result = subprocess.run(cmd, capture_output=True, text=True, cwd=root_dir, encoding="utf-8")
             
             if result.returncode == 0:
@@ -302,6 +302,8 @@ if __name__ == "__main__":
     import argparse
     import shutil
     
+    
+
     parser = argparse.ArgumentParser(description="Automate building and publishing the xpyrment package.")
     parser.add_argument("--build", action="store_true", help="Build source distribution and wheel.")
     parser.add_argument("--testpypi", action="store_true", help="Publish the package to TestPyPI.")
@@ -340,6 +342,13 @@ if __name__ == "__main__":
 
     # Ensure everything is in sync before any build or publish action
     if args.build or args.pypi or args.testpypi or args.sync:
+        # Check if Poetry CLI is available on PATH
+        if not shutil.which("poetry"):
+            print("❌ Error: Poetry CLI is not available on PATH.")
+            print("   This project utilizes Poetry for dependency resolution, building, and publishing.")
+            print("   Please install Poetry (https://python-poetry.org) or add it to your environment variables.")
+            sys.exit(1)
+            
         print(f"🔄 Synchronizing versions and badges (Target: v{version})...")
         # For build/publish, we force the PyPI badge to the version being released
         force_v = version if (args.build or args.pypi or args.testpypi) else None
@@ -363,16 +372,9 @@ if __name__ == "__main__":
                     pass
 
                 
-        print("📦 Building source distribution and wheel packages...")
-        build_cmd = [sys.executable, "-m", "build"]
-        try:
-            # Ensure build package is present
-            import build
-        except ImportError:
-            print("⚠️ 'build' package not found. Installing it under local active python interpreter...")
-            subprocess.run([sys.executable, "-m", "pip", "install", "build"], check=True)
-            
-        print(f"📦 Running build command: {' '.join(build_cmd)}")
+        print("📦 Building source distribution and wheel packages via Poetry...")
+        build_cmd = ["poetry", "build"]
+        print(f"📦 Running Poetry build command: {' '.join(build_cmd)}")
         result = subprocess.run(build_cmd, cwd=root_dir)
         if result.returncode == 0:
             print(f"🎉 Build completed successfully. Artifacts saved inside '{os.path.relpath(os.path.join(root_dir, 'dist'), root_dir)}/' directory.")
@@ -384,18 +386,10 @@ if __name__ == "__main__":
             sys.exit(result.returncode)
             
     if args.testpypi or args.pypi:
-        try:
-            import twine
-        except ImportError:
-            print("⚠️ 'twine' package not found. Installing it under local active python interpreter...")
-            subprocess.run([sys.executable, "-m", "pip", "install", "twine"], check=True)
-            
         dist_dir = os.path.join(root_dir, "dist")
         if not os.path.exists(dist_dir) or not os.listdir(dist_dir):
             print("❌ No distribution files found in 'dist/' directory. Please run with --build flag first.")
             sys.exit(1)
-            
-        dist_files = os.path.join(dist_dir, "*")
         readme_path = os.path.join(root_dir, "README.md")
         notes_path = os.path.join(root_dir, "RELEASE_NOTES.md")
         
@@ -510,18 +504,22 @@ if __name__ == "__main__":
                 print(f"❌ Failed to create GitHub Release via REST API: {str(e)}")
         
         if args.testpypi:
-            print("🚀 Uploading distribution files to TestPyPI...")
+            print("🚀 Uploading distribution files to TestPyPI via Poetry...")
             env_vars = os.environ.copy()
             pypi_token = env_vars.get("TESTPYPI_TOKEN") or env_vars.get("PYPI_TOKEN")
-            if pypi_token:
-                print(f"🔑 Using API Token for TestPyPI authentication ({'TESTPYPI_TOKEN' if env_vars.get('TESTPYPI_TOKEN') else 'PYPI_TOKEN'}).")
-                env_vars["TWINE_USERNAME"] = "__token__"
-                env_vars["TWINE_PASSWORD"] = pypi_token
-            else:
-                print("⚠️ No API Token found for TestPyPI. Twine may prompt for credentials.")
             
-            upload_cmd = [sys.executable, "-m", "twine", "upload", "--repository", "testpypi", dist_files]
-            result = subprocess.run(upload_cmd, cwd=root_dir, env=env_vars)
+            # Configure TestPyPI repository in Poetry
+            subprocess.run(["poetry", "config", "repositories.testpypi", "https://test.pypi.org/legacy/"], check=True)
+            
+            if pypi_token:
+                token_source = "TESTPYPI_TOKEN" if env_vars.get("TESTPYPI_TOKEN") else "PYPI_TOKEN"
+                print(f"🔑 Using API Token for TestPyPI authentication ({token_source}).")
+                # Pass token via environment to avoid persisting credentials in Poetry config
+                env_vars["POETRY_PYPI_TOKEN_TESTPYPI"] = pypi_token
+            else:
+                print("⚠️ No API Token found for TestPyPI. Poetry may prompt for credentials.")
+            
+            result = subprocess.run(["poetry", "publish", "-r", "testpypi"], cwd=root_dir, env=env_vars)
             
             if result.returncode != 0:
                 print("❌ Upload to TestPyPI failed! Reverting PyPI badge in README.md to latest available version...")
@@ -531,18 +529,18 @@ if __name__ == "__main__":
                 create_github_release(version, notes_content)
             
         if args.pypi:
-            print("🚀 Uploading distribution files to actual PyPI...")
+            print("🚀 Uploading distribution files to actual PyPI via Poetry...")
             env_vars = os.environ.copy()
             pypi_token = env_vars.get("PYPI_TOKEN")
+            
             if pypi_token:
                 print("🔑 Using API Token for PyPI authentication (PYPI_TOKEN).")
-                env_vars["TWINE_USERNAME"] = "__token__"
-                env_vars["TWINE_PASSWORD"] = pypi_token
+                # Pass token via environment to avoid persisting credentials in Poetry config
+                env_vars["POETRY_PYPI_TOKEN_PYPI"] = pypi_token
             else:
-                print("⚠️ No PYPI_TOKEN found. Twine may prompt for credentials.")
+                print("⚠️ No PYPI_TOKEN found. Poetry may prompt for credentials.")
                 
-            upload_cmd = [sys.executable, "-m", "twine", "upload", dist_files]
-            result = subprocess.run(upload_cmd, cwd=root_dir, env=env_vars)
+            result = subprocess.run(["poetry", "publish"], cwd=root_dir, env=env_vars)
             
             if result.returncode != 0:
                 print("❌ Upload to PyPI failed! Reverting PyPI badge in README.md to latest available version...")

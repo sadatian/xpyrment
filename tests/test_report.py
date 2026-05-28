@@ -1,4 +1,5 @@
 import json
+import pytest
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -158,4 +159,109 @@ def test_experiment_report_generator(tmp_path):
     assert md_file.exists()
     assert len(html_file.read_text(encoding="utf-8")) > 1000
     assert len(md_file.read_text(encoding="utf-8")) > 100
+
+
+def test_audit_trail_sqlite_persistence(tmp_path):
+    """Verifies that AuditTrail cleanly logs events to SQLite, persists them, and loads safely."""
+    db_file = tmp_path / "audit.db"
+    trail = AuditTrail("EXP-202", db_path=str(db_file))
+
+    # Log events with signatures and public keys
+    trail.log_event("INIT", "Initialized experiment", signature="sig123", public_key="key456")
+    trail.log_event("TRANSITION", "Moved to RUNNING")
+
+    assert len(trail.get_logs()) == 2
+    assert trail.verify_integrity() is True
+
+    # Check database records directly
+    import sqlite3
+    with sqlite3.connect(str(db_file)) as conn:
+        df = pd.read_sql_query("SELECT * FROM audit_logs WHERE experiment_id='EXP-202'", conn)
+        assert len(df) == 2
+        assert df.iloc[0]["action"] == "INIT"
+        assert df.iloc[0]["signature"] == "sig123"
+        assert df.iloc[0]["public_key"] == "key456"
+        assert df.iloc[1]["action"] == "TRANSITION"
+
+
+def test_report_generator_exceptions_and_empty():
+    """Asserts proper exceptions are raised for invalid or empty inputs to report generator."""
+    from xpyrment.report.generator import ExperimentReportGenerator
+
+    # 1. Invalid AnalysisResult
+    with pytest.raises(ValueError, match="Invalid AnalysisResult provided"):
+        ExperimentReportGenerator(None)
+
+    # 2. Empty df_raw
+    from xpyrment.analyze.orchestrator import AnalysisResult
+    res_empty = AnalysisResult(
+        raw_results=[],
+        alpha=0.05,
+        balance_checker=None
+    )
+    generator = ExperimentReportGenerator(res_empty)
+    assert generator.control_n == 0
+    assert generator.treatment_n == 0
+    assert generator.srm_passed is True
+    assert generator.srm_p_value == 1.0
+
+
+def test_report_generator_imbalanced_covariates(tmp_path):
+    """Validates that imbalanced covariates correctly trigger warning badges in report layouts."""
+    from xpyrment.analyze.orchestrator import AnalysisResult
+    from xpyrment.report.generator import ExperimentReportGenerator
+
+    # Setup dummy diagnostics showing a large SMD (imbalance)
+    class MockBalanceChecker:
+        def __init__(self):
+            self.diagnostics_ = {
+                "age": {
+                    "smd": 0.25,  # > 0.1 threshold
+                    "variance_ratio": 1.1,
+                    "mean_control": 30.0,
+                    "mean_treatment": 32.5
+                },
+                "income": {
+                    "smd": 0.02,  # balanced
+                    "variance_ratio": 1.0,
+                    "mean_control": 50000.0,
+                    "mean_treatment": 50100.0
+                }
+            }
+        def generate_love_plot(self):
+            return "Mock Love Plot"
+
+    df_raw = pd.DataFrame({
+        "metric_name": ["revenue"],
+        "metric_type": ["mean"],
+        "control_mean": [10.0],
+        "treatment_mean": [10.5],
+        "control_n": [500],
+        "treatment_n": [500],
+        "relative_lift": [0.05],
+        "p_value": [0.04],
+        "cuped_applied": [False],
+        "rel_ci_lower": [0.01],
+        "rel_ci_upper": [0.09]
+    })
+
+    res = AnalysisResult(
+        raw_results=df_raw.to_dict(orient="records"),
+        alpha=0.05,
+        balance_checker=MockBalanceChecker()
+    )
+
+    generator = ExperimentReportGenerator(res, experiment_name="Imbalance Test")
+    
+    # 1. Verify markdown output shows warning emoji
+    md = generator.generate_markdown()
+    assert "IMBALANCE DETECTED" in md
+    assert "age" in md
+    assert "income" not in md.split("IMBALANCE DETECTED")[1].split("\n")[0] # Only age is flagged
+
+    # 2. Verify HTML output has imbalanced class
+    html = generator.generate_html()
+    assert "smd-fail" in html
+    assert "IMBALANCED" in html
+
 

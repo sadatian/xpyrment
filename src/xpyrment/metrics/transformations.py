@@ -82,7 +82,13 @@ def delta_normalization(df: pd.DataFrame, col: str) -> pd.Series:
         col (str): The name of the column representing the metric to normalize.
 
     Returns:
-        pd.Series: A pandas Series of normalized values (currently returned unchanged in this scaffolding).
+        pd.Series: A pandas Series of normalized values.
     """
-    # TODO: Implement full delta normalization
-    return df[col]
+    series = df[col]
+    mean_val = series.mean()
+    std_val = series.std(ddof=1)
+
+    if pd.isna(std_val) or std_val == 0.0:
+        return pd.Series(0.0, index=series.index, name=col)
+
+    return (series - mean_val) / std_val

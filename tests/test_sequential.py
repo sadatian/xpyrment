@@ -33,3 +33,40 @@ def test_sequential_boundaries_pocock():
     # Critical z boundaries should be positive reals
     for z in boundaries["critical_z_boundaries"]:
         assert z > 1.5
+
+
+def test_sequential_spending_type_validation():
+    """Asserts that invalid spending_type parameter raises a ValueError."""
+    with pytest.raises(ValueError, match="spending_type must be either"):
+        GroupSequentialMonitor(spending_type="invalid_spending")
+
+
+def test_sequential_alpha_spent_boundaries():
+    """Asserts that information fractions outside (0, 1) return exact boundary alpha budgets."""
+    monitor = GroupSequentialMonitor(alpha=0.05, spending_type="obrien_fleming")
+    assert monitor.alpha_spent(-0.5) == 0.0
+    assert monitor.alpha_spent(0.0) == 0.0
+    assert monitor.alpha_spent(1.5) == 0.05
+    assert monitor.alpha_spent(1.0) == 0.05
+
+
+def test_sequential_compute_boundaries_validation():
+    """Asserts that invalid information fractions in compute_boundaries raise ValueError."""
+    monitor = GroupSequentialMonitor(alpha=0.05)
+    with pytest.raises(ValueError, match="must be strictly in the range"):
+        monitor.compute_boundaries([0.5, 1.2])
+        
+    with pytest.raises(ValueError, match="must be strictly in the range"):
+        monitor.compute_boundaries([-0.1, 0.5])
+
+
+def test_sequential_incremental_floor():
+    """Asserts that extremely close consecutive looks trigger the spent alpha floor safeguard."""
+    monitor = GroupSequentialMonitor(alpha=0.05, spending_type="pocock")
+    # Two extremely close looks to force tiny difference in cumulative spent alphas
+    looks = [0.5, 0.5000000001]
+    res = monitor.compute_boundaries(looks)
+    
+    assert res["incremental_alpha_spent"][1] == 1e-9
+    assert res["critical_z_boundaries"][1] > 5.0  # Extremely high Z boundary for tiny alpha
+
