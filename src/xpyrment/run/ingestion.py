@@ -53,12 +53,56 @@ def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
             )
 
 
+from typing import Any, Iterable, Iterator, List, Optional
+
+
+def _clean_dataframe_like(
+    df: Any,
+    unit_id_col: Optional[str],
+    time_col: Optional[str],
+    metric_cols: Optional[List[str]],
+    categorical_cols: Optional[List[str]],
+    to_datetime: Any,
+    frame_label: str,
+    copy_frame: bool,
+) -> Any:
+    df_clean = df.copy() if copy_frame else df
+
+    # 1. Primary Key Integrities
+    if unit_id_col is not None:
+        if unit_id_col not in df_clean.columns:
+            raise KeyError(f"unit_id column '{unit_id_col}' not found in {frame_label}.")
+        # Drop rows with null unit_id
+        df_clean = df_clean.dropna(subset=[unit_id_col])
+
+    # 2. Chronological Alignment
+    if time_col is not None:
+        if time_col not in df_clean.columns:
+            raise KeyError(f"time column '{time_col}' not found in {frame_label}.")
+        df_clean[time_col] = to_datetime(df_clean[time_col])
+
+    # 3. Missing Value Imputation
+    if metric_cols is not None:
+        for m in metric_cols:
+            if m not in df_clean.columns:
+                raise KeyError(f"Metric column '{m}' not found in {frame_label}.")
+            df_clean[m] = df_clean[m].fillna(0.0)
+
+    if categorical_cols is not None:
+        for c in categorical_cols:
+            if c not in df_clean.columns:
+                raise KeyError(f"Categorical column '{c}' not found in {frame_label}.")
+            df_clean[c] = df_clean[c].fillna("UNKNOWN")
+
+    return df_clean
+
+
 def ingest_dataframe(
     df: pd.DataFrame,
-    unit_id_col: str = None,
-    time_col: str = None,
-    metric_cols: list = None,
-    categorical_cols: list = None,
+    unit_id_col: Optional[str] = None,
+    time_col: Optional[str] = None,
+    metric_cols: Optional[List[str]] = None,
+    categorical_cols: Optional[List[str]] = None,
 ) -> pd.DataFrame:
     """Ingests, validates, and copies an in-memory pandas DataFrame into the xpyrment lifecycle.
 
@@ -75,40 +119,17 @@ def ingest_dataframe(
     Returns:
         pd.DataFrame: An audited, isolated copy of the DataFrame ready for downstream operations.
     """
-    df_clean = df.copy()
-
-    # 1. Primary Key Integrities
-    if unit_id_col is not None:
-        if unit_id_col not in df_clean.columns:
-            raise KeyError(f"unit_id column '{unit_id_col}' not found in DataFrame.")
-        # Drop rows with null unit_id
-        df_clean = df_clean.dropna(subset=[unit_id_col])
-
-    # 2. Chronological Alignment
-    if time_col is not None:
-        if time_col not in df_clean.columns:
-            raise KeyError(f"time column '{time_col}' not found in DataFrame.")
-        df_clean[time_col] = pd.to_datetime(df_clean[time_col])
-
-    # 3. Missing Value Imputation
-    if metric_cols is not None:
-        for m in metric_cols:
-            if m not in df_clean.columns:
-                raise KeyError(f"Metric column '{m}' not found in DataFrame.")
-            df_clean[m] = df_clean[m].fillna(0.0)
-
-    if categorical_cols is not None:
-        for c in categorical_cols:
-            if c not in df_clean.columns:
-                raise KeyError(f"Categorical column '{c}' not found in DataFrame.")
-            df_clean[c] = df_clean[c].fillna("UNKNOWN")
-
     # TODO: Add schema enforcement using Pydantic models or Pandera DataFrame schemas.
-
-    return df_clean
-
-
-from typing import Iterable, Iterator
+    return _clean_dataframe_like(
+        df=df,
+        unit_id_col=unit_id_col,
+        time_col=time_col,
+        metric_cols=metric_cols,
+        categorical_cols=categorical_cols,
+        to_datetime=pd.to_datetime,
+        frame_label="DataFrame",
+        copy_frame=True,
+    )
 
 
 def ingest_chunks(
@@ -144,12 +165,12 @@ def ingest_chunks(
 
 
 def ingest_dask_dataframe(
-    ddf,
-    unit_id_col: str = None,
-    time_col: str = None,
-    metric_cols: list = None,
-    categorical_cols: list = None,
-):
+    ddf: Any,
+    unit_id_col: Optional[str] = None,
+    time_col: Optional[str] = None,
+    metric_cols: Optional[List[str]] = None,
+    categorical_cols: Optional[List[str]] = None,
+) -> Any:
     """Ingests, validates, and sets up a computation graph for a Dask DataFrame.
 
     Performs localized validation checks on the Dask DataFrame, similar to `ingest_dataframe`,
@@ -167,6 +188,7 @@ def ingest_dask_dataframe(
 
     Raises:
         ImportError: If the 'dask' library is not installed.
+        TypeError: If the input is not a dask.dataframe.DataFrame.
     """
     try:
         import dask.dataframe as dd
@@ -177,36 +199,18 @@ def ingest_dask_dataframe(
         )
 
     if not isinstance(ddf, dd.DataFrame):
-        raise TypeError("Input must be a dask.dataframe.DataFrame.")
+        raise TypeError("ingest_dask_dataframe expects a dask.dataframe.DataFrame.")
 
-    ddf_clean = ddf.copy()
-
-    # 1. Primary Key Integrities
-    if unit_id_col is not None:
-        if unit_id_col not in ddf_clean.columns:
-            raise KeyError(f"unit_id column '{unit_id_col}' not found in Dask DataFrame.")
-        ddf_clean = ddf_clean.dropna(subset=[unit_id_col])
-
-    # 2. Chronological Alignment
-    if time_col is not None:
-        if time_col not in ddf_clean.columns:
-            raise KeyError(f"time column '{time_col}' not found in Dask DataFrame.")
-        ddf_clean[time_col] = dd.to_datetime(ddf_clean[time_col])
-
-    # 3. Missing Value Imputation
-    if metric_cols is not None:
-        for m in metric_cols:
-            if m not in ddf_clean.columns:
-                raise KeyError(f"Metric column '{m}' not found in Dask DataFrame.")
-            ddf_clean[m] = ddf_clean[m].fillna(0.0)
-
-    if categorical_cols is not None:
-        for c in categorical_cols:
-            if c not in ddf_clean.columns:
-                raise KeyError(f"Categorical column '{c}' not found in Dask DataFrame.")
-            ddf_clean[c] = ddf_clean[c].fillna("UNKNOWN")
-
-    return ddf_clean
+    return _clean_dataframe_like(
+        df=ddf,
+        unit_id_col=unit_id_col,
+        time_col=time_col,
+        metric_cols=metric_cols,
+        categorical_cols=categorical_cols,
+        to_datetime=dd.to_datetime,
+        frame_label="Dask DataFrame",
+        copy_frame=False,
+    )
 
 
 def _quote_identifier(col_name: str) -> str:

@@ -183,18 +183,101 @@ def test_ingest_chunks():
 
 def test_ingest_dask_dataframe_missing_dependency(monkeypatch):
     """Tests that missing dask dependency raises an ImportError."""
-    import builtins
-    original_import = builtins.__import__
+    import sys
+    monkeypatch.setitem(sys.modules, "dask.dataframe", None)
+    monkeypatch.setitem(sys.modules, "dask", None)
 
-    def mock_import(name, *args, **kwargs):
-        if name == "dask.dataframe":
-            raise ImportError("No module named dask.dataframe")
-        return original_import(name, *args, **kwargs)
+    with pytest.raises(
+        ImportError,
+        match="The 'dask' library is required to use 'ingest_dask_dataframe'",
+    ):
+        ingest_dask_dataframe(None)
 
-    monkeypatch.setattr(builtins, "__import__", mock_import)
+def test_ingest_dask_dataframe_type_error_for_non_dask_input():
+    """Tests that passing a non-Dask object raises a TypeError when Dask is available."""
+    pytest.importorskip("dask.dataframe")
+    # Use a plain pandas DataFrame, which should not be accepted by ingest_dask_dataframe
+    df = pd.DataFrame({"value": [1, 2, 3]})
 
-    with pytest.raises(ImportError, match="The 'dask' library is required to use 'ingest_dask_dataframe'"):
-        ingest_dask_dataframe(pd.DataFrame())
+    with pytest.raises(
+        TypeError,
+        match="ingest_dask_dataframe expects a dask.dataframe.DataFrame",
+    ):
+        ingest_dask_dataframe(df)
+
+def test_ingest_dask_dataframe_missing_unit_id_col():
+    """ingest_dask_dataframe raises KeyError when unit_id_col is missing from the dask dataframe."""
+    pytest.importorskip("dask.dataframe")
+    import dask.dataframe as dd
+
+    pdf = pd.DataFrame(
+        {
+            # deliberately omit "user_id"
+            "joined_at": ["2026-05-01", "2026-05-02"],
+            "revenue": [10.0, 20.0],
+            "browser": ["Chrome", "Safari"],
+        }
+    )
+    ddf = dd.from_pandas(pdf, npartitions=1)
+
+    with pytest.raises(KeyError, match="unit_id column 'user_id' not found in Dask DataFrame."):
+        ingest_dask_dataframe(
+            ddf,
+            unit_id_col="user_id",
+            time_col="joined_at",
+            metric_cols=["revenue"],
+            categorical_cols=["browser"],
+        )
+
+
+def test_ingest_dask_dataframe_missing_metric_col():
+    """ingest_dask_dataframe raises KeyError when a metric column is missing from the dask dataframe."""
+    pytest.importorskip("dask.dataframe")
+    import dask.dataframe as dd
+
+    pdf = pd.DataFrame(
+        {
+            "user_id": ["u1", "u2"],
+            "joined_at": ["2026-05-01", "2026-05-02"],
+            "browser": ["Chrome", "Safari"],
+            # deliberately omit "revenue"
+        }
+    )
+    ddf = dd.from_pandas(pdf, npartitions=1)
+
+    with pytest.raises(KeyError, match="Metric column 'revenue' not found in Dask DataFrame."):
+        ingest_dask_dataframe(
+            ddf,
+            unit_id_col="user_id",
+            time_col="joined_at",
+            metric_cols=["revenue"],
+            categorical_cols=["browser"],
+        )
+
+
+def test_ingest_dask_dataframe_missing_categorical_col():
+    """ingest_dask_dataframe raises KeyError when a categorical column is missing from the dask dataframe."""
+    pytest.importorskip("dask.dataframe")
+    import dask.dataframe as dd
+
+    pdf = pd.DataFrame(
+        {
+            "user_id": ["u1", "u2"],
+            "joined_at": ["2026-05-01", "2026-05-02"],
+            "revenue": [10.0, 20.0],
+            # deliberately omit "browser"
+        }
+    )
+    ddf = dd.from_pandas(pdf, npartitions=1)
+
+    with pytest.raises(KeyError, match="Categorical column 'browser' not found in Dask DataFrame."):
+        ingest_dask_dataframe(
+            ddf,
+            unit_id_col="user_id",
+            time_col="joined_at",
+            metric_cols=["revenue"],
+            categorical_cols=["browser"],
+        )
 
 def test_ingest_dask_dataframe():
     """Tests dask dataframe out-of-core ingestion if dask is available."""
