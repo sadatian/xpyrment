@@ -2915,4 +2915,4 @@ dev = ["black", "duckdb", "isort", "mypy", "pyarrow", "pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "05c2dd0bf8d32bfe4bcf69507b145e20b58c0e29484972c899406d54f1806589"
+content-hash = "431fa31a12bf75a41f4e6786da01ab76a557f0a0d160c317714f6e65b01b1cab"

@@ -161,7 +161,7 @@
 
 - **Plots.py Code Coverage Diagnostics & Test Setup (In Progress)**:
   - Scanned the entire repository codebase to analyze coverage profiles.
-  - Verified that there are **zero** files completely missing test coverage in `src/` (all active modules have >0% coverage, with average at 94%).
+  - Verified that there are **zero** files completely missing test coverage in `src/` (all active modules have >0% coverage, with average coverage at 94%).
   - Identified that `src/xpyrment/interactions/plots.py` currently has 87.88% coverage.
   - Formulated a comprehensive implementation plan to write a dedicated unit test suite for `src/xpyrment/interactions/plots.py` to achieve 100% coverage, and to document why certain modules have minor gaps.
 
