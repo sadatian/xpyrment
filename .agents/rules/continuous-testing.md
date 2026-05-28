@@ -39,5 +39,5 @@ When adding safe, backward-compatible new features:
 
 ## 3. Deployment & Release Readiness Checks
 Before completing any task, execute:
-* **Unit Verification**: Run `.venv\Scripts\python.exe -m pytest` to verify 100% test success across all 140+ test cases.
-* **Documentation Health**: Run `.venv\Scripts\python.exe -m mkdocs build` to confirm that any docstring changes do not trigger mkdocstrings errors.
+* **Unit Verification**: Run `poetry run pytest` to verify 100% test success across all 290+ test cases.
+* **Documentation Health**: Run `poetry run mkdocs build` to confirm that any docstring changes do not trigger mkdocstrings errors.

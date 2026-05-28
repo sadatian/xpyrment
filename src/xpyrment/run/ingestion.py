@@ -53,12 +53,152 @@ def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
             )
 
 
+from typing import Any, Iterable, Iterator, List, Optional
+
+def _metric_columns_spec(metric_cols: list, pa):
+    return {
+        name: pa.Column(float, nullable=False, coerce=True)
+        for name in metric_cols
+    }
+
+
+def _categorical_columns_spec(categorical_cols: list, pa):
+    return {
+        name: pa.Column(str, nullable=False, coerce=True)
+        for name in categorical_cols
+    }
+
+
+def _enforce_schema(
+    df: pd.DataFrame,
+    unit_id_col: str = None,
+    time_col: str = None,
+    metric_cols: list = None,
+    categorical_cols: list = None,
+    schema=None,
+) -> pd.DataFrame:
+    try:
+        import pandera as pa
+        import pandera.errors as pa_errors
+    except ImportError as exc:
+        if schema is not None:
+            raise ImportError(
+                "pandera is required for schema enforcement. "
+                "Please install it via `pip install xpyrment[schema]` or `pip install pandera`."
+            ) from exc
+        # Skip validation entirely if no schema is specified and pandera isn't installed.
+        return df
+
+    if schema is not None:
+        try:
+            return schema.validate(df)
+        except pa_errors.SchemaError as e:
+            raise ValueError(f"Schema validation failed: {e}") from e
+
+    schema_dict = {}
+
+    if unit_id_col is not None:
+        schema_dict[unit_id_col] = pa.Column(nullable=False)
+
+    if time_col is not None:
+        schema_dict[time_col] = pa.Column("datetime64[ns]", nullable=False)
+
+    if metric_cols:
+        schema_dict.update(_metric_columns_spec(metric_cols, pa))
+
+    if categorical_cols:
+        schema_dict.update(_categorical_columns_spec(categorical_cols, pa))
+
+    if not schema_dict:
+        return df
+
+    dynamic_schema = pa.DataFrameSchema(schema_dict, coerce=True)
+    try:
+        return dynamic_schema.validate(df)
+    except (pa_errors.SchemaError, pa_errors.SchemaErrors) as e:
+        raise ValueError(f"Dynamic schema validation failed: {e}") from e
+
+
 def ingest_dataframe(
     df: pd.DataFrame,
     unit_id_col: str = None,
     time_col: str = None,
     metric_cols: list = None,
     categorical_cols: list = None,
+    schema=None,
+) -> pd.DataFrame:
+    """Ingests, validates, and copies an in-memory pandas DataFrame into the xpyrment lifecycle.
+
+    Performs localized validation checks on the pandas DataFrame, ensuring all required column signatures
+    are mapped correctly.
+
+    Args:
+        df (pd.DataFrame): The raw source DataFrame.
+        unit_id_col (str): Column representing unit identifiers (nulls will be dropped).
+        time_col (str): Column representing event timestamps (will be parsed to datetime).
+        metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
+        categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+        schema (pandera.DataFrameSchema, optional): A user-provided Pandera schema to validate against.
+            If None, a schema is built dynamically based on the provided columns.
+
+def _clean_dataframe_like(
+    df: Any,
+    unit_id_col: Optional[str],
+    time_col: Optional[str],
+    metric_cols: Optional[List[str]],
+    categorical_cols: Optional[List[str]],
+    to_datetime: Any,
+    frame_label: str,
+    copy_frame: bool,
+) -> Any:
+    df_clean = df.copy() if copy_frame else df
+
+    # 1. Primary Key Integrities
+    if unit_id_col is not None:
+        if unit_id_col not in df_clean.columns:
+            raise KeyError(f"unit_id column '{unit_id_col}' not found in {frame_label}.")
+        # Drop rows with null unit_id
+        df_clean = df_clean.dropna(subset=[unit_id_col])
+
+    # 2. Chronological Alignment
+    if time_col is not None:
+        if time_col not in df_clean.columns:
+            raise KeyError(f"time column '{time_col}' not found in {frame_label}.")
+        df_clean[time_col] = to_datetime(df_clean[time_col])
+
+    # 3. Missing Value Imputation
+    if metric_cols is not None:
+        for m in metric_cols:
+            if m not in df_clean.columns:
+                raise KeyError(f"Metric column '{m}' not found in {frame_label}.")
+            df_clean[m] = df_clean[m].fillna(0.0)
+
+    if categorical_cols is not None:
+        for c in categorical_cols:
+            if c not in df_clean.columns:
+                raise KeyError(f"Categorical column '{c}' not found in {frame_label}.")
+            df_clean[c] = df_clean[c].fillna("UNKNOWN")
+
+    # 4. Schema Enforcement using Pandera
+    df_clean = _enforce_schema(
+        df_clean,
+        unit_id_col=unit_id_col,
+        time_col=time_col,
+        metric_cols=metric_cols,
+        categorical_cols=categorical_cols,
+        schema=schema,
+    )
+
+    # TODO: Implement out-of-core chunked ingestion or Dask integration for datasets exceeding local RAM capacities.
+    return df_clean
+
+
+def ingest_dataframe(
+    df: pd.DataFrame,
+    unit_id_col: Optional[str] = None,
+    time_col: Optional[str] = None,
+    metric_cols: Optional[List[str]] = None,
+    categorical_cols: Optional[List[str]] = None,
 ) -> pd.DataFrame:
     """Ingests, validates, and copies an in-memory pandas DataFrame into the xpyrment lifecycle.
 
@@ -75,37 +215,98 @@ def ingest_dataframe(
     Returns:
         pd.DataFrame: An audited, isolated copy of the DataFrame ready for downstream operations.
     """
-    df_clean = df.copy()
-
-    # 1. Primary Key Integrities
-    if unit_id_col is not None:
-        if unit_id_col not in df_clean.columns:
-            raise KeyError(f"unit_id column '{unit_id_col}' not found in DataFrame.")
-        # Drop rows with null unit_id
-        df_clean = df_clean.dropna(subset=[unit_id_col])
-
-    # 2. Chronological Alignment
-    if time_col is not None:
-        if time_col not in df_clean.columns:
-            raise KeyError(f"time column '{time_col}' not found in DataFrame.")
-        df_clean[time_col] = pd.to_datetime(df_clean[time_col])
-
-    # 3. Missing Value Imputation
-    if metric_cols is not None:
-        for m in metric_cols:
-            if m not in df_clean.columns:
-                raise KeyError(f"Metric column '{m}' not found in DataFrame.")
-            df_clean[m] = df_clean[m].fillna(0.0)
-
-    if categorical_cols is not None:
-        for c in categorical_cols:
-            if c not in df_clean.columns:
-                raise KeyError(f"Categorical column '{c}' not found in DataFrame.")
-            df_clean[c] = df_clean[c].fillna("UNKNOWN")
-
     # TODO: Add schema enforcement using Pydantic models or Pandera DataFrame schemas.
-    # TODO: Implement out-of-core chunked ingestion or Dask integration for datasets exceeding local RAM capacities.
-    return df_clean
+    return _clean_dataframe_like(
+        df=df,
+        unit_id_col=unit_id_col,
+        time_col=time_col,
+        metric_cols=metric_cols,
+        categorical_cols=categorical_cols,
+        to_datetime=pd.to_datetime,
+        frame_label="DataFrame",
+        copy_frame=True,
+    )
+
+
+def ingest_chunks(
+    chunks: Iterable[pd.DataFrame],
+    unit_id_col: str = None,
+    time_col: str = None,
+    metric_cols: list = None,
+    categorical_cols: list = None,
+) -> Iterator[pd.DataFrame]:
+    """Ingests and yields an iterable of pandas DataFrames (chunks) for out-of-core processing.
+
+    Applies the same localized validation and imputation checks as `ingest_dataframe` to each chunk.
+    This is highly memory efficient for massive datasets when used with e.g. `pd.read_csv(..., chunksize=N)`.
+
+    Args:
+        chunks (Iterable[pd.DataFrame]): An iterable or generator of raw pandas DataFrames.
+        unit_id_col (str): Column representing unit identifiers (nulls will be dropped).
+        time_col (str): Column representing event timestamps (will be parsed to datetime).
+        metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
+        categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+
+    Yields:
+        pd.DataFrame: An audited, isolated chunk of the dataset ready for downstream operations.
+    """
+    for chunk in chunks:
+        yield ingest_dataframe(
+            df=chunk,
+            unit_id_col=unit_id_col,
+            time_col=time_col,
+            metric_cols=metric_cols,
+            categorical_cols=categorical_cols,
+        )
+
+
+def ingest_dask_dataframe(
+    ddf: Any,
+    unit_id_col: Optional[str] = None,
+    time_col: Optional[str] = None,
+    metric_cols: Optional[List[str]] = None,
+    categorical_cols: Optional[List[str]] = None,
+) -> Any:
+    """Ingests, validates, and sets up a computation graph for a Dask DataFrame.
+
+    Performs localized validation checks on the Dask DataFrame, similar to `ingest_dataframe`,
+    using lazy Dask operations without triggering computation.
+
+    Args:
+        ddf (dask.dataframe.DataFrame): The raw source Dask DataFrame.
+        unit_id_col (str): Column representing unit identifiers (nulls will be dropped).
+        time_col (str): Column representing event timestamps (will be parsed to datetime).
+        metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
+        categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+
+    Returns:
+        dask.dataframe.DataFrame: A lazy Dask DataFrame with data cleaning operations appended to its graph.
+
+    Raises:
+        ImportError: If the 'dask' library is not installed.
+        TypeError: If the input is not a dask.dataframe.DataFrame.
+    """
+    try:
+        import dask.dataframe as dd
+    except ImportError:
+        raise ImportError(
+            "The 'dask' library is required to use 'ingest_dask_dataframe'. "
+            "Please install it via: pip install dask"
+        )
+
+    if not isinstance(ddf, dd.DataFrame):
+        raise TypeError("ingest_dask_dataframe expects a dask.dataframe.DataFrame.")
+
+    return _clean_dataframe_like(
+        df=ddf,
+        unit_id_col=unit_id_col,
+        time_col=time_col,
+        metric_cols=metric_cols,
+        categorical_cols=categorical_cols,
+        to_datetime=dd.to_datetime,
+        frame_label="Dask DataFrame",
+        copy_frame=False,
+    )
 
 
 def _quote_identifier(col_name: str) -> str:
@@ -273,7 +474,7 @@ class DuckDBIngester:
             )
 
         path_str = (
-            str(Path(parquet_path).resolve()).replace("\\", "/").replace("'", "''")
+            str(Path(parquet_path).resolve()).replace("\\", "/")
         )
 
         # 2. Schema pre-validation & column presence verification
@@ -477,7 +678,7 @@ class DuckDBIngester:
                 WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {safe_cov} IS NOT NULL
                 GROUP BY {safe_cov}, {safe_treatment_col}
             """
-            cat_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
+            cat_df = self.query(sql)
 
             if not cat_df.empty:
                 contingency = cat_df.pivot(
@@ -547,7 +748,7 @@ class DuckDBIngester:
             )
 
         path_str = (
-            str(Path(parquet_path).resolve()).replace("\\", "/").replace("'", "''")
+            str(Path(parquet_path).resolve()).replace("\\", "/")
         )
 
         # 2. Schema pre-validation & column presence verification
@@ -627,7 +828,7 @@ class DuckDBIngester:
             WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
             GROUP BY {safe_treatment_col}
         """
-        stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
+        stats_df = self.query(sql)
 
         row_0 = (
             stats_df[stats_df[treatment_col] == comp_groups[0]].iloc[0]

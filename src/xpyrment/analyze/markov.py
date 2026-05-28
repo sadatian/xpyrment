@@ -42,14 +42,30 @@ class MarkovJourneyAnalyzer:
         Returns:
             List[Tuple[str, str]]: Chronological transitions.
         """
-        transitions = []
-        # Group by user and preserve chronological sorting
-        for _, group in df.groupby(user_col, sort=False):
-            state_list = group[state_col].tolist()
-            for i in range(len(state_list) - 1):
-                s_from, s_to = state_list[i], state_list[i + 1]
-                if s_from in self.state_to_idx and s_to in self.state_to_idx:
-                    transitions.append((s_from, s_to))
+        # Factorize the user column to get an integer representation that preserves the original appearance order
+        user_codes, _ = pd.factorize(df[user_col])
+
+        # Stably sort by these integer codes to mimic groupby(sort=False) ordering exactly
+        sort_idx = np.argsort(user_codes, kind="stable")
+
+        users = df[user_col].to_numpy()[sort_idx]
+        states = df[state_col].to_numpy()[sort_idx]
+
+        # Mask where the user is the same in the next row
+        mask = users[:-1] == users[1:]
+
+        from_states = states[:-1][mask]
+        to_states = states[1:][mask]
+
+        # Filter to only valid transitions using vectorized isin
+        valid_states = np.array(list(self.state_to_idx.keys()))
+        valid_mask = np.isin(from_states, valid_states) & np.isin(to_states, valid_states)
+
+        final_from = from_states[valid_mask]
+        final_to = to_states[valid_mask]
+
+        transitions = list(zip(final_from, final_to))
+
         return transitions
 
     def compute_transition_matrix(self, transitions: List[Tuple[str, str]]) -> Tuple[np.ndarray, np.ndarray]:
