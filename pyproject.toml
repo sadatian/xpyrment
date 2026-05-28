@@ -73,6 +73,9 @@ dev = [
     "isort>=5.10.0",
     "mypy>=0.950",
 ]
+schema = [
+    "pandera>=0.15.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
