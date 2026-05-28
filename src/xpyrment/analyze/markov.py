@@ -42,11 +42,14 @@ class MarkovJourneyAnalyzer:
         Returns:
             List[Tuple[str, str]]: Chronological transitions.
         """
-        # Group by user and preserve chronological sorting using stable sort
-        df_sorted = df.sort_values(by=user_col, kind="stable")
+        # Factorize the user column to get an integer representation that preserves the original appearance order
+        user_codes, _ = pd.factorize(df[user_col])
 
-        users = df_sorted[user_col].to_numpy()
-        states = df_sorted[state_col].to_numpy()
+        # Stably sort by these integer codes to mimic groupby(sort=False) ordering exactly
+        sort_idx = np.argsort(user_codes, kind="stable")
+
+        users = df[user_col].to_numpy()[sort_idx]
+        states = df[state_col].to_numpy()[sort_idx]
 
         # Mask where the user is the same in the next row
         mask = users[:-1] == users[1:]
@@ -54,12 +57,14 @@ class MarkovJourneyAnalyzer:
         from_states = states[:-1][mask]
         to_states = states[1:][mask]
 
-        # Filter valid transitions
-        transitions = [
-            (s_from, s_to)
-            for s_from, s_to in zip(from_states, to_states)
-            if s_from in self.state_to_idx and s_to in self.state_to_idx
-        ]
+        # Filter to only valid transitions using vectorized isin
+        valid_states = np.array(list(self.state_to_idx.keys()))
+        valid_mask = np.isin(from_states, valid_states) & np.isin(to_states, valid_states)
+
+        final_from = from_states[valid_mask]
+        final_to = to_states[valid_mask]
+
+        transitions = list(zip(final_from, final_to))
 
         return transitions
 
