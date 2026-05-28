@@ -111,5 +111,5 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
    - Never run raw `pip install` or manual package mutations.
    - Keep the dependency lockfile updated by running `poetry lock` whenever `pyproject.toml` dependencies change.
 9. **Pull Request Submission & Commits**:
-   - Once a large portion of activities is completed, go through the process of creating a Pull Request (PR) and submitting it with the respective commits to merge the changes securely.
-   - **Branch Naming Standard**: Always create a new feature/bugfix branch with a unique, distinct name tagged with the date/time (e.g., `agy-YYMMDD-HHMM` like `agy-260528-0030`) before committing and opening the PR.
+   - Once a large portion of activities is completed, go through the process of creating a Pull Request (PR) and submitting it with the respective commits.
+   - Adhere strictly to the dedicated, granular PR creation rules defined in `.agents/rules/create-pr.md`.
