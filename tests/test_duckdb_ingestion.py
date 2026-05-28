@@ -384,3 +384,172 @@ def test_sql_injection_safety(tmp_path):
             treatment_group="treatment"
         )
         assert malicious_metric in stat_res
+
+
+def test_load_from_sql_sqlite(tmp_path):
+    """Verifies load_from_sql with SQLite database in-memory and file paths."""
+    from xpyrment.run.ingestion import load_from_sql
+    import sqlite3
+
+    db_path = tmp_path / "test_sql.db"
+    conn = sqlite3.connect(str(db_path))
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE users (user_id INT, revenue REAL)")
+    cursor.execute("INSERT INTO users VALUES (1, 10.5), (2, 20.0)")
+    conn.commit()
+    conn.close()
+
+    # 1. Load from file DB using sqlite:/// prefix
+    uri = f"sqlite:///{db_path}"
+    df = load_from_sql("SELECT * FROM users", uri)
+    assert len(df) == 2
+    assert df.iloc[0]["user_id"] == 1
+    assert df.iloc[0]["revenue"] == 10.5
+
+    # 2. Load from file DB using raw path
+    df_raw = load_from_sql("SELECT * FROM users", str(db_path))
+    assert len(df_raw) == 2
+
+    # 3. Load from in-memory DB (empty string or :memory:)
+    df_mem = load_from_sql("SELECT 42 as value", ":memory:")
+    assert df_mem.iloc[0]["value"] == 42
+
+    # 4. Exception handling
+    with pytest.raises(Exception):
+        load_from_sql("SELECT * FROM non_existent", ":memory:")
+
+
+def test_load_from_sql_sqlalchemy_import_error(monkeypatch):
+    """Verifies that load_from_sql raises ImportError when SQLAlchemy is required but missing."""
+    from xpyrment.run.ingestion import load_from_sql
+
+    # Mock import of sqlalchemy to raise ImportError
+    import sys
+    monkeypatch.setitem(sys.modules, "sqlalchemy", None)
+
+    with pytest.raises(ImportError, match="sqlalchemy is required"):
+        load_from_sql("SELECT * FROM users", "postgresql://user:pass@host/db")
+
+
+def test_ingest_dataframe_cleansing_and_imputations():
+    """Validates that ingest_dataframe safely drops null unit_ids, converts datetime, and imputes null metrics/categories."""
+    from xpyrment.run.ingestion import ingest_dataframe
+
+    # Prepare raw dataframe with various nulls
+    df_raw = pd.DataFrame({
+        "unit_id": [1, None, 3, 4],
+        "timestamp": ["2026-05-01 10:00:00", "2026-05-01 11:00:00", None, "2026-05-01 12:00:00"],
+        "metric_a": [10.5, 20.0, None, 30.5],
+        "category_x": ["desktop", "mobile", None, "desktop"]
+    })
+
+    # Run ingestion
+    df_clean = ingest_dataframe(
+        df_raw,
+        unit_id_col="unit_id",
+        time_col="timestamp",
+        metric_cols=["metric_a"],
+        categorical_cols=["category_x"]
+    )
+
+    # 1. Null unit_ids dropped (Null at index 1 should be dropped)
+    assert len(df_clean) == 3
+    assert None not in df_clean["unit_id"].tolist()
+    assert 2 not in df_clean["unit_id"].tolist() # original index 1 drops, index 2 (val 3) remains
+
+    # 2. Datetime parsed correctly
+    assert pd.api.types.is_datetime64_any_dtype(df_clean["timestamp"])
+
+    # 3. Numeric metric null imputed to 0.0
+    # Original third row (unit_id=3) had None for metric_a
+    row_3 = df_clean[df_clean["unit_id"] == 3].iloc[0]
+    assert row_3["metric_a"] == 0.0
+
+    # 4. Categorical covariate null imputed to "UNKNOWN"
+    assert row_3["category_x"] == "UNKNOWN"
+
+
+def test_ingest_dataframe_key_errors():
+    """Verifies that ingest_dataframe raises KeyErrors when specified columns are missing."""
+    from xpyrment.run.ingestion import ingest_dataframe
+
+    df = pd.DataFrame({"user_id": [1, 2], "revenue": [10.0, 15.0]})
+
+    with pytest.raises(KeyError, match="unit_id column 'missing_id' not found"):
+        ingest_dataframe(df, unit_id_col="missing_id")
+
+    with pytest.raises(KeyError, match="time column 'missing_time' not found"):
+        ingest_dataframe(df, time_col="missing_time")
+
+    with pytest.raises(KeyError, match="Metric column 'missing_metric' not found"):
+        ingest_dataframe(df, metric_cols=["missing_metric"])
+
+    with pytest.raises(KeyError, match="Categorical column 'missing_cat' not found"):
+        ingest_dataframe(df, categorical_cols=["missing_cat"])
+
+
+def test_load_from_sql_sqlalchemy_execution(monkeypatch):
+    """Verifies load_from_sql SQLAlchemy non-SQLite execution path."""
+    import sys
+    from types import ModuleType
+
+    # Mock sqlalchemy module and create_engine function
+    mock_sqla = ModuleType("sqlalchemy")
+    class MockEngine:
+        pass
+    mock_engine = MockEngine()
+    mock_sqla.create_engine = lambda uri: mock_engine
+    
+    monkeypatch.setitem(sys.modules, "sqlalchemy", mock_sqla)
+
+    mock_df = pd.DataFrame({"user_id": [1]})
+    monkeypatch.setattr(pd, "read_sql_query", lambda query, engine: mock_df if engine is mock_engine else None)
+
+    from xpyrment.run.ingestion import load_from_sql
+    df = load_from_sql("SELECT * FROM users", "postgresql://user:pass@host/db")
+    assert len(df) == 1
+    assert df.iloc[0]["user_id"] == 1
+
+
+def test_ingester_close_exception_handling():
+    """Verifies that closing DuckDBIngester handles connection exceptions gracefully."""
+    from xpyrment.run.ingestion import DuckDBIngester
+    ingester = DuckDBIngester()
+    
+    class MockConnection:
+        def close(self):
+            raise Exception("Mock close error")
+            
+    ingester._conn = MockConnection()
+
+    # Should close cleanly without crashing
+    ingester.close()
+
+
+def test_ingester_query_runtime_error_and_escape():
+    """Verifies ingester query connection error and identifier escaping with quotes."""
+    from xpyrment.run.ingestion import DuckDBIngester
+    
+    # 1. Escape quotes in identifier
+    escaped = DuckDBIngester._escape_identifier('col"name')
+    assert escaped == '"col""name"'
+
+    # 2. Closed connection runtime error
+    ingester = DuckDBIngester()
+    ingester.close()
+    with pytest.raises(RuntimeError, match="connection is closed"):
+        ingester.query("SELECT 1")
+
+
+def test_ingester_schema_parse_error(tmp_path):
+    """Verifies that invalid parquet files trigger schema parse ValueErrors."""
+    from xpyrment.run.ingestion import DuckDBIngester
+    ingester = DuckDBIngester()
+    
+    bad_path = tmp_path / "bad.parquet"
+    bad_path.write_text("corrupted content")
+
+    with pytest.raises(ValueError, match="Failed to parse Parquet schema"):
+        ingester.compute_covariate_balance(str(bad_path), "treatment", ["age"])
+
+

@@ -102,7 +102,11 @@ Refer to `docstring_reference.md` for complete API signatures, parameters, and r
 6. **Context & Token Optimization**:
    - Make sure to use built in search functionality when possible to reduce context size and token expenditure.
    - Consider all other possible measures to reduce context size and token use during operations.
-7. Virtual Environment Activation:
-   - Always run `.\.venv\Scripts\Activate.ps1` once in each conversation if a terminal command is expected to be run.
-   - If blocked by a PowerShell execution policy (`UnauthorizedAccess`), use the bypass command: `powershell -ExecutionPolicy Bypass -File .\.venv\Scripts\Activate.ps1`.
-   - Alternatively, you may execute tools directly using the venv path (e.g., `.\.venv\Scripts\python.exe -m pytest`) to ensure the correct environment is utilized without explicit activation.
+7. Virtual Environment & Command Execution:
+   - Always run terminal commands using `poetry run <command>` (e.g. `poetry run pytest` or `poetry run python main.py --sync`) to guarantee execution under the correct environment and lockfile dependencies.
+   - Alternatively, you can spawn an isolated subshell via `poetry shell` to run interactive commands.
+8. **Dependency & Lockfile Best Practices**:
+   - Ensure all dependencies and virtual environments are managed strictly via Poetry.
+   - Run `poetry install` to synchronize local virtual environments, and use `poetry add <dependency>` to add new packages.
+   - Never run raw `pip install` or manual package mutations.
+   - Keep the dependency lockfile updated by running `poetry lock` whenever `pyproject.toml` dependencies change.

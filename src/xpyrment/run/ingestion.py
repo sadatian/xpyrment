@@ -273,7 +273,7 @@ class DuckDBIngester:
             )
 
         path_str = (
-            str(Path(parquet_path).resolve()).replace("\\", "/").replace("'", "''")
+            str(Path(parquet_path).resolve()).replace("\\", "/")
         )
 
         # 2. Schema pre-validation & column presence verification
@@ -477,7 +477,7 @@ class DuckDBIngester:
                 WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {safe_cov} IS NOT NULL
                 GROUP BY {safe_cov}, {safe_treatment_col}
             """
-            cat_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
+            cat_df = self.query(sql)
 
             if not cat_df.empty:
                 contingency = cat_df.pivot(
@@ -547,7 +547,7 @@ class DuckDBIngester:
             )
 
         path_str = (
-            str(Path(parquet_path).resolve()).replace("\\", "/").replace("'", "''")
+            str(Path(parquet_path).resolve()).replace("\\", "/")
         )
 
         # 2. Schema pre-validation & column presence verification
@@ -627,7 +627,7 @@ class DuckDBIngester:
             WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
             GROUP BY {safe_treatment_col}
         """
-        stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
+        stats_df = self.query(sql)
 
         row_0 = (
             stats_df[stats_df[treatment_col] == comp_groups[0]].iloc[0]

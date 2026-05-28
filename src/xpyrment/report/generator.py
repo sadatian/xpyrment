@@ -5,6 +5,7 @@ self-contained Markdown reports and dynamic HTML dashboards.
 """
 
 import os
+from typing import Dict, Any
 from scipy.stats import chi2
 from dataclasses import dataclass
 
@@ -150,18 +151,8 @@ class ExperimentReportGenerator:
         )
         lines.append("| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |")
 
-        for row in self.df_raw.itertuples(index=False):
-            m_name = getattr(row, "metric_name")
-            m_type = getattr(row, "metric_type", "mean")
-            c_mean = getattr(row, "control_mean", 0.0)
-            t_mean = getattr(row, "treatment_mean", 0.0)
-            lift = getattr(row, "relative_lift", 0.0)
-            p_val = getattr(row, "p_value", 1.0)
-            cuped = "✅" if getattr(row, "cuped_applied", False) else "❌"
-
-            is_sig = p_val < self.alpha
-            sig_badge = "🌟 **Significant**" if is_sig else "Neutral"
-
+        for metric in self._iter_metric_rows():
+            sig = self._metric_significance(metric)
             lines.append(
                 f"| **{metric.name}** | `{metric.type}` | "
                 f"{metric.control_mean:.4f} | {metric.treatment_mean:.4f} | "
@@ -213,23 +204,10 @@ class ExperimentReportGenerator:
 
         # Formulate HTML metric table rows
         table_rows = []
-        for row in self.df_raw.itertuples(index=False):
-            m_name = getattr(row, "metric_name")
-            m_type = getattr(row, "metric_type", "mean")
-            c_mean = getattr(row, "control_mean", 0.0)
-            t_mean = getattr(row, "treatment_mean", 0.0)
-            lift = getattr(row, "relative_lift", 0.0)
-            p_val = getattr(row, "p_value", 1.0)
-            cuped_applied = getattr(row, "cuped_applied", False)
-
-            is_sig = p_val < self.alpha
-            sig_class = "sig-badge" if is_sig else "neutral-badge"
-            sig_text = "SIGNIFICANT" if is_sig else "NEUTRAL"
-            
-            lift_class = "positive-lift" if lift > 0 else "negative-lift"
-            lift_str = f"{lift:+.2%}" if lift != 0.0 else "0.00%"
-            
-            cuped_badge = '<span class="badge badge-success">CUPED Applied</span>' if cuped_applied else '<span class="badge badge-gray">Standard</span>'
+        for metric in self._iter_metric_rows():
+            sig = self._metric_significance(metric)
+            lift_fmt = self._metric_lift_presentation(metric)
+            cuped_badge = self._metric_cuped_badge_html(metric)
 
             table_rows.append(f"""
             <tr>

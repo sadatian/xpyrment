@@ -1,10 +1,14 @@
 [build-system]
-requires = ["setuptools>=77.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+packages = [{ include = "xpyrment", from = "src" }]
+include = ["src/xpyrment/assets/images/*"]
 
 [project]
 name = "xpyrment"
-version = "1.6.0.0"
+version = "1.6.1.0"
 authors = [
     { name = "Dan Sadatian", email = "dan.sadatian@gmail.com" }
 ]
@@ -54,13 +58,14 @@ dependencies = [
     "statsmodels>=0.13.0",
     "matplotlib>=3.4.0",
     "seaborn>=0.11.0",
+    "shap>=0.40.0; python_version >= '3.11'",
 ]
 
 [project.urls]
-"¹ Homepage" = "https://sadatian.io/xpyrment/"
-"² Repository" = "https://github.com/sadatian/xpyrment"
-"³ Bug Tracker" = "https://github.com/sadatian/xpyrment/issues"
-"⁴ Changelog" = "https://github.com/sadatian/xpyrment/blob/main/CHANGELOG.md"
+"Homepage" = "https://sadatian.io/xpyrment/"
+"Repository" = "https://github.com/sadatian/xpyrment"
+"Bug Tracker" = "https://github.com/sadatian/xpyrment/issues"
+"Changelog" = "https://github.com/sadatian/xpyrment/blob/main/CHANGELOG.md"
 
 [project.scripts]
 xpyrment = "xpyrment.cli:main"
@@ -72,14 +77,10 @@ dev = [
     "black>=22.0.0",
     "isort>=5.10.0",
     "mypy>=0.950",
+    "duckdb>=0.8.0",
+    "pyarrow>=10.0.0",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["xpyrment*"]
-
-[tool.setuptools.package-data]
-xpyrment = ["assets/images/*"]
 
 [tool.black]
 line-length = 88
