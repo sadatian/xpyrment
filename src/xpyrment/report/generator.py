@@ -5,6 +5,7 @@ self-contained Markdown reports and dynamic HTML dashboards.
 """
 
 import os
+from typing import Dict, Any
 from scipy.stats import chi2
 from dataclasses import dataclass
 

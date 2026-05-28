@@ -104,8 +104,109 @@ def ingest_dataframe(
             df_clean[c] = df_clean[c].fillna("UNKNOWN")
 
     # TODO: Add schema enforcement using Pydantic models or Pandera DataFrame schemas.
-    # TODO: Implement out-of-core chunked ingestion or Dask integration for datasets exceeding local RAM capacities.
+
     return df_clean
+
+
+from typing import Iterable, Iterator
+
+
+def ingest_chunks(
+    chunks: Iterable[pd.DataFrame],
+    unit_id_col: str = None,
+    time_col: str = None,
+    metric_cols: list = None,
+    categorical_cols: list = None,
+) -> Iterator[pd.DataFrame]:
+    """Ingests and yields an iterable of pandas DataFrames (chunks) for out-of-core processing.
+
+    Applies the same localized validation and imputation checks as `ingest_dataframe` to each chunk.
+    This is highly memory efficient for massive datasets when used with e.g. `pd.read_csv(..., chunksize=N)`.
+
+    Args:
+        chunks (Iterable[pd.DataFrame]): An iterable or generator of raw pandas DataFrames.
+        unit_id_col (str): Column representing unit identifiers (nulls will be dropped).
+        time_col (str): Column representing event timestamps (will be parsed to datetime).
+        metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
+        categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+
+    Yields:
+        pd.DataFrame: An audited, isolated chunk of the dataset ready for downstream operations.
+    """
+    for chunk in chunks:
+        yield ingest_dataframe(
+            df=chunk,
+            unit_id_col=unit_id_col,
+            time_col=time_col,
+            metric_cols=metric_cols,
+            categorical_cols=categorical_cols,
+        )
+
+
+def ingest_dask_dataframe(
+    ddf,
+    unit_id_col: str = None,
+    time_col: str = None,
+    metric_cols: list = None,
+    categorical_cols: list = None,
+):
+    """Ingests, validates, and sets up a computation graph for a Dask DataFrame.
+
+    Performs localized validation checks on the Dask DataFrame, similar to `ingest_dataframe`,
+    using lazy Dask operations without triggering computation.
+
+    Args:
+        ddf (dask.dataframe.DataFrame): The raw source Dask DataFrame.
+        unit_id_col (str): Column representing unit identifiers (nulls will be dropped).
+        time_col (str): Column representing event timestamps (will be parsed to datetime).
+        metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
+        categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+
+    Returns:
+        dask.dataframe.DataFrame: A lazy Dask DataFrame with data cleaning operations appended to its graph.
+
+    Raises:
+        ImportError: If the 'dask' library is not installed.
+    """
+    try:
+        import dask.dataframe as dd
+    except ImportError:
+        raise ImportError(
+            "The 'dask' library is required to use 'ingest_dask_dataframe'. "
+            "Please install it via: pip install dask"
+        )
+
+    if not isinstance(ddf, dd.DataFrame):
+        raise TypeError("Input must be a dask.dataframe.DataFrame.")
+
+    ddf_clean = ddf.copy()
+
+    # 1. Primary Key Integrities
+    if unit_id_col is not None:
+        if unit_id_col not in ddf_clean.columns:
+            raise KeyError(f"unit_id column '{unit_id_col}' not found in Dask DataFrame.")
+        ddf_clean = ddf_clean.dropna(subset=[unit_id_col])
+
+    # 2. Chronological Alignment
+    if time_col is not None:
+        if time_col not in ddf_clean.columns:
+            raise KeyError(f"time column '{time_col}' not found in Dask DataFrame.")
+        ddf_clean[time_col] = dd.to_datetime(ddf_clean[time_col])
+
+    # 3. Missing Value Imputation
+    if metric_cols is not None:
+        for m in metric_cols:
+            if m not in ddf_clean.columns:
+                raise KeyError(f"Metric column '{m}' not found in Dask DataFrame.")
+            ddf_clean[m] = ddf_clean[m].fillna(0.0)
+
+    if categorical_cols is not None:
+        for c in categorical_cols:
+            if c not in ddf_clean.columns:
+                raise KeyError(f"Categorical column '{c}' not found in Dask DataFrame.")
+            ddf_clean[c] = ddf_clean[c].fillna("UNKNOWN")
+
+    return ddf_clean
 
 
 def _quote_identifier(col_name: str) -> str:

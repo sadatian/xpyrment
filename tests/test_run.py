@@ -140,3 +140,90 @@ def test_load_from_sql_mock():
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 1
     assert df.iloc[0]['id'] == 1
+
+from xpyrment.run.ingestion import ingest_chunks, ingest_dask_dataframe
+import types
+
+def test_ingest_chunks():
+    """Tests the chunked out-of-core ingestion functionality."""
+    raw_chunks = [
+        pd.DataFrame({
+            "user_id": ["u1", None],
+            "revenue": [50.0, np.nan],
+            "browser": ["Chrome", "Safari"]
+        }),
+        pd.DataFrame({
+            "user_id": ["u3", "u4"],
+            "revenue": [np.nan, 20.0],
+            "browser": [np.nan, "Firefox"]
+        })
+    ]
+
+    chunk_gen = ingest_chunks(
+        raw_chunks,
+        unit_id_col="user_id",
+        metric_cols=["revenue"],
+        categorical_cols=["browser"]
+    )
+
+    assert isinstance(chunk_gen, types.GeneratorType)
+    clean_chunks = list(chunk_gen)
+    assert len(clean_chunks) == 2
+
+    chunk1 = clean_chunks[0]
+    assert len(chunk1) == 1
+    assert "u1" in chunk1["user_id"].values
+    assert chunk1.iloc[0]["revenue"] == 50.0
+
+    chunk2 = clean_chunks[1]
+    assert len(chunk2) == 2
+    u3_row = chunk2[chunk2["user_id"] == "u3"].iloc[0]
+    assert u3_row["revenue"] == 0.0
+    assert u3_row["browser"] == "UNKNOWN"
+
+def test_ingest_dask_dataframe_missing_dependency(monkeypatch):
+    """Tests that missing dask dependency raises an ImportError."""
+    import builtins
+    original_import = builtins.__import__
+
+    def mock_import(name, *args, **kwargs):
+        if name == "dask.dataframe":
+            raise ImportError("No module named dask.dataframe")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", mock_import)
+
+    with pytest.raises(ImportError, match="The 'dask' library is required to use 'ingest_dask_dataframe'"):
+        ingest_dask_dataframe(pd.DataFrame())
+
+def test_ingest_dask_dataframe():
+    """Tests dask dataframe out-of-core ingestion if dask is available."""
+    pytest.importorskip("dask.dataframe")
+    import dask.dataframe as dd
+
+    pdf = pd.DataFrame({
+        "user_id": ["u1", None, "u3"],
+        "joined_at": ["2026-05-01", "2026-05-02", "2026-05-03"],
+        "revenue": [50.0, np.nan, 20.0],
+        "browser": ["Chrome", "Safari", np.nan]
+    })
+    ddf = dd.from_pandas(pdf, npartitions=2)
+
+    clean_ddf = ingest_dask_dataframe(
+        ddf,
+        unit_id_col="user_id",
+        time_col="joined_at",
+        metric_cols=["revenue"],
+        categorical_cols=["browser"]
+    )
+
+    # Note: Operations are lazy. Call compute() to test outcome.
+    clean_pdf = clean_ddf.compute()
+
+    assert len(clean_pdf) == 2
+    assert "u1" in clean_pdf["user_id"].values
+    assert "u3" in clean_pdf["user_id"].values
+
+    u3_row = clean_pdf[clean_pdf["user_id"] == "u3"].iloc[0]
+    assert u3_row["revenue"] == 20.0
+    assert u3_row["browser"] == "UNKNOWN"
