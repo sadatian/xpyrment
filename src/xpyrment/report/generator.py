@@ -7,6 +7,7 @@ self-contained Markdown reports and dynamic HTML dashboards.
 import os
 from scipy.stats import chi2
 from dataclasses import dataclass
+from typing import Dict, Any, List, Optional, Tuple
 
 from xpyrment.analyze.orchestrator import AnalysisResult
 

@@ -254,7 +254,10 @@ class XpyrmentHubServer:
                         df = server_instance.shared_data.copy()
                         y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
                         x_cols = [c for c in df.columns if c not in [y_col, "user_id"]]
-                        X = df[x_cols].apply(lambda x: pd.factorize(x)[0]).to_numpy()
+                        if not x_cols:
+                            X = np.empty((len(df), 0))
+                        else:
+                            X = np.column_stack([pd.factorize(df[c])[0] for c in x_cols])
                         y = df[y_col].to_numpy()
                         detector = InteractionDetector(metric_name=y_col, factors=x_cols)
                         res = detector.detect(df, x_cols)
