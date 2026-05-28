@@ -621,6 +621,11 @@ def test_taguchi_l12_generation():
     assert len(df) == 12
     assert len(df.columns) == 11
 
+    # Verify column balance (each column has 6 low and 6 high)
+    for col in df.columns:
+        assert len(df[col].unique()) == 2
+        assert df[col].value_counts().iloc[0] == 6
+
     # Verify that if fewer factors are provided it still works
     factors_short = {f"F{i}": [1.0, 2.0] for i in range(5)}
     design_short = TaguchiDesign(factors_short, array_name="L12")
@@ -634,6 +639,12 @@ def test_taguchi_l12_generation():
     with pytest.raises(ValueError, match="must have exactly 2 levels"):
         design_invalid.generate()
 
+    # Assert >11 factors
+    factors_too_many = {f"F{i}": [1.0, 2.0] for i in range(12)}
+    design_too_many = TaguchiDesign(factors_too_many, array_name="L12")
+    with pytest.raises(ValueError, match="supports at most 11 factors"):
+        design_too_many.generate()
+
 
 def test_taguchi_l16_generation():
     """Tests Taguchi Design L16 orthogonal array correctness."""
@@ -643,6 +654,26 @@ def test_taguchi_l16_generation():
 
     assert len(df) == 16
     assert len(df.columns) == 15
+
+
+def test_taguchi_l16_invalid_levels():
+    """L16 factors must each have exactly 2 levels."""
+    # Single factor with an invalid number of levels
+    factors_invalid = {"A": [1.0]}
+    design_invalid = TaguchiDesign(factors_invalid, array_name="L16")
+
+    with pytest.raises(ValueError, match="must have exactly 2 levels"):
+        design_invalid.generate()
+
+
+def test_taguchi_l16_too_many_factors():
+    """L16 supports at most 15 two-level factors."""
+    # 16 factors exceeds the maximum supported by the L16 array
+    factors_too_many = {f"F{i}": [1.0, 2.0] for i in range(16)}
+    design_too_many = TaguchiDesign(factors_too_many, array_name="L16")
+
+    with pytest.raises(ValueError, match="supports at most 15 factors"):
+        design_too_many.generate()
 
 
 def test_taguchi_l18_generation():
@@ -660,10 +691,34 @@ def test_taguchi_l18_generation():
     # Assert valid mixed level validation
     factors_invalid_first = {"F0": [1.0, 2.0, 3.0]}
     design_invalid = TaguchiDesign(factors_invalid_first, array_name="L18")
-    with pytest.raises(ValueError, match="first factor .* must have exactly 2 levels"):
+    with pytest.raises(ValueError, match="must have exactly 2 levels"):
         design_invalid.generate()
 
     factors_invalid_second = {"F0": [1.0, 2.0], "F1": [1.0, 2.0]}
     design_invalid_2 = TaguchiDesign(factors_invalid_second, array_name="L18")
-    with pytest.raises(ValueError, match="Factors 2 to .* must have exactly 3 levels"):
+    with pytest.raises(ValueError, match="must have exactly 3 levels"):
         design_invalid_2.generate()
+
+
+def test_taguchi_l18_raises_on_too_many_factors():
+    """L18 should raise when more than the maximum number of factors is provided."""
+    # 1 two-level factor + 8 three-level factors = 9 total factors (> 8 allowed).
+    factors = {"F0": [1.0, 2.0]}
+    factors.update({f"F{i}": [1.0, 2.0, 3.0] for i in range(1, 9)})
+
+    design = TaguchiDesign(factors, array_name="L18")
+    with pytest.raises(ValueError, match="supports at most 8 factors"):
+        design.generate()
+
+
+def test_taguchi_l18_generation_with_fewer_factors():
+    """L18 should still generate 18 runs when fewer than 8 factors are provided."""
+    # Use F0 (2 levels) plus 3 three-level factors (total 4 factors < 8).
+    factors = {"F0": [1.0, 2.0]}
+    factors.update({f"F{i}": [1.0, 2.0, 3.0] for i in range(1, 4)})
+
+    design = TaguchiDesign(factors, array_name="L18")
+    df = design.generate()
+
+    assert len(df) == 18
+    assert len(df.columns) == len(factors)

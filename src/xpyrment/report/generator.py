@@ -3,6 +3,7 @@
 Consolidates metrics, SRM allocation diagnostics, and covariate balances into premium,
 self-contained Markdown reports and dynamic HTML dashboards.
 """
+from typing import Dict, Any
 
 import os
 from scipy.stats import chi2
