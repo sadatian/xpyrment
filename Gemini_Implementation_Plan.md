@@ -150,7 +150,7 @@
   - Refactored `.agents/rules/create-pr.md` to run `gh` commands natively without exposing personal access token parameters, leveraging the system's global authentication state.
   - Successfully verified all 291 unit tests with a 100% green pass.
 
-- **Sprint 1.6.1.2 Post-Merge Review Refactoring (In Progress — PR #23)**:
+- **Sprint 1.6.1.2 Post-Merge Review Refactoring (Completed)**:
   - Updated Rule 9 in `.agents/rules/implementation-guide.md` to explicitly enforce the time-tagged branch naming convention (`agy-YYMMDD-HHMM`).
   - Updated `get_doe_design_summaries()` in `src/xpyrment/run/hub.py` to fall back to `dir(doe_pkg)` when `__all__` is absent, with module-level filtering (`cls.__module__.startswith("xpyrment.design.doe")`) to prevent exposing imported helper classes from other modules.
   - Moved the Poetry CLI check in `main.py` from global startup into the command-execution branch, so `--help` works without Poetry on PATH.
@@ -159,9 +159,15 @@
   - Fixed grammatical typo: "the entire 291 unit tests" → "all 291 unit tests".
   - Verified all 291 unit tests pass (100% green) after each change.
 
+- **Plots.py Code Coverage Diagnostics & Test Setup (In Progress)**:
+  - Scanned the entire repository codebase to analyze coverage profiles.
+  - Verified that there are **zero** files completely missing test coverage in `src/` (all active modules have >0% coverage, with average coverage at 94%).
+  - Identified that `src/xpyrment/interactions/plots.py` currently has 87.88% coverage.
+  - Formulated a comprehensive implementation plan to write a dedicated unit test suite for `src/xpyrment/interactions/plots.py` to achieve 100% coverage, and to document why certain modules have minor gaps.
+
 ### Next Steps
-- **Push & Submit Pull Request**: Stage all modified files, commit the changes to branch `agy-260528-0049`, push the branch, and verify the Pull Request has updated with the detailed PR description artifact on GitHub.
-- **Switch Workspace Branch**: Switch back to `main` once the PR is successfully opened/updated on GitHub.
+- **Execute Plots Testing Backfill**: Implement `tests/test_plots.py` to cover all edge cases, exceptions, and paths for `src/xpyrment/interactions/plots.py`.
+- **Run Full Verification**: Run all unit tests using `poetry run pytest` to ensure 100% pass rate and verify code coverage of `plots.py` reaches >= 90% (target 100%).
 
 
 
