@@ -611,3 +611,59 @@ def test_full_factorial_design():
     assert df.shape == (4, 2)
     assert set(df['F1']) == {0, 1}
     assert set(df['F2']) == {0, 1}
+
+def test_taguchi_l12_generation():
+    """Tests Taguchi Design L12 orthogonal array correctness."""
+    factors = {f"F{i}": [1.0, 2.0] for i in range(11)}
+    design = TaguchiDesign(factors, array_name="L12")
+    df = design.generate()
+
+    assert len(df) == 12
+    assert len(df.columns) == 11
+
+    # Verify that if fewer factors are provided it still works
+    factors_short = {f"F{i}": [1.0, 2.0] for i in range(5)}
+    design_short = TaguchiDesign(factors_short, array_name="L12")
+    df_short = design_short.generate()
+    assert len(df_short) == 12
+    assert len(df_short.columns) == 5
+
+    # Assert validation
+    factors_invalid = {"A": [1.0, 2.0, 3.0]}
+    design_invalid = TaguchiDesign(factors_invalid, array_name="L12")
+    with pytest.raises(ValueError, match="must have exactly 2 levels"):
+        design_invalid.generate()
+
+
+def test_taguchi_l16_generation():
+    """Tests Taguchi Design L16 orthogonal array correctness."""
+    factors = {f"F{i}": [1.0, 2.0] for i in range(15)}
+    design = TaguchiDesign(factors, array_name="L16")
+    df = design.generate()
+
+    assert len(df) == 16
+    assert len(df.columns) == 15
+
+
+def test_taguchi_l18_generation():
+    """Tests Taguchi Design L18 mixed-level orthogonal array correctness."""
+    # L18 supports 1 factor with 2 levels, and 7 factors with 3 levels.
+    factors = {"F0": [1.0, 2.0]}
+    factors.update({f"F{i}": [1.0, 2.0, 3.0] for i in range(1, 8)})
+
+    design = TaguchiDesign(factors, array_name="L18")
+    df = design.generate()
+
+    assert len(df) == 18
+    assert len(df.columns) == 8
+
+    # Assert valid mixed level validation
+    factors_invalid_first = {"F0": [1.0, 2.0, 3.0]}
+    design_invalid = TaguchiDesign(factors_invalid_first, array_name="L18")
+    with pytest.raises(ValueError, match="first factor .* must have exactly 2 levels"):
+        design_invalid.generate()
+
+    factors_invalid_second = {"F0": [1.0, 2.0], "F1": [1.0, 2.0]}
+    design_invalid_2 = TaguchiDesign(factors_invalid_second, array_name="L18")
+    with pytest.raises(ValueError, match="Factors 2 to .* must have exactly 3 levels"):
+        design_invalid_2.generate()

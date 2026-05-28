@@ -94,41 +94,118 @@ class TaguchiDesign(DesignMatrix):
         """
         import numpy as np
 
-        if self.array_name.upper() != "L9":
+        array_name = self.array_name.upper()
+
+        templates = {
+            "L9": np.array([
+                [1, 1, 1, 1],
+                [1, 2, 2, 2],
+                [1, 3, 3, 3],
+                [2, 1, 2, 3],
+                [2, 2, 3, 1],
+                [2, 3, 1, 2],
+                [3, 1, 3, 2],
+                [3, 2, 1, 3],
+                [3, 3, 2, 1]
+            ]),
+            "L12": np.array([
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2],
+                [1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2],
+                [1, 2, 1, 2, 2, 1, 2, 2, 1, 1, 2],
+                [1, 2, 2, 1, 2, 2, 1, 2, 1, 2, 1],
+                [1, 2, 2, 2, 1, 2, 2, 1, 2, 1, 1],
+                [2, 1, 2, 2, 1, 1, 2, 2, 1, 2, 1],
+                [2, 1, 2, 1, 2, 2, 2, 1, 1, 1, 2],
+                [2, 1, 1, 2, 2, 2, 1, 2, 2, 1, 1],
+                [2, 2, 2, 1, 1, 1, 1, 2, 2, 1, 2],
+                [2, 2, 1, 2, 1, 2, 1, 1, 1, 2, 2],
+                [2, 2, 1, 1, 2, 1, 2, 1, 2, 2, 1]
+            ]),
+            "L16": np.array([
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+                [1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2],
+                [1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1],
+                [1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2],
+                [1, 2, 2, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1],
+                [1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1],
+                [1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2],
+                [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
+                [2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1],
+                [2, 1, 2, 2, 1, 2, 1, 1, 2, 1, 2, 2, 1, 2, 1],
+                [2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 2],
+                [2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1],
+                [2, 2, 1, 1, 2, 2, 1, 2, 1, 1, 2, 2, 1, 1, 2],
+                [2, 2, 1, 2, 1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 2],
+                [2, 2, 1, 2, 1, 1, 2, 2, 1, 1, 2, 1, 2, 2, 1]
+            ]),
+            "L18": np.array([
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 2, 2, 2, 2, 2, 2],
+                [1, 1, 3, 3, 3, 3, 3, 3],
+                [1, 2, 1, 1, 2, 2, 3, 3],
+                [1, 2, 2, 2, 3, 3, 1, 1],
+                [1, 2, 3, 3, 1, 1, 2, 2],
+                [1, 3, 1, 2, 1, 3, 2, 3],
+                [1, 3, 2, 3, 2, 1, 3, 1],
+                [1, 3, 3, 1, 3, 2, 1, 2],
+                [2, 1, 1, 3, 3, 2, 2, 1],
+                [2, 1, 2, 1, 1, 3, 3, 2],
+                [2, 1, 3, 2, 2, 1, 1, 3],
+                [2, 2, 1, 2, 3, 1, 3, 2],
+                [2, 2, 2, 3, 1, 2, 1, 3],
+                [2, 2, 3, 1, 2, 3, 2, 1],
+                [2, 3, 1, 3, 2, 3, 1, 2],
+                [2, 3, 2, 1, 3, 1, 2, 3],
+                [2, 3, 3, 2, 1, 2, 3, 1]
+            ])
+        }
+
+        if array_name not in templates:
             raise ValueError(
-                f"Taguchi array '{self.array_name}' is not currently implemented. Only 'L9' is supported."
+                f"Taguchi array '{self.array_name}' is not currently implemented. Supported arrays are: {', '.join(templates.keys())}."
             )
 
-        # Standard L9 template (coded levels 1, 2, 3)
-        l9_matrix = np.array([
-            [1, 1, 1, 1],
-            [1, 2, 2, 2],
-            [1, 3, 3, 3],
-            [2, 1, 2, 3],
-            [2, 2, 3, 1],
-            [2, 3, 1, 2],
-            [3, 1, 3, 2],
-            [3, 2, 1, 3],
-            [3, 3, 2, 1]
-        ])
-
+        matrix = templates[array_name]
+        max_factors = matrix.shape[1]
         k = len(self.factors)
-        if k > 4:
-            raise ValueError("L9 Orthogonal Array supports at most 4 factors.")
+
+        if k > max_factors:
+            raise ValueError(f"{array_name} Orthogonal Array supports at most {max_factors} factors.")
 
         keys = list(self.factors.keys())
         physical_df = pd.DataFrame()
 
-        for idx, col in enumerate(keys):
-            levels = self.factors[col]
-            if len(levels) != 3:
-                raise ValueError(
-                    f"Each factor in Taguchi L9 design must have exactly 3 levels. Factor '{col}' has {len(levels)} levels."
-                )
+        if array_name == "L18":
+            # For L18, the first column has 2 levels and columns 2-8 have 3 levels.
+            for idx, col in enumerate(keys):
+                levels = self.factors[col]
+                if idx == 0:
+                    if len(levels) != 2:
+                        raise ValueError(
+                            f"The first factor in Taguchi L18 design must have exactly 2 levels. Factor '{col}' has {len(levels)} levels."
+                        )
+                else:
+                    if len(levels) != 3:
+                        raise ValueError(
+                            f"Factors 2 to {max_factors} in Taguchi L18 design must have exactly 3 levels. Factor '{col}' has {len(levels)} levels."
+                        )
+                coded_col = matrix[:, idx]
+                physical_df[col] = [levels[c - 1] for c in coded_col]
 
-            coded_col = l9_matrix[:, idx]
-            physical_df[col] = [levels[c - 1] for c in coded_col]
+        else:
+            # For L9 (3-level), L12 (2-level), L16 (2-level)
+            required_levels = 3 if array_name == "L9" else 2
 
-        # TODO: Add automatic lookup support for L12, L16, and L18 mixed-level orthogonal arrays.
+            for idx, col in enumerate(keys):
+                levels = self.factors[col]
+                if len(levels) != required_levels:
+                    raise ValueError(
+                        f"Each factor in Taguchi {array_name} design must have exactly {required_levels} levels. Factor '{col}' has {len(levels)} levels."
+                    )
+                coded_col = matrix[:, idx]
+                physical_df[col] = [levels[c - 1] for c in coded_col]
+
         # TODO: Integrate signal-to-noise ratio (SNR) loss analysis plots for parameter robust design.
         return physical_df
