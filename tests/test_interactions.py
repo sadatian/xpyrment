@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 import pandas as pd
 from xpyrment.interactions.anova import run_factorial_anova
