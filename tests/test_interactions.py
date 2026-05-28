@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+import pytest
 from xpyrment.interactions.anova import run_factorial_anova
 from xpyrment.interactions.regression import check_treatment_covariate_interaction
 from xpyrment.interactions.hstat import compute_friedman_h_statistic
@@ -230,3 +231,27 @@ def test_plot_interaction_effects(covariate_type, num_treatments, add_nans):
     assert ax.get_ylabel().lower() == 'revenue'
 
     plt.close('all')
+
+
+def test_friedman_h_statistic_edge_cases():
+    """Tests compute_friedman_h_statistic with non-DataFrame array input and zero predictions denominator."""
+    # 1. Non-DataFrame array input (DataFrame auto-coercion)
+    class DummyModel:
+        def predict(self, X):
+            return X[0] + X[1]
+
+    X_arr = np.array([[1.0, 2.0], [3.0, 4.0]])
+    # Feature names are 0 and 1 for coerced DataFrame
+    h_val = compute_friedman_h_statistic(DummyModel(), X_arr, 0, 1)
+    assert isinstance(h_val, float)
+    assert h_val >= 0.0
+
+    # 2. Zero predictions denominator
+    class ZeroModel:
+        def predict(self, X):
+            return np.zeros(len(X))
+
+    X_df = pd.DataFrame({"X1": [1.0, 2.0], "X2": [3.0, 4.0]})
+    h_zero = compute_friedman_h_statistic(ZeroModel(), X_df, "X1", "X2")
+    assert h_zero == 0.0
+

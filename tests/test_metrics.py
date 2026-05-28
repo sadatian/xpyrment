@@ -163,3 +163,78 @@ def test_transformations():
     res_delta = delta_normalization(df, "Y")
     assert len(res_delta) == 3
 
+
+def test_metrics_degenerate_and_empty():
+    """Validates degenerate variance Welch statistical fallbacks and empty group error triggers."""
+    # 1. Zero Variance Welch stats fallback (se_diff <= 0 branch)
+    df_degenerate = pd.DataFrame({
+        "variant": ["control", "control", "treatment", "treatment"],
+        "revenue": [10.0, 10.0, 15.0, 15.0]  # Constant within groups
+    })
+    metric = MeanMetric("Revenue", value_col="revenue")
+    res = metric.calculate(df_degenerate, "variant", "control", "treatment")
+    assert res["control_var"] == 0.0
+    assert res["treatment_var"] == 0.0
+    assert res["p_value"] == 1.0
+    assert res["ci_lower"] == res["absolute_difference"]
+    assert res["ci_upper"] == res["absolute_difference"]
+    assert res["power"] == 0.0
+
+    # 2. MeanMetric Empty Group (after dropping NaNs)
+    df_empty_mean = pd.DataFrame({
+        "variant": ["control", "treatment"],
+        "revenue": [np.nan, 10.0]
+    })
+    with pytest.raises(ValueError, match="Control or treatment group is empty"):
+        metric.calculate(df_empty_mean, "variant", "control", "treatment")
+
+    # 3. RatioMetric Empty Group (after dropping NaNs)
+    df_empty_ratio = pd.DataFrame({
+        "variant": ["control", "treatment"],
+        "num": [1.0, np.nan],
+        "den": [5.0, 10.0]
+    })
+    ratio_metric = RatioMetric("Ratio", numerator_col="num", denominator_col="den")
+    with pytest.raises(ValueError, match="Control or treatment group is empty"):
+        ratio_metric.calculate(df_empty_ratio, "variant", "control", "treatment")
+
+
+def test_ratio_metric_cuped_success():
+    """Validates that RatioMetric correctly applies double-covariate CUPED adjustment when variances are positive."""
+    rng = np.random.default_rng(42)
+    n = 200
+
+    # Correlated pre and post period numerator and denominators
+    pre_num = rng.normal(5.0, 1.0, n)
+    num = pre_num + rng.normal(1.0, 0.5, n)
+
+    pre_den = rng.normal(20.0, 2.0, n)
+    den = pre_den + rng.normal(2.0, 1.0, n)
+
+    df = pd.DataFrame({
+        "variant": ["control"] * (n // 2) + ["treatment"] * (n // 2),
+        "clicks": num,
+        "impressions": den,
+        "pre_clicks": pre_num,
+        "pre_impressions": pre_den
+    })
+
+    # Initialize RatioMetric with valid pre-period covariates
+    ratio_metric = RatioMetric(
+        "CTR",
+        numerator_col="clicks",
+        denominator_col="impressions",
+        pre_numerator_col="pre_clicks",
+        pre_denominator_col="pre_impressions"
+    )
+
+    res = ratio_metric.calculate(df, "variant", "control", "treatment")
+
+    # Assert CUPED was successfully applied
+    assert res["cuped_applied"] is True
+    assert res["variance_reduction"] > 0.0
+    assert res["control_mean"] > 0
+    assert res["treatment_mean"] > 0
+
+
+

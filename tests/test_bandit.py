@@ -348,4 +348,18 @@ def test_non_stationary_bandits():
     assert selected_sw.count("A") > selected_sw.count("B")
 
 
+def test_thompson_sampling_default_rng():
+    """Verifies that select_arm initializes a default RNG if none is passed."""
+    # 1. Binary reward type
+    bandit_bin = ThompsonSamplingBandit(arms=["A", "B"], reward_type="binary")
+    selected_bin = bandit_bin.select_arm() # No rng passed
+    assert selected_bin in ["A", "B"]
+
+    # 2. Continuous reward type
+    bandit_cont = ThompsonSamplingBandit(arms=["A", "B"], reward_type="continuous")
+    selected_cont = bandit_cont.select_arm() # No rng passed
+    assert selected_cont in ["A", "B"]
+
+
+
 

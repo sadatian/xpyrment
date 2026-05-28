@@ -126,8 +126,16 @@ class XpyrmentHubServer:
                         self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
                 elif self.path.startswith("/api/module/design/generate"):
                     try:
-                        from xpyrment.design.doe import get_doe_designs
-                        designs = get_doe_designs()
+                        import xpyrment.design.doe as doe_pkg
+                        import inspect
+                        designs = {}
+                        for name in doe_pkg.__all__:
+                            if name in ("DesignMatrix", "CarryoverDecomposition"):
+                                continue
+                            cls = getattr(doe_pkg, name)
+                            doc = inspect.getdoc(cls) or ""
+                            first_line = doc.split("\n")[0] if doc else "No description available."
+                            designs[name] = {"summary": first_line}
                         self.send_response(200)
                         self.send_header("Content-Type", "application/json")
                         self.end_headers()
@@ -205,7 +213,7 @@ class XpyrmentHubServer:
                         y = df[y_col].to_numpy()
                         learner = TLearner()
                         learner.fit(X, T, y)
-                        cate = learner.predict(X)
+                        cate = learner.estimate_effect(X)
                         avg_cate = float(cate.mean())
                         self.send_response(200)
                         self.send_header("Content-Type", "application/json")
@@ -224,14 +232,29 @@ class XpyrmentHubServer:
                         self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
                         return
                     try:
-                        from xpyrment.network.partition import GraphPartitioner
+                        from xpyrment.network.partition import EntropyBalancedGraphPartitioner
                         import numpy as np
                         df = server_instance.shared_data
                         num_nodes = len(df)
-                        edges = np.random.randint(0, num_nodes, size=(min(1000, num_nodes * 2), 2))
-                        partitioner = GraphPartitioner(edges=edges, num_nodes=num_nodes)
-                        clusters = partitioner.partition()
-                        num_clusters = len(set(clusters))
+                        
+                        # Generate a mock adjacency dict for the loaded rows
+                        adj = {i: [] for i in range(num_nodes)}
+                        rng = np.random.default_rng(42)
+                        for i in range(num_nodes):
+                            # Connect each node to 2-4 random neighbors
+                            n_edges = int(rng.integers(2, 5))
+                            targets = rng.choice(num_nodes, size=min(n_edges, num_nodes), replace=False)
+                            for target in targets:
+                                if target != i:
+                                    adj[i].append(int(target))
+                                    adj[int(target)].append(i)
+                        
+                        # Deduplicate neighbor lists
+                        adj = {node: list(set(neighbors)) for node, neighbors in adj.items()}
+                        
+                        partitioner = EntropyBalancedGraphPartitioner(adjacency_dict=adj, gamma=0.1)
+                        clusters = partitioner.fit_predict()
+                        num_clusters = len(set(clusters.values()))
                         self.send_response(200)
                         self.send_header("Content-Type", "application/json")
                         self.end_headers()
@@ -249,19 +272,31 @@ class XpyrmentHubServer:
                         self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
                         return
                     try:
+                        from xpyrment.analyze.orchestrator import setup
                         from xpyrment.interactions.detector import InteractionDetector
                         import pandas as pd
                         df = server_instance.shared_data.copy()
                         y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
-                        x_cols = [c for c in df.columns if c not in [y_col, "user_id"]]
-                        X = df[x_cols].apply(lambda x: pd.factorize(x)[0]).to_numpy()
-                        y = df[y_col].to_numpy()
-                        detector = InteractionDetector(metric_name=y_col, factors=x_cols)
-                        res = detector.detect(df, x_cols)
+                        covariates = ["pre_revenue", "pre_impressions", "pre_clicks"]
+                        covariates = [c for c in covariates if c in df.columns]
+                        
+                        # Create standard experiment structure and register target metric
+                        exp = setup(df, treatment_col="variant", id_col="user_id", covariates=covariates)
+                        exp.register_metric(y_col)
+                        
+                        detector = InteractionDetector(exp)
+                        res = detector.detect_all()
+                        
                         self.send_response(200)
                         self.send_header("Content-Type", "application/json")
                         self.end_headers()
-                        out = "\n".join([f"{k}: p={v}" for k,v in res.items()]) if isinstance(res, dict) else str(res)
+                        
+                        hte = res.get("heterogeneous_treatment_effects", [])
+                        if hte:
+                            out = "\n".join([f"{item['metric']} x {item['covariate']}: p={item['p_value']:.4f}" for item in hte])
+                        else:
+                            out = "No significant heterogeneous treatment effects detected (all p >= 0.05)."
+                            
                         self.wfile.write(json.dumps({"status": "success", "message": f"ANOVA Calculated:\n{out}"}).encode("utf-8"))
                     except Exception as e:
                         self.send_response(500)
@@ -861,9 +896,8 @@ class XpyrmentHubServer:
         if self.monitoring_server is not None and self.monitoring_server._is_running:
              return self.monitoring_server.port
 
-        monitor = LiveMonitor(expected_ratios={"control": 0.5, "treatment": 0.5})
-        if self.shared_data is not None:
-             monitor.df = self.shared_data.copy()
+        df = self.shared_data.copy() if self.shared_data is not None else pd.DataFrame(columns=["unit_id", "exposed_at", "variant"])
+        monitor = LiveMonitor(df=df, time_col="exposed_at")
 
         self.monitoring_server = ExperimentDashboardServer(
             monitor=monitor,

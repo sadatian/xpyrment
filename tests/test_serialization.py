@@ -119,3 +119,48 @@ def test_estimator_serialization():
 
     iv_json = iv.to_json()
     assert "complier_average_causal_effect" in iv_json
+
+
+def test_serialization_sets_tuples():
+    """Asserts sets and tuples are recursively converted to lists."""
+    data = (np.int32(1), {np.float64(2.5)})
+    cleaned = make_serializable(data)
+    assert cleaned == [1, [2.5]]
+
+
+def test_serialization_negative_inf():
+    """Asserts negative infinity is correctly serialized as '-inf'."""
+    cleaned = make_serializable(np.float64(-np.inf))
+    assert cleaned == "-inf"
+
+
+def test_serialization_to_dict_exception():
+    """Asserts that objects whose to_dict method throws are serialized as their string representation."""
+    class BrokenObject:
+        def to_dict(self):
+            raise ValueError("Intentional exception in to_dict")
+        
+        def __str__(self):
+            return "BrokenObjectStr"
+
+    cleaned = make_serializable(BrokenObject())
+    assert cleaned == "BrokenObjectStr"
+
+
+def test_serialization_custom_object_fallback():
+    """Asserts custom classes without to_dict fallback to str()."""
+    class SimpleObject:
+        def __str__(self):
+            return "SimpleObjectStr"
+
+    cleaned = make_serializable(SimpleObject())
+    assert cleaned == "SimpleObjectStr"
+
+
+def test_serialize_to_json_helper():
+    """Validates the serialize_to_json function."""
+    from xpyrment.core.serialization import serialize_to_json
+    data = {"a": np.int64(42)}
+    json_str = serialize_to_json(data, indent=2)
+    assert '"a": 42' in json_str
+
