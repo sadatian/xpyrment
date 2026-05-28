@@ -1,0 +1,17 @@
+--- src/xpyrment/analyze/orchestrator.py
++++ src/xpyrment/analyze/orchestrator.py
+@@ -137,12 +137,12 @@
+
+         summary_df["CUPED"] = df["cuped_applied"].map({True: "Yes", False: "No"})
+
+         var_red_str = df["variance_reduction"].map("{:.1%}".format, na_action="ignore").fillna("-")
+
+         # Previously, the logic was: `if not cuped: return "-"`.
+         # In python, `not np.nan` evaluates to False, so NaN was considered truthy.
+-        # To preserve this prior semantic where only explicit Falsy values bypass variance reduction formatting:
+-        cuped_applied = df["cuped_applied"].apply(lambda x: bool(x) if x is not False else False)
++        # However `not None` is True. So `None` was falsy, while `np.nan` was truthy.
++        # Using `.astype(bool)` perfectly matches this odd Python semantic (NaN -> True, None -> False).
++        cuped_applied = df["cuped_applied"].astype(bool)
+
+         summary_df["Var Reduction"] = np.where(cuped_applied, var_red_str, "-")

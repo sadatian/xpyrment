@@ -722,3 +722,32 @@ def test_taguchi_l18_generation_with_fewer_factors():
 
     assert len(df) == 18
     assert len(df.columns) == len(factors)
+
+def test_evop_generation_defaults():
+    """Tests EVOPDesign generation with default center settings and deltas fallback branches."""
+    # Factors have high/low levels
+    factors = {
+        "A": [10.0, 20.0],
+        "B": [100.0, 200.0]
+    }
+    design = EVOPDesign(factors)
+    
+    # Run with default arguments
+    df = design.generate()
+
+    # 2 factors -> 5 runs per cycle. Default is 3 cycles -> 15 runs.
+    assert len(df) == 15
+    assert "Cycle" in df.columns
+    assert "Phase" in df.columns
+
+    # Default center setting is mean of factor levels
+    # For A: mean of 10 and 20 is 15
+    # For B: mean of 100 and 200 is 150
+    # Default delta is 1.0
+    # Center point is at [15.0, 150.0]
+    # Factor levels should be:
+    # A: 15.0 - 1.0 = 14.0, 15.0, 15.0 + 1.0 = 16.0
+    # B: 150.0 - 1.0 = 149.0, 150.0, 150.0 + 1.0 = 151.0
+    assert set(df["A"].unique()) == {14.0, 15.0, 16.0}
+    assert set(df["B"].unique()) == {149.0, 150.0, 151.0}
+

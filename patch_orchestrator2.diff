@@ -1,0 +1,17 @@
+--- src/xpyrment/analyze/orchestrator.py
++++ src/xpyrment/analyze/orchestrator.py
+@@ -137,8 +137,13 @@
+
+         summary_df["CUPED"] = df["cuped_applied"].map({True: "Yes", False: "No"})
+
+-        cuped_applied = df["cuped_applied"].fillna(False).astype(bool)
+         var_red_str = df["variance_reduction"].map("{:.1%}".format, na_action="ignore").fillna("-")
++
++        # Previously, the logic was: `if not cuped: return "-"`.
++        # In python, `not np.nan` evaluates to False, so NaN was considered truthy.
++        # To preserve this prior semantic where only explicit Falsy values bypass variance reduction formatting:
++        cuped_applied = df["cuped_applied"].apply(lambda x: bool(x) if x is not False else False)
++
+         summary_df["Var Reduction"] = np.where(cuped_applied, var_red_str, "-")
+
+         # Automatically raise an alert / print warning if covariate imbalance is detected
