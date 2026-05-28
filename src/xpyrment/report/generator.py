@@ -10,7 +10,7 @@ import os
 from typing import Dict, Any
 from scipy.stats import chi2
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 
 from typing import Dict, Any
 from xpyrment.analyze.orchestrator import AnalysisResult
