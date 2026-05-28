@@ -455,7 +455,7 @@ def test_ingest_dataframe_cleansing_and_imputations():
     # 1. Null unit_ids dropped (Null at index 1 should be dropped)
     assert len(df_clean) == 3
     assert None not in df_clean["unit_id"].tolist()
-    assert 2 not in df_clean["unit_id"].tolist() # original index 1 drops, index 2 (val 3) remains
+    assert set(df_clean["unit_id"].tolist()) == {1, 3, 4}
 
     # 2. Datetime parsed correctly
     assert pd.api.types.is_datetime64_any_dtype(df_clean["timestamp"])

@@ -131,7 +131,7 @@ We established and formalized the custom 4-digit versioning protocol across all 
 
 ### a) What was accomplished:
 1. **Added to Implementation Plan**: Documented the strict 4-digit versioning rules (`Major.Minor.Patch.Revision`) in `Gemini_Implementation_Plan.md`.
-2. **Added to Agent Rules Guide**: Injected the custom 4-digit rules under the "Strict Four-Digit Versioning & Compliance Rule" section in the `.agents/rules/implenmentation-guide.md` guidelines.
+2. **Added to Agent Rules Guide**: Injected the custom 4-digit rules under the "Strict Four-Digit Versioning & Compliance Rule" section in the `.agents/rules/implementation-guide.md` guidelines.
 3. **Formalized Downstream Reset Rule**: Explicitly detailed the rule of reset where higher-order increments zero out downstream digits.
 
 ## 🚀 Pip Upgrade & PyPI Publishing Master Guide (Completed)
@@ -205,7 +205,7 @@ We discovered and terminated an active background `mkdocs serve` process listeni
 
 ### a) What was accomplished:
 1. **Identified & Stopped Port 8000 Process**: Checked local network connections and identified a python process (PID `42384`) listening on port 8000 running the background `mkdocs serve` server. Successfully terminated the process using PowerShell `Stop-Process` commands.
-2. **Added Agent Rule**: Added rule `6. No Automated Documentation Serving` to [implenmentation-guide.md](file:///c:/Users/Dan/projects/xpyrment/.agents/rules/implenmentation-guide.md). This rule mandates that we must avoid executing the `serve` command directly on behalf of the user, and instead prompt the user to run it separately.
+2. **Added Agent Rule**: Added rule `6. No Automated Documentation Serving` to [implementation-guide.md](file:///c:/Users/Dan/projects/xpyrment/.agents/rules/implementation-guide.md). This rule mandates that we must avoid executing the `serve` command directly on behalf of the user, and instead prompt the user to run it separately.
 3. **Synced Revision Versions**: Incremented package version to `1.0.0.7` across `pyproject.toml`, `src/xpyrment/_version.py`, `Gemini_Implementation_Plan.md`, and the documentation homepage release badges.
 
 ### b) What must be done next:
@@ -276,10 +276,10 @@ We established `pyproject.toml` as the absolute single source of truth for the p
 
 ## 🚀 Corrected Version Compliance & Schema Refinement (Completed)
 
-We corrected the project release version to `1.1.0.0` to fully comply with our 4-digit versioning standard (`Major.Minor.Patch.Revision`), updated the formal agent rule guidelines in `.agents/rules/implenmentation-guide.md` to clarify digit meanings, and ran the automated build pipeline to synchronize all files.
+We corrected the project release version to `1.1.0.0` to fully comply with our 4-digit versioning standard (`Major.Minor.Patch.Revision`), updated the formal agent rule guidelines in `.agents/rules/implementation-guide.md` to clarify digit meanings, and ran the automated build pipeline to synchronize all files.
 
 ### a) What was accomplished:
-1. **Refined Agent Rule Guide**: Updated Rule 4 of [implenmentation-guide.md](file:///c:/Users/Dan/projects/xpyrment/.agents/rules/implenmentation-guide.md) to explicitly detail that bug fixes use the 3rd digit (`0.0.x.0`, Patch) and features/automation integration use the 2nd digit (`0.x.0.0`, Minor).
+1. **Refined Agent Rule Guide**: Updated Rule 4 of [implementation-guide.md](file:///c:/Users/Dan/projects/xpyrment/.agents/rules/implementation-guide.md) to explicitly detail that bug fixes use the 3rd digit (`0.0.x.0`, Patch) and features/automation integration use the 2nd digit (`0.x.0.0`, Minor).
 2. **Corrected Global Package Version**: Reconfigured the single-source-of-truth version in [pyproject.toml](file:///c:/Users/Dan/projects/xpyrment/pyproject.toml) to `1.1.0.0`, resetting all downstream digits.
 3. **Automated Verification**: Ran `mkdocs build` to execute the macro synchronizer, confirming that the new version `1.1.0.0` was successfully and cleanly propagated to all downstream source codes, readme markdowns, top-navigation panels, and badges.
 

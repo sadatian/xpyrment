@@ -60,11 +60,9 @@ def test_extreme_value_tail_estimator_boundary_clipping():
     # Assert MOM shape is indeed less than 0.5
     assert estimator.shape_ < 0.5
     
-    # Manually trigger the safeguard to verify it clips to 0.49
+    # Verify the helper method clips to 0.49 when manual values are set
     estimator.shape_ = 0.6
-    # Re-run a mock fit or assert the safeguard logic manually
-    if estimator.shape_ >= 0.5:
-        estimator.shape_ = 0.49
+    estimator._clip_shape()
     assert estimator.shape_ == 0.49
 
 

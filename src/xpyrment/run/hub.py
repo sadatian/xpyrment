@@ -28,6 +28,82 @@ def numpy_to_python(obj: Any) -> Any:
         return obj.isoformat()
     return obj
 
+
+def get_doe_design_summaries() -> list[dict]:
+    """Retrieves summaries of all design of experiments classes dynamically."""
+    import inspect
+    try:
+        import xpyrment.design.doe as doe_pkg
+    except ImportError:
+        return []
+        
+    designs = {}
+    if hasattr(doe_pkg, "__all__"):
+        for name in doe_pkg.__all__:
+            if name in ("DesignMatrix", "CarryoverDecomposition"):
+                continue
+            cls = getattr(doe_pkg, name, None)
+            if cls is not None and inspect.isclass(cls):
+                doc = inspect.getdoc(cls) or ""
+                first_line = doc.split("\n")[0] if doc else "No description available."
+                first_line = first_line.replace("$", "").replace("|", "\\|")
+                designs[name] = {"summary": first_line}
+    return [{"name": k, "desc": v["summary"]} for k, v in sorted(designs.items())]
+
+
+def run_network_partition(df: pd.DataFrame) -> int:
+    """Helper to partition the graph based on network structure."""
+    from xpyrment.network.partition import EntropyBalancedGraphPartitioner
+    num_nodes = len(df)
+    
+    # Generate a mock adjacency dict for the loaded rows
+    adj = {i: [] for i in range(num_nodes)}
+    rng = np.random.default_rng(42)
+    for i in range(num_nodes):
+        # Connect each node to 2-4 random neighbors
+        n_edges = int(rng.integers(2, 5))
+        targets = rng.choice(num_nodes, size=min(n_edges, num_nodes), replace=False)
+        for target in targets:
+            if target != i:
+                adj[i].append(int(target))
+                adj[int(target)].append(i)
+                
+    # Deduplicate neighbor lists
+    adj = {node: list(set(neighbors)) for node, neighbors in adj.items()}
+    
+    partitioner = EntropyBalancedGraphPartitioner(adjacency_dict=adj, gamma=0.1)
+    clusters = partitioner.fit_predict()
+    return len(set(clusters.values()))
+
+
+def format_hte_results(res: dict) -> str:
+    """Formats heterogeneous treatment effects results from ANOVA."""
+    hte = res.get("heterogeneous_treatment_effects", [])
+    if hte:
+        return "\n".join(
+            f"{item['metric']} x {item['covariate']}: p={item['p_value']:.4f}"
+            for item in hte
+        )
+    return "No significant heterogeneous treatment effects detected (all p >= 0.05)."
+
+
+def run_anova_interaction_detection(df: pd.DataFrame, y_col: str) -> str:
+    """Helper to run ANOVA interaction detection on shared dataframe."""
+    from xpyrment.analyze.orchestrator import setup
+    from xpyrment.interactions.detector import InteractionDetector
+    
+    covariates = ["pre_revenue", "pre_impressions", "pre_clicks"]
+    covariates = [c for c in covariates if c in df.columns]
+    
+    # Create standard experiment structure and register target metric
+    exp = setup(df, treatment_col="variant", id_col="user_id", covariates=covariates)
+    exp.register_metric(y_col)
+    
+    detector = InteractionDetector(exp)
+    res = detector.detect_all()
+    return format_hte_results(res)
+
+
 class XpyrmentHubServer:
     """Primary Hub Server acting as a launcher for the suite of modules."""
 
@@ -126,20 +202,11 @@ class XpyrmentHubServer:
                         self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
                 elif self.path.startswith("/api/module/design/generate"):
                     try:
-                        import xpyrment.design.doe as doe_pkg
-                        import inspect
-                        designs = {}
-                        for name in doe_pkg.__all__:
-                            if name in ("DesignMatrix", "CarryoverDecomposition"):
-                                continue
-                            cls = getattr(doe_pkg, name)
-                            doc = inspect.getdoc(cls) or ""
-                            first_line = doc.split("\n")[0] if doc else "No description available."
-                            designs[name] = {"summary": first_line}
+                        data = get_doe_design_summaries()
                         self.send_response(200)
                         self.send_header("Content-Type", "application/json")
                         self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "data": [{"name": k, "desc": v["summary"]} for k, v in designs.items()]}).encode("utf-8"))
+                        self.wfile.write(json.dumps({"status": "success", "data": data}).encode("utf-8"))
                     except Exception as e:
                         self.send_response(500)
                         self.send_header("Content-Type", "application/json")
@@ -232,29 +299,7 @@ class XpyrmentHubServer:
                         self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
                         return
                     try:
-                        from xpyrment.network.partition import EntropyBalancedGraphPartitioner
-                        import numpy as np
-                        df = server_instance.shared_data
-                        num_nodes = len(df)
-                        
-                        # Generate a mock adjacency dict for the loaded rows
-                        adj = {i: [] for i in range(num_nodes)}
-                        rng = np.random.default_rng(42)
-                        for i in range(num_nodes):
-                            # Connect each node to 2-4 random neighbors
-                            n_edges = int(rng.integers(2, 5))
-                            targets = rng.choice(num_nodes, size=min(n_edges, num_nodes), replace=False)
-                            for target in targets:
-                                if target != i:
-                                    adj[i].append(int(target))
-                                    adj[int(target)].append(i)
-                        
-                        # Deduplicate neighbor lists
-                        adj = {node: list(set(neighbors)) for node, neighbors in adj.items()}
-                        
-                        partitioner = EntropyBalancedGraphPartitioner(adjacency_dict=adj, gamma=0.1)
-                        clusters = partitioner.fit_predict()
-                        num_clusters = len(set(clusters.values()))
+                        num_clusters = run_network_partition(server_instance.shared_data)
                         self.send_response(200)
                         self.send_header("Content-Type", "application/json")
                         self.end_headers()
@@ -272,31 +317,12 @@ class XpyrmentHubServer:
                         self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
                         return
                     try:
-                        from xpyrment.analyze.orchestrator import setup
-                        from xpyrment.interactions.detector import InteractionDetector
-                        import pandas as pd
                         df = server_instance.shared_data.copy()
                         y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
-                        covariates = ["pre_revenue", "pre_impressions", "pre_clicks"]
-                        covariates = [c for c in covariates if c in df.columns]
-                        
-                        # Create standard experiment structure and register target metric
-                        exp = setup(df, treatment_col="variant", id_col="user_id", covariates=covariates)
-                        exp.register_metric(y_col)
-                        
-                        detector = InteractionDetector(exp)
-                        res = detector.detect_all()
-                        
+                        out = run_anova_interaction_detection(df, y_col)
                         self.send_response(200)
                         self.send_header("Content-Type", "application/json")
                         self.end_headers()
-                        
-                        hte = res.get("heterogeneous_treatment_effects", [])
-                        if hte:
-                            out = "\n".join([f"{item['metric']} x {item['covariate']}: p={item['p_value']:.4f}" for item in hte])
-                        else:
-                            out = "No significant heterogeneous treatment effects detected (all p >= 0.05)."
-                            
                         self.wfile.write(json.dumps({"status": "success", "message": f"ANOVA Calculated:\n{out}"}).encode("utf-8"))
                     except Exception as e:
                         self.send_response(500)
