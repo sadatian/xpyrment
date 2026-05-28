@@ -143,9 +143,17 @@
   - Expanded OLS batch updating verification and updated ingestion cleansings tests.
   - Successfully verified the entire 291-test suite with a 100% green pass and synchronized all dynamic badges to 94% coverage.
 
+- **Sprint 1.6.1.2 Post-Merge Review Refactoring (In Progress — PR #23)**:
+  - Updated Rule 9 in `.agents/rules/implementation-guide.md` to explicitly enforce the time-tagged branch naming convention (`agy-YYMMDD-HHMM`).
+  - Updated `get_doe_design_summaries()` in `src/xpyrment/run/hub.py` to fall back to `dir(doe_pkg)` when `__all__` is absent, with module-level filtering (`cls.__module__.startswith("xpyrment.design.doe")`) to prevent exposing imported helper classes from other modules.
+  - Moved the Poetry CLI check in `main.py` from global startup into the command-execution branch, so `--help` works without Poetry on PATH.
+  - Strengthened `test_streaming_ols_batch_update` with ground-truth coefficient assertions; added inline rationale for the `1e-2` tolerance (fixed seed, zero noise, small L2 shrinkage).
+  - Refactored `.agents/rules/create-pr.md` to use native `gh` global auth without explicit token injection.
+  - Fixed grammatical typo: "the entire 291 unit tests" → "all 291 unit tests".
+  - Verified all 291 unit tests pass (100% green) after each change.
+
 ### Next Steps
-- **New PR Creation**: Push the refactored branch `coverage-improvements-260527` and open a brand-new Pull Request on GitHub for final merge into the master/main branch.
-- **Continuous Monitoring**: Adhere strictly to Poetry-native environment workflows for all future release and testing pipelines.
+- **Merge PR #23**: Merge [Pull Request #23](https://github.com/sadatian/xpyrment/pull/23) into `main` once approved.
 
 
 
