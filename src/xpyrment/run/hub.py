@@ -46,10 +46,12 @@ def get_doe_design_summaries() -> list[dict]:
             continue
         cls = getattr(doe_pkg, name, None)
         if cls is not None and inspect.isclass(cls):
-            doc = inspect.getdoc(cls) or ""
-            first_line = doc.split("\n")[0] if doc else "No description available."
-            first_line = first_line.replace("$", "").replace("|", "\\|")
-            designs[name] = {"summary": first_line}
+            # Filter out any classes imported from other modules
+            if cls.__module__.startswith("xpyrment.design.doe"):
+                doc = inspect.getdoc(cls) or ""
+                first_line = doc.split("\n")[0] if doc else "No description available."
+                first_line = first_line.replace("$", "").replace("|", "\\|")
+                designs[name] = {"summary": first_line}
     return [{"name": k, "desc": v["summary"]} for k, v in sorted(designs.items())]
 
 
