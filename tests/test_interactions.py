@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 from xpyrment.interactions.anova import run_factorial_anova
 from xpyrment.interactions.regression import check_treatment_covariate_interaction
 from xpyrment.interactions.hstat import compute_friedman_h_statistic

@@ -42,14 +42,25 @@ class MarkovJourneyAnalyzer:
         Returns:
             List[Tuple[str, str]]: Chronological transitions.
         """
-        transitions = []
-        # Group by user and preserve chronological sorting
-        for _, group in df.groupby(user_col, sort=False):
-            state_list = group[state_col].tolist()
-            for i in range(len(state_list) - 1):
-                s_from, s_to = state_list[i], state_list[i + 1]
-                if s_from in self.state_to_idx and s_to in self.state_to_idx:
-                    transitions.append((s_from, s_to))
+        # Group by user and preserve chronological sorting using stable sort
+        df_sorted = df.sort_values(by=user_col, kind="stable")
+
+        users = df_sorted[user_col].to_numpy()
+        states = df_sorted[state_col].to_numpy()
+
+        # Mask where the user is the same in the next row
+        mask = users[:-1] == users[1:]
+
+        from_states = states[:-1][mask]
+        to_states = states[1:][mask]
+
+        # Filter valid transitions
+        transitions = [
+            (s_from, s_to)
+            for s_from, s_to in zip(from_states, to_states)
+            if s_from in self.state_to_idx and s_to in self.state_to_idx
+        ]
+
         return transitions
 
     def compute_transition_matrix(self, transitions: List[Tuple[str, str]]) -> Tuple[np.ndarray, np.ndarray]:
