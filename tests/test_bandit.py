@@ -70,6 +70,20 @@ def test_epsilon_greedy_bandit_min_epsilon():
     with pytest.raises(ValueError, match="cannot be greater than initial epsilon"):
         EpsilonGreedyBandit(arms=["A"], epsilon=0.1, min_epsilon=0.2)
 
+    # Test boundary condition: min_epsilon == epsilon
+    bandit_boundary = EpsilonGreedyBandit(arms=["A"], epsilon=0.1, min_epsilon=0.1, decay_rate=0.5)
+    bandit_boundary.update("A", 1.0)
+    # Epsilon should remain clamped at min_epsilon (0.1) instead of decaying to 0.05
+    assert bandit_boundary.epsilon == 0.1
+
+    # Test parameter validation: decay_rate <= 0.0
+    with pytest.raises(ValueError, match="decay_rate must be in the range"):
+        EpsilonGreedyBandit(arms=["A"], decay_rate=0.0)
+
+    # Test parameter validation: decay_rate > 1.0
+    with pytest.raises(ValueError, match="decay_rate must be in the range"):
+        EpsilonGreedyBandit(arms=["A"], decay_rate=1.1)
+
 
 def test_ucb1_bandit():
     """Validates that UCB1 initializes by sampling all arms, then picks optimally with logarithmic bounds."""

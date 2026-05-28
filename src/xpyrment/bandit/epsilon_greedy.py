@@ -29,6 +29,8 @@ class EpsilonGreedyBandit:
             raise ValueError(f"min_epsilon must be between 0.0 and 1.0, got {min_epsilon}")
         if min_epsilon > epsilon:
             raise ValueError(f"min_epsilon ({min_epsilon}) cannot be greater than initial epsilon ({epsilon})")
+        if not (0.0 < decay_rate <= 1.0):
+            raise ValueError(f"decay_rate must be in the range (0.0, 1.0], got {decay_rate}")
 
         self.arms = arms
         self.epsilon = epsilon
