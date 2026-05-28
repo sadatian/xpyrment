@@ -1,0 +1,78 @@
+--- src/xpyrment/analyze/orchestrator.py
++++ src/xpyrment/analyze/orchestrator.py
+@@ -8,6 +8,7 @@
+ import warnings
+ from typing import Any, List, Optional
+ import pandas as pd
++import numpy as np
+
+ from xpyrment.core.state import ExperimentState
+ from xpyrment.core.experiment import Experiment
+@@ -118,51 +119,30 @@
+         summary_df["Metric"] = df["metric_name"]
+         summary_df["Type"] = df["metric_type"]
+
+-        def _format_ci(lower: float, upper: float) -> str:
+-            if pd.isna(lower) or pd.isna(upper):
+-                return "N/A"
+-            return f"[{lower:+.2%}, {upper:+.2%}]"
+-
+-        def _format_p_value(p_val: float) -> str:
+-            if pd.isna(p_val):
+-                return "N/A"
+-            if p_val < 0.001:
+-                sig_symbol = "***"
+-            elif p_val < 0.01:
+-                sig_symbol = "**"
+-            elif p_val < 0.05:
+-                sig_symbol = "*"
+-            else:
+-                sig_symbol = ""
+-            return f"{p_val:.4f}{sig_symbol}"
+-
+-        def _format_var_reduction(cuped: bool, var_red: float) -> str:
+-            if not cuped:
+-                return "-"
+-            return f"{var_red:.1%}" if pd.notna(var_red) else "-"
+-
+         summary_df["Control Mean"] = df["control_mean"].map("{:.4f}".format)
+         summary_df["Treatment Mean"] = df["treatment_mean"].map("{:.4f}".format)
+
+-        summary_df["Relative Lift"] = df["relative_lift"].apply(
+-            lambda x: f"{x:+.2%}" if pd.notna(x) else "N/A"
+-        )
++        summary_df["Relative Lift"] = df["relative_lift"].map("{:+.2%}".format, na_action="ignore").fillna("N/A")
+
+-        summary_df["95% CI (Rel)"] = [
+-            _format_ci(l, u) for l, u in zip(df["rel_ci_lower"], df["rel_ci_upper"])
+-        ]
++        ci_mask = df["rel_ci_lower"].isna() | df["rel_ci_upper"].isna()
++        lower_str = df["rel_ci_lower"].map("{:+.2%}".format, na_action="ignore")
++        upper_str = df["rel_ci_upper"].map("{:+.2%}".format, na_action="ignore")
++        summary_df["95% CI (Rel)"] = np.where(ci_mask, "N/A", "[" + lower_str.astype(str) + ", " + upper_str.astype(str) + "]")
+
+-        summary_df["p-value"] = df["p_value"].apply(_format_p_value)
++        p_val = df["p_value"]
++        p_str = p_val.map("{:.4f}".format, na_action="ignore")
++        sig_symbol = np.select([p_val < 0.001, p_val < 0.01, p_val < 0.05], ["***", "**", "*"], default="")
++        summary_df["p-value"] = np.where(p_val.isna(), "N/A", p_str.astype(str) + sig_symbol)
+
+-        summary_df["Post-hoc Power"] = df["power"].apply(
+-            lambda x: f"{x:.1%}" if pd.notna(x) else "N/A"
+-        )
++        summary_df["Post-hoc Power"] = df["power"].map("{:.1%}".format, na_action="ignore").fillna("N/A")
+
+         summary_df["CUPED"] = df["cuped_applied"].map({True: "Yes", False: "No"})
+
+-        summary_df["Var Reduction"] = [
+-            _format_var_reduction(c, v) for c, v in zip(df["cuped_applied"], df["variance_reduction"])
+-        ]
++        # Previously, the logic was: `if not cuped: return "-"`.
++        # In python, `bool(np.nan)` is True, while `bool(None)` or `bool(False)` is False.
++        # Using `.astype(bool)` exactly replicates this prior behavior.
++        cuped_applied = df["cuped_applied"].astype(bool)
++        var_red_str = df["variance_reduction"].map("{:.1%}".format, na_action="ignore").fillna("-")
++        summary_df["Var Reduction"] = np.where(cuped_applied, var_red_str, "-")
+
+         # Automatically raise an alert / print warning if covariate imbalance is detected
+         if self.balance_checker is not None and self.balance_checker.diagnostics_:
