@@ -53,6 +53,70 @@ def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
             )
 
 
+def _metric_columns_spec(metric_cols: list, pa):
+    return {
+        name: pa.Column(float, nullable=False, coerce=True)
+        for name in metric_cols
+    }
+
+
+def _categorical_columns_spec(categorical_cols: list, pa):
+    return {
+        name: pa.Column(str, nullable=False, coerce=True)
+        for name in categorical_cols
+    }
+
+
+def _enforce_schema(
+    df: pd.DataFrame,
+    unit_id_col: str = None,
+    time_col: str = None,
+    metric_cols: list = None,
+    categorical_cols: list = None,
+    schema=None,
+) -> pd.DataFrame:
+    try:
+        import pandera as pa
+        import pandera.errors as pa_errors
+    except ImportError as exc:
+        if schema is not None:
+            raise ImportError(
+                "pandera is required for schema enforcement. "
+                "Please install it via `pip install xpyrment[schema]` or `pip install pandera`."
+            ) from exc
+        # Skip validation entirely if no schema is specified and pandera isn't installed.
+        return df
+
+    if schema is not None:
+        try:
+            return schema.validate(df)
+        except pa_errors.SchemaError as e:
+            raise ValueError(f"Schema validation failed: {e}") from e
+
+    schema_dict = {}
+
+    if unit_id_col is not None:
+        schema_dict[unit_id_col] = pa.Column(nullable=False)
+
+    if time_col is not None:
+        schema_dict[time_col] = pa.Column("datetime64[ns]", nullable=False)
+
+    if metric_cols:
+        schema_dict.update(_metric_columns_spec(metric_cols, pa))
+
+    if categorical_cols:
+        schema_dict.update(_categorical_columns_spec(categorical_cols, pa))
+
+    if not schema_dict:
+        return df
+
+    dynamic_schema = pa.DataFrameSchema(schema_dict, coerce=True)
+    try:
+        return dynamic_schema.validate(df)
+    except (pa_errors.SchemaError, pa_errors.SchemaErrors) as e:
+        raise ValueError(f"Dynamic schema validation failed: {e}") from e
+
+
 def ingest_dataframe(
     df: pd.DataFrame,
     unit_id_col: str = None,
@@ -107,48 +171,14 @@ def ingest_dataframe(
             df_clean[c] = df_clean[c].fillna("UNKNOWN")
 
     # 4. Schema Enforcement using Pandera
-    try:
-        import pandera.pandas as pa
-        import pandera.errors as pa_errors
-    except ImportError:
-        raise ImportError(
-            "pandera is required for schema enforcement. "
-            "Please install it via `pip install xpyrment[schema]` or `pip install pandera`."
-        )
-
-    if schema is not None:
-        try:
-            df_clean = schema.validate(df_clean)
-        except pa_errors.SchemaError as e:
-            raise ValueError(f"Schema validation failed: {e}")
-    else:
-        # Dynamically build a schema to strictly enforce types
-        schema_dict = {}
-
-        if unit_id_col is not None:
-            # Typically a string or int, we enforce that it exists and is not null
-            schema_dict[unit_id_col] = pa.Column(nullable=False)
-
-        if time_col is not None:
-            # We already converted to datetime above, so enforce datetime type
-            schema_dict[time_col] = pa.Column("datetime64[ns]", nullable=False)
-
-        if metric_cols is not None:
-            for m in metric_cols:
-                # Metrics should be continuous numeric values (float)
-                schema_dict[m] = pa.Column(float, nullable=False, coerce=True)
-
-        if categorical_cols is not None:
-            for c in categorical_cols:
-                # Categorical covariates should be strings or object
-                schema_dict[c] = pa.Column(str, nullable=False, coerce=True)
-
-        if schema_dict:
-            dynamic_schema = pa.DataFrameSchema(schema_dict, coerce=True)
-            try:
-                df_clean = dynamic_schema.validate(df_clean)
-            except (pa_errors.SchemaError, pa_errors.SchemaErrors) as e:
-                raise ValueError(f"Dynamic schema validation failed: {e}")
+    df_clean = _enforce_schema(
+        df_clean,
+        unit_id_col=unit_id_col,
+        time_col=time_col,
+        metric_cols=metric_cols,
+        categorical_cols=categorical_cols,
+        schema=schema,
+    )
 
     # TODO: Implement out-of-core chunked ingestion or Dask integration for datasets exceeding local RAM capacities.
     return df_clean
