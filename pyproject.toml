@@ -8,7 +8,7 @@ include = ["src/xpyrment/assets/images/*"]
 
 [project]
 name = "xpyrment"
-version = "1.6.1.0"
+version = "1.6.1.2"
 authors = [
     { name = "Dan Sadatian", email = "dan.sadatian@gmail.com" }
 ]
@@ -17,7 +17,7 @@ maintainers = [
 ]
 description = "A low-code Python library for enterprise-grade experiment design, classical DoE, and statistical analysis."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 license = "LicenseRef-AISlop"
 license-files = ["LICENSE"]
 keywords = [
@@ -85,3 +85,13 @@ target-version = ['py38']
 [tool.isort]
 profile = "black"
 line_length = 88
+
+[dependency-groups]
+dev = [
+    "mkdocs (>=1.6.1,<2.0.0)",
+    "mkdocs-macros-plugin (>=1.5.0,<2.0.0)",
+    "mkdocs-material (>=9.7.6,<10.0.0)",
+    "mkdocstrings (>=1.0.4,<2.0.0)",
+    "mkdocstrings-python (>=2.0.3,<3.0.0)",
+    "pymdown-extensions (>=10.21.3,<11.0.0)"
+]
