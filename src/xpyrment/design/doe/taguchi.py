@@ -5,8 +5,89 @@ Taguchi methods are optimized for quality engineering and robust product design,
 to minimize performance variance under uncontrollable noise conditions using Signal-to-Noise ($S/N$) ratios.
 """
 
+import numpy as np
 import pandas as pd
 from xpyrment.design.doe.base import DesignMatrix
+
+
+# module-level constant for Taguchi arrays
+ARRAY_SPECS = {
+    "L9": {
+        "matrix": np.array([
+            [1, 1, 1, 1],
+            [1, 2, 2, 2],
+            [1, 3, 3, 3],
+            [2, 1, 2, 3],
+            [2, 2, 3, 1],
+            [2, 3, 1, 2],
+            [3, 1, 3, 2],
+            [3, 2, 1, 3],
+            [3, 3, 2, 1]
+        ]),
+        "levels_per_factor": lambda idx: 3,
+    },
+    "L12": {
+        "matrix": np.array([
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2],
+            [1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2],
+            [1, 2, 1, 2, 2, 1, 2, 2, 1, 1, 2],
+            [1, 2, 2, 1, 2, 2, 1, 2, 1, 2, 1],
+            [1, 2, 2, 2, 1, 2, 2, 1, 2, 1, 1],
+            [2, 1, 2, 2, 1, 1, 2, 2, 1, 2, 1],
+            [2, 1, 2, 1, 2, 2, 2, 1, 1, 1, 2],
+            [2, 1, 1, 2, 2, 2, 1, 2, 2, 1, 1],
+            [2, 2, 2, 1, 1, 1, 1, 2, 2, 1, 2],
+            [2, 2, 1, 2, 1, 2, 1, 1, 1, 2, 2],
+            [2, 2, 1, 1, 2, 1, 2, 1, 2, 2, 1]
+        ]),
+        "levels_per_factor": lambda idx: 2,
+    },
+    "L16": {
+        "matrix": np.array([
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+            [1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2],
+            [1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1],
+            [1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2],
+            [1, 2, 2, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1],
+            [1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1],
+            [1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2],
+            [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
+            [2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1],
+            [2, 1, 2, 2, 1, 2, 1, 1, 2, 1, 2, 2, 1, 2, 1],
+            [2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 2],
+            [2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1],
+            [2, 2, 1, 1, 2, 2, 1, 2, 1, 1, 2, 2, 1, 1, 2],
+            [2, 2, 1, 2, 1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 2],
+            [2, 2, 1, 2, 1, 1, 2, 2, 1, 1, 2, 1, 2, 2, 1]
+        ]),
+        "levels_per_factor": lambda idx: 2,
+    },
+    "L18": {
+        "matrix": np.array([
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 2, 2, 2, 2, 2, 2],
+            [1, 1, 3, 3, 3, 3, 3, 3],
+            [1, 2, 1, 1, 2, 2, 3, 3],
+            [1, 2, 2, 2, 3, 3, 1, 1],
+            [1, 2, 3, 3, 1, 1, 2, 2],
+            [1, 3, 1, 2, 1, 3, 2, 3],
+            [1, 3, 2, 3, 2, 1, 3, 1],
+            [1, 3, 3, 1, 3, 2, 1, 2],
+            [2, 1, 1, 3, 3, 2, 2, 1],
+            [2, 1, 2, 1, 1, 3, 3, 2],
+            [2, 1, 3, 2, 2, 1, 1, 3],
+            [2, 2, 1, 2, 3, 1, 3, 2],
+            [2, 2, 2, 3, 1, 2, 1, 3],
+            [2, 2, 3, 1, 2, 3, 2, 1],
+            [2, 3, 1, 3, 2, 3, 1, 2],
+            [2, 3, 2, 1, 3, 1, 2, 3],
+            [2, 3, 3, 2, 1, 2, 3, 1]
+        ]),
+        "levels_per_factor": lambda idx: 2 if idx == 0 else 3,
+    },
+}
 
 
 class TaguchiDesign(DesignMatrix):
@@ -92,43 +173,35 @@ class TaguchiDesign(DesignMatrix):
         Returns:
             pd.DataFrame: A pandas DataFrame containing the Taguchi design matrix.
         """
-        import numpy as np
+        array_name = self.array_name.upper()
 
-        if self.array_name.upper() != "L9":
+        if array_name not in ARRAY_SPECS:
             raise ValueError(
-                f"Taguchi array '{self.array_name}' is not currently implemented. Only 'L9' is supported."
+                f"Taguchi array '{self.array_name}' is not currently implemented. "
+                f"Supported arrays are: {', '.join(ARRAY_SPECS.keys())}."
             )
 
-        # Standard L9 template (coded levels 1, 2, 3)
-        l9_matrix = np.array([
-            [1, 1, 1, 1],
-            [1, 2, 2, 2],
-            [1, 3, 3, 3],
-            [2, 1, 2, 3],
-            [2, 2, 3, 1],
-            [2, 3, 1, 2],
-            [3, 1, 3, 2],
-            [3, 2, 1, 3],
-            [3, 3, 2, 1]
-        ])
+        spec = ARRAY_SPECS[array_name]
+        matrix = spec["matrix"]
+        max_factors = matrix.shape[1]
 
         k = len(self.factors)
-        if k > 4:
-            raise ValueError("L9 Orthogonal Array supports at most 4 factors.")
+        if k > max_factors:
+            raise ValueError(f"{array_name} Orthogonal Array supports at most {max_factors} factors.")
 
         keys = list(self.factors.keys())
         physical_df = pd.DataFrame()
 
         for idx, col in enumerate(keys):
             levels = self.factors[col]
-            if len(levels) != 3:
+            required_levels = spec["levels_per_factor"](idx)
+            if len(levels) != required_levels:
                 raise ValueError(
-                    f"Each factor in Taguchi L9 design must have exactly 3 levels. Factor '{col}' has {len(levels)} levels."
+                    f"Factor '{col}' in Taguchi {array_name} design must have exactly "
+                    f"{required_levels} levels. It has {len(levels)} levels."
                 )
-
-            coded_col = l9_matrix[:, idx]
+            coded_col = matrix[:, idx]
             physical_df[col] = [levels[c - 1] for c in coded_col]
 
-        # TODO: Add automatic lookup support for L12, L16, and L18 mixed-level orthogonal arrays.
         # TODO: Integrate signal-to-noise ratio (SNR) loss analysis plots for parameter robust design.
         return physical_df
