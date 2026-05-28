@@ -8,6 +8,7 @@ import os
 from scipy.stats import chi2
 from dataclasses import dataclass
 
+from typing import Dict, Any
 from xpyrment.analyze.orchestrator import AnalysisResult
 
 
