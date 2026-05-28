@@ -12,7 +12,7 @@ from xpyrment.bandit import (
 def test_epsilon_greedy_bandit():
     """Validates the exploration-exploitation balance and exponential decay of EpsilonGreedyBandit."""
     rng = np.random.default_rng(42)
-    bandit = EpsilonGreedyBandit(arms=["A", "B"], epsilon=0.5, decay_rate=0.90)
+    bandit = EpsilonGreedyBandit(arms=["A", "B"], epsilon=0.5, decay_rate=0.90, min_epsilon=0.0)
 
     # Update arm A with high average value and B with low average value
     for _ in range(10):
@@ -33,6 +33,56 @@ def test_epsilon_greedy_bandit():
     # Test error on invalid arm update
     with pytest.raises(ValueError):
         bandit.update("INVALID_ARM", 1.0)
+
+
+def test_epsilon_greedy_bandit_min_epsilon():
+    """Validates min_epsilon bounds and decay clamping for EpsilonGreedyBandit."""
+    # Test valid initialization
+    bandit = EpsilonGreedyBandit(arms=["A", "B"], epsilon=0.5, decay_rate=0.5, min_epsilon=0.1)
+
+    # Test epsilon decay clamping
+    bandit.update("A", 1.0) # 0.5 * 0.5 = 0.25
+    assert bandit.epsilon == 0.25
+    bandit.update("A", 1.0) # 0.25 * 0.5 = 0.125
+    assert bandit.epsilon == 0.125
+    bandit.update("A", 1.0) # 0.125 * 0.5 = 0.0625 -> 0.1
+    assert bandit.epsilon == 0.1
+    bandit.update("A", 1.0) # 0.1 * 0.5 = 0.05 -> 0.1
+    assert bandit.epsilon == 0.1
+
+    # Test parameter validation: epsilon > 1.0
+    with pytest.raises(ValueError, match="epsilon must be between 0.0 and 1.0"):
+        EpsilonGreedyBandit(arms=["A"], epsilon=1.5)
+
+    # Test parameter validation: epsilon < 0.0
+    with pytest.raises(ValueError, match="epsilon must be between 0.0 and 1.0"):
+        EpsilonGreedyBandit(arms=["A"], epsilon=-0.1)
+
+    # Test parameter validation: min_epsilon > 1.0
+    with pytest.raises(ValueError, match="min_epsilon must be between 0.0 and 1.0"):
+        EpsilonGreedyBandit(arms=["A"], min_epsilon=1.5)
+
+    # Test parameter validation: min_epsilon < 0.0
+    with pytest.raises(ValueError, match="min_epsilon must be between 0.0 and 1.0"):
+        EpsilonGreedyBandit(arms=["A"], min_epsilon=-0.1)
+
+    # Test parameter validation: min_epsilon > epsilon
+    with pytest.raises(ValueError, match="cannot be greater than initial epsilon"):
+        EpsilonGreedyBandit(arms=["A"], epsilon=0.1, min_epsilon=0.2)
+
+    # Test boundary condition: min_epsilon == epsilon
+    bandit_boundary = EpsilonGreedyBandit(arms=["A"], epsilon=0.1, min_epsilon=0.1, decay_rate=0.5)
+    bandit_boundary.update("A", 1.0)
+    # Epsilon should remain clamped at min_epsilon (0.1) instead of decaying to 0.05
+    assert bandit_boundary.epsilon == 0.1
+
+    # Test parameter validation: decay_rate <= 0.0
+    with pytest.raises(ValueError, match="decay_rate must be in the range"):
+        EpsilonGreedyBandit(arms=["A"], decay_rate=0.0)
+
+    # Test parameter validation: decay_rate > 1.0
+    with pytest.raises(ValueError, match="decay_rate must be in the range"):
+        EpsilonGreedyBandit(arms=["A"], decay_rate=1.1)
 
 
 def test_ucb1_bandit():
@@ -157,7 +207,7 @@ def test_bandit_hyperparameter_tuner():
 
     # Parameter space: search bounds for epsilon and decay_rate
     bounds = {
-        "epsilon": (0.01, 0.40),
+        "epsilon": (0.05, 0.40),
         "decay_rate": (0.90, 0.999),
     }
 
@@ -296,6 +346,20 @@ def test_non_stationary_bandits():
     # Arm B has 5 plays with reward 0 in the last 5 steps (so Beta(1, 6))
     # Since Beta(1, 1) sample is statistically much larger than Beta(1, 6), Arm A should dominate selections
     assert selected_sw.count("A") > selected_sw.count("B")
+
+
+def test_thompson_sampling_default_rng():
+    """Verifies that select_arm initializes a default RNG if none is passed."""
+    # 1. Binary reward type
+    bandit_bin = ThompsonSamplingBandit(arms=["A", "B"], reward_type="binary")
+    selected_bin = bandit_bin.select_arm() # No rng passed
+    assert selected_bin in ["A", "B"]
+
+    # 2. Continuous reward type
+    bandit_cont = ThompsonSamplingBandit(arms=["A", "B"], reward_type="continuous")
+    selected_cont = bandit_cont.select_arm() # No rng passed
+    assert selected_cont in ["A", "B"]
+
 
 
 

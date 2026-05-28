@@ -55,6 +55,91 @@ def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
 
 from typing import Any, Iterable, Iterator, List, Optional
 
+def _metric_columns_spec(metric_cols: list, pa):
+    return {
+        name: pa.Column(float, nullable=False, coerce=True)
+        for name in metric_cols
+    }
+
+
+def _categorical_columns_spec(categorical_cols: list, pa):
+    return {
+        name: pa.Column(str, nullable=False, coerce=True)
+        for name in categorical_cols
+    }
+
+
+def _enforce_schema(
+    df: pd.DataFrame,
+    unit_id_col: str = None,
+    time_col: str = None,
+    metric_cols: list = None,
+    categorical_cols: list = None,
+    schema=None,
+) -> pd.DataFrame:
+    try:
+        import pandera as pa
+        import pandera.errors as pa_errors
+    except ImportError as exc:
+        if schema is not None:
+            raise ImportError(
+                "pandera is required for schema enforcement. "
+                "Please install it via `pip install xpyrment[schema]` or `pip install pandera`."
+            ) from exc
+        # Skip validation entirely if no schema is specified and pandera isn't installed.
+        return df
+
+    if schema is not None:
+        try:
+            return schema.validate(df)
+        except pa_errors.SchemaError as e:
+            raise ValueError(f"Schema validation failed: {e}") from e
+
+    schema_dict = {}
+
+    if unit_id_col is not None:
+        schema_dict[unit_id_col] = pa.Column(nullable=False)
+
+    if time_col is not None:
+        schema_dict[time_col] = pa.Column("datetime64[ns]", nullable=False)
+
+    if metric_cols:
+        schema_dict.update(_metric_columns_spec(metric_cols, pa))
+
+    if categorical_cols:
+        schema_dict.update(_categorical_columns_spec(categorical_cols, pa))
+
+    if not schema_dict:
+        return df
+
+    dynamic_schema = pa.DataFrameSchema(schema_dict, coerce=True)
+    try:
+        return dynamic_schema.validate(df)
+    except (pa_errors.SchemaError, pa_errors.SchemaErrors) as e:
+        raise ValueError(f"Dynamic schema validation failed: {e}") from e
+
+
+def ingest_dataframe(
+    df: pd.DataFrame,
+    unit_id_col: str = None,
+    time_col: str = None,
+    metric_cols: list = None,
+    categorical_cols: list = None,
+    schema=None,
+) -> pd.DataFrame:
+    """Ingests, validates, and copies an in-memory pandas DataFrame into the xpyrment lifecycle.
+
+    Performs localized validation checks on the pandas DataFrame, ensuring all required column signatures
+    are mapped correctly.
+
+    Args:
+        df (pd.DataFrame): The raw source DataFrame.
+        unit_id_col (str): Column representing unit identifiers (nulls will be dropped).
+        time_col (str): Column representing event timestamps (will be parsed to datetime).
+        metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
+        categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+        schema (pandera.DataFrameSchema, optional): A user-provided Pandera schema to validate against.
+            If None, a schema is built dynamically based on the provided columns.
 
 def _clean_dataframe_like(
     df: Any,
@@ -94,6 +179,17 @@ def _clean_dataframe_like(
                 raise KeyError(f"Categorical column '{c}' not found in {frame_label}.")
             df_clean[c] = df_clean[c].fillna("UNKNOWN")
 
+    # 4. Schema Enforcement using Pandera
+    df_clean = _enforce_schema(
+        df_clean,
+        unit_id_col=unit_id_col,
+        time_col=time_col,
+        metric_cols=metric_cols,
+        categorical_cols=categorical_cols,
+        schema=schema,
+    )
+
+    # TODO: Implement out-of-core chunked ingestion or Dask integration for datasets exceeding local RAM capacities.
     return df_clean
 
 
@@ -378,7 +474,7 @@ class DuckDBIngester:
             )
 
         path_str = (
-            str(Path(parquet_path).resolve()).replace("\\", "/").replace("'", "''")
+            str(Path(parquet_path).resolve()).replace("\\", "/")
         )
 
         # 2. Schema pre-validation & column presence verification
@@ -582,7 +678,7 @@ class DuckDBIngester:
                 WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])}) AND {safe_cov} IS NOT NULL
                 GROUP BY {safe_cov}, {safe_treatment_col}
             """
-            cat_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
+            cat_df = self.query(sql)
 
             if not cat_df.empty:
                 contingency = cat_df.pivot(
@@ -652,7 +748,7 @@ class DuckDBIngester:
             )
 
         path_str = (
-            str(Path(parquet_path).resolve()).replace("\\", "/").replace("'", "''")
+            str(Path(parquet_path).resolve()).replace("\\", "/")
         )
 
         # 2. Schema pre-validation & column presence verification
@@ -732,7 +828,7 @@ class DuckDBIngester:
             WHERE {safe_treatment_col} IN ({to_sql_val(comp_groups[0])}, {to_sql_val(comp_groups[1])})
             GROUP BY {safe_treatment_col}
         """
-        stats_df = self.query(sql, [path_str, comp_groups[0], comp_groups[1]])
+        stats_df = self.query(sql)
 
         row_0 = (
             stats_df[stats_df[treatment_col] == comp_groups[0]].iloc[0]

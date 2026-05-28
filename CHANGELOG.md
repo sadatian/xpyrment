@@ -1,6 +1,19 @@
 # Changelog
 
-## [1.6.0.0] - Upcoming
+## [1.6.1.0] - 2026-05-28
+
+### Added
+- **5 New High-Fidelity Test Suites**: Created dedicated unit/integration test suites for `shap.py`, `validate_novelty.py`, `network_identity.py`, `streaming_extreme.py`, and `frequentist.py` achieving near 100% code coverage.
+- **Dependency Clean-Rebuild (Poetry Integration)**: Configured and migrated the local virtual environment to use Poetry as the single source of truth based on `pyproject.toml`, resolving dependency resolution conflicts. Added clean-rebuild guidelines to `.agents/rules/implementation-guide.md` to prevent future Python dependency issues.
+
+### Fixed
+- **SPA Dashboard Server Bugs**: Fully resolved three key runtime bugs in `src/xpyrment/run/hub.py`:
+  1. Fixed `AttributeError` in `/api/module/personalize/train` route by invoking `.estimate_effect(X)` instead of `.predict(X)` on `TLearner`.
+  2. Fixed `GraphPartitioner` `ImportError` in `/api/module/network/cluster` by importing and correctly invoking `EntropyBalancedGraphPartitioner` over simulated adjacency lists.
+  3. Resolved `InteractionDetector` constructor misalignment in `/api/module/interactions/anova` route by constructing a valid `Experiment` via the orchestrator `setup(df)` API and calling `.detect_all()`.
+- **CLI & Statistical Edge Cases**: Fixed boundary/exception tests in `test_cli.py` (mocked app server startup), GPD tails in `test_extreme.py` (constant tail and MOM bounds safeguards), Winsorization bounds in `test_outliers.py`, and spent alpha calculations in `test_sequential.py`.
+
+## [1.6.0.0] - 2026-05-27
 ### Added
 - Created the primary `XpyrmentHubServer` dashboard.
 - Introduced `app` subcommand to CLI to launch the interactive UI hub.

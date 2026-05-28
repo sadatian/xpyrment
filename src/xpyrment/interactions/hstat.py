@@ -59,15 +59,6 @@ def compute_friedman_h_statistic(model: Any, X_data: Any, feature_i: str, featur
     if not isinstance(X_data, pd.DataFrame):
         X_data = pd.DataFrame(X_data)
 
-    def get_pd(features: list, vals: np.ndarray) -> np.ndarray:
-        """Computes average prediction when 'features' are fixed at 'vals'."""
-        X_temp = X_data.copy()
-        for idx, feat in enumerate(features):
-            X_temp[feat] = vals[:, idx] if vals.ndim > 1 else vals[idx]
-        
-        preds = model.predict(X_temp)
-        return np.mean(preds)
-
     # We evaluate PDs over the empirical distribution of X_data
     n = len(X_data)
     pd_ij = np.zeros(n)
