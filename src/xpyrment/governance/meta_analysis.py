@@ -7,6 +7,7 @@ Random-Effects (DerSimonian-Laird) analytical pooling models.
 from typing import Dict, Any, List
 import numpy as np
 from scipy import stats
+from xpyrment.core.cache import cached_norm_cdf
 
 
 class MetaAnalysis:
@@ -50,7 +51,7 @@ class MetaAnalysis:
         pooled_se = np.sqrt(pooled_var)
 
         z_stat = pooled_effect / pooled_se
-        p_val = 2.0 * (1.0 - stats.norm.cdf(np.abs(z_stat)))
+        p_val = 2.0 * (1.0 - cached_norm_cdf(float(np.abs(z_stat))))
 
         ci_lower = pooled_effect - 1.96 * pooled_se
         ci_upper = pooled_effect + 1.96 * pooled_se
@@ -101,7 +102,7 @@ class MetaAnalysis:
         pooled_se = np.sqrt(pooled_var)
 
         z_stat = pooled_effect / pooled_se
-        p_val = 2.0 * (1.0 - stats.norm.cdf(np.abs(z_stat)))
+        p_val = 2.0 * (1.0 - cached_norm_cdf(float(np.abs(z_stat))))
 
         ci_lower = pooled_effect - 1.96 * pooled_se
         ci_upper = pooled_effect + 1.96 * pooled_se

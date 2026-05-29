@@ -5,6 +5,12 @@ variances (with Satterthwaite degrees of freedom) and the non-parametric Mann-Wh
 """
 
 import numpy as np
+from xpyrment.core.cache import (
+    statistical_cache,
+    cached_statistical,
+    cached_t_cdf,
+    welch_satterthwaite_df,
+)
 
 
 def run_welch_t_test(group_a: np.ndarray, group_b: np.ndarray) -> dict:
@@ -25,8 +31,6 @@ def run_welch_t_test(group_a: np.ndarray, group_b: np.ndarray) -> dict:
             - `"df"` (float): The approximated Satterthwaite degrees of freedom.
             - `"difference"` (float): Absolute difference between means ($\\bar{X}_B - \\bar{X}_A$).
     """
-    from scipy import stats
-
     val_a = group_a[~np.isnan(group_a)]
     val_b = group_b[~np.isnan(group_b)]
 
@@ -51,10 +55,8 @@ def run_welch_t_test(group_a: np.ndarray, group_b: np.ndarray) -> dict:
 
     if se_diff > 0.0:
         t_stat = diff / se_diff
-        num = (var_a / n_a + var_b / n_b) ** 2
-        den = ((var_a / n_a) ** 2) / (n_a - 1) + ((var_b / n_b) ** 2) / (n_b - 1)
-        df = num / den if den > 0 else (n_a + n_b - 2)
-        p_val = 2 * (1.0 - stats.t.cdf(np.abs(t_stat), df=df))
+        df = welch_satterthwaite_df(float(var_a), n_a, float(var_b), n_b)
+        p_val = 2 * (1.0 - cached_t_cdf(np.abs(t_stat), df))
     else:
         t_stat = 0.0
         p_val = 1.0

@@ -8,7 +8,7 @@ from typing import Dict, Any
 
 import os
 from typing import Dict, Any
-from scipy.stats import chi2
+from xpyrment.core.cache import cached_chi2_cdf
 from dataclasses import dataclass
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -57,7 +57,7 @@ class ExperimentReportGenerator:
                 chi_sq = ((self.control_n - expected_n) ** 2 / expected_n) + (
                     (self.treatment_n - expected_n) ** 2 / expected_n
                 )
-                self.srm_p_value = float(1.0 - chi2.cdf(chi_sq, df=1))
+                self.srm_p_value = float(1.0 - cached_chi2_cdf(float(chi_sq), 1.0))
                 self.srm_passed = (
                     self.srm_p_value >= 0.01
                 )  # Standard 0.01 SRM critical alpha

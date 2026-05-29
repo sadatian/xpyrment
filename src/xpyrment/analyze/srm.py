@@ -8,6 +8,7 @@ from typing import Dict, Tuple, Union
 import logging
 import numpy as np
 from scipy.stats import chi2
+from xpyrment.core.cache import cached_chi2_cdf
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class SampleRatioMismatchDetector:
         chi_sq = ((obs_ctrl - exp_ctrl) ** 2) / exp_ctrl + ((obs_trt - exp_trt) ** 2) / exp_trt
         
         # 1 Degree of Freedom for a 2-class goodness-of-fit test
-        p_val = float(1.0 - chi2.cdf(chi_sq, df=1))
+        p_val = float(1.0 - cached_chi2_cdf(float(chi_sq), 1.0))
 
         # SRM is conventionally flagged at highly conservative significance levels (e.g. alpha = 0.001)
         srm_detected = p_val < 0.001

@@ -5,6 +5,7 @@ server-side datasets (such as SQL tables or CSVs) into the `xpyrment` experiment
 """
 
 import pandas as pd
+from xpyrment.core.cache import cached_t_cdf, cached_t_ppf, welch_satterthwaite_df
 
 
 def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
@@ -631,12 +632,8 @@ class DuckDBIngester:
                 diff = mean_1 - mean_0
                 if se_diff > 0.0:
                     t_stat = diff / se_diff
-                    num = (var_0 / n_0 + var_1 / n_1) ** 2
-                    den = ((var_0 / n_0) ** 2) / (n_0 - 1) + ((var_1 / n_1) ** 2) / (
-                        n_1 - 1
-                    )
-                    df_val = num / den if den > 0 else (n_0 + n_1 - 2)
-                    p_val = 2 * (1.0 - stats.t.cdf(np.abs(t_stat), df=df_val))
+                    df_val = welch_satterthwaite_df(float(var_0), n_0, float(var_1), n_1)
+                    p_val = 2 * (1.0 - cached_t_cdf(float(np.abs(t_stat)), float(df_val)))
                 else:
                     p_val = 1.0
 
@@ -875,15 +872,11 @@ class DuckDBIngester:
 
             if se_diff > 0.0:
                 t_stat = diff / se_diff
-                num = (var_0 / n_0 + var_1 / n_1) ** 2
-                den = ((var_0 / n_0) ** 2) / (n_0 - 1) + ((var_1 / n_1) ** 2) / (
-                    n_1 - 1
-                )
-                df_val = num / den if den > 0 else (n_0 + n_1 - 2)
-                p_val = 2 * (1.0 - stats.t.cdf(np.abs(t_stat), df=df_val))
+                df_val = welch_satterthwaite_df(float(var_0), n_0, float(var_1), n_1)
+                p_val = 2 * (1.0 - cached_t_cdf(float(np.abs(t_stat)), float(df_val)))
 
                 # Confidence interval calculation
-                ci_half = stats.t.ppf(1.0 - alpha / 2.0, df=df_val) * se_diff
+                ci_half = cached_t_ppf(float(1.0 - alpha / 2.0), float(df_val)) * se_diff
                 ci_lower = diff - ci_half
                 ci_upper = diff + ci_half
                 significant = bool(p_val < alpha)

@@ -4,7 +4,7 @@ This module provides standard plotting wrappers, such as `plot_interaction_heatm
 the presence and magnitude of interactions across high-dimensional experimental spaces.
 """
 
-from typing import Optional
+from typing import Optional, Any
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -15,7 +15,7 @@ def plot_interaction_heatmap(
     df_interactions: pd.DataFrame,
     annot: Optional[bool] = None,
     ax: Optional[plt.Axes] = None,
-    **kwargs
+    **kwargs: Any
 ) -> tuple:
     r"""Generates an interaction term heatmap using matplotlib.
 
@@ -120,7 +120,7 @@ def plot_interaction_effects(
     metric_col: str,
     covariate_col: str,
     ax: Optional[plt.Axes] = None,
-    **kwargs
+    **kwargs: Any
 ) -> tuple:
     """Plots interaction effects between a treatment and a covariate on a metric.
 

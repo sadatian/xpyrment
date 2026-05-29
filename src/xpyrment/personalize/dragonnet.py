@@ -494,7 +494,7 @@ class DragonNet:
         return activations["e_hat"].squeeze(axis=-1)
 
     def estimate_effect(self, X: np.ndarray) -> np.ndarray:
-        """Estimates individual treatment effects (ITE) / uplift.
+        r"""Estimates individual treatment effects (ITE) / uplift.
 
         Computes the Conditional Average Treatment Effect (CATE) for each unit:
         $$

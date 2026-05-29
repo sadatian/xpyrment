@@ -46,6 +46,11 @@ from typing import Any, Dict, Optional
 import numpy as np
 import pandas as pd
 from scipy import stats
+from xpyrment.core.cache import (
+    cached_t_cdf,
+    cached_t_ppf,
+    welch_satterthwaite_df,
+)
 
 
 class BaseMetric(ABC):
@@ -130,24 +135,22 @@ class BaseMetric(ABC):
             Dict[str, float]: Standardized dict containing `p_value`, `ci_lower`, `ci_upper`,
                 `rel_ci_lower`, `rel_ci_upper`, and `power`.
         """
-        num = (var_c / n_c + var_t / n_t) ** 2
-        den = ((var_c / n_c) ** 2) / (n_c - 1) + ((var_t / n_t) ** 2) / (n_t - 1)
-        df = num / den if den > 0 else (n_c + n_t - 2)
+        df = welch_satterthwaite_df(float(var_c), n_c, float(var_t), n_t)
 
         se_diff = np.sqrt(var_c / n_c + var_t / n_t)
         diff = mean_t - mean_c
 
         if se_diff > 0:
             t_stat = diff / se_diff
-            p_val = 2 * (1 - stats.t.cdf(np.abs(t_stat), df=df))
+            p_val = 2 * (1.0 - cached_t_cdf(float(np.abs(t_stat)), float(df)))
 
-            t_crit = stats.t.ppf(1 - alpha / 2, df=df)
+            t_crit = cached_t_ppf(float(1.0 - alpha / 2.0), float(df))
             ci_lower = diff - t_crit * se_diff
             ci_upper = diff + t_crit * se_diff
 
             ncp = np.abs(diff) / se_diff
-            t_crit_alpha = stats.t.ppf(1 - alpha / 2, df=df)
-            power = 1 - stats.t.cdf(t_crit_alpha, df=df, loc=ncp) + stats.t.cdf(-t_crit_alpha, df=df, loc=ncp)
+            t_crit_alpha = cached_t_ppf(float(1.0 - alpha / 2.0), float(df))
+            power = 1.0 - cached_t_cdf(float(t_crit_alpha - ncp), float(df)) + cached_t_cdf(float(-t_crit_alpha - ncp), float(df))
         else:
             p_val = 1.0
             ci_lower = diff

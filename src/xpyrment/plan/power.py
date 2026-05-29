@@ -28,6 +28,7 @@ runtimes.
 from typing import Dict, Any, Optional
 import numpy as np
 from scipy import stats
+from xpyrment.core.cache import cached_norm_ppf
 
 
 class ExperimentDesignResult:
@@ -209,8 +210,8 @@ def design_experiment(
             raise ValueError(f"standard_deviation is required for metric type '{metric_type}'.")
         variance = standard_deviation**2
 
-    z_alpha = stats.norm.ppf(1 - alpha / 2)
-    z_beta = stats.norm.ppf(power)
+    z_alpha = cached_norm_ppf(float(1.0 - alpha / 2.0))
+    z_beta = cached_norm_ppf(float(power))
 
     factor = 2 * (z_alpha + z_beta) ** 2
     sample_size = factor * variance / (mde_absolute**2)
