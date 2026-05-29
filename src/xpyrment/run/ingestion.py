@@ -5,6 +5,8 @@ server-side datasets (such as SQL tables or CSVs) into the `xpyrment` experiment
 """
 
 import pandas as pd
+from types import TracebackType
+from typing import Optional, Type
 
 
 def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
@@ -137,7 +139,7 @@ class DuckDBIngester:
            where $O_{i,j}$ and $E_{i,j}$ are the observed and expected frequency counts, respectively.
     """
 
-    def __init__(self, db_path: str = ":memory:"):
+    def __init__(self, db_path: str = ":memory:") -> None:
         """Initializes the DuckDBIngester and opens a connection.
 
         Args:
@@ -161,13 +163,13 @@ class DuckDBIngester:
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> None:
         self.close()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         """Closes the underlying DuckDB connection if open to release locks."""
         if hasattr(self, "_conn") and self._conn is not None:
             try:

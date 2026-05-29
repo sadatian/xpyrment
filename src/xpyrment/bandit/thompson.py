@@ -21,7 +21,7 @@ class ThompsonSamplingBandit:
         arms: List[str],
         reward_type: Literal["binary", "continuous"] = "binary",
         prior_params: Optional[Dict[str, tuple]] = None,
-    ):
+    ) -> None:
         """Initializes the Thompson Sampling bandit.
 
         Args:

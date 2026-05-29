@@ -62,7 +62,7 @@ class DOptimalDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, num_runs: int, seed: int = 42):
+    def __init__(self, factors: dict, num_runs: int, seed: int = 42) -> None:
         """Initializes a DOptimalDesign.
 
         Args:

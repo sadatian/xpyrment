@@ -66,7 +66,7 @@ class HypothesisSpec:
         primary_metric: BaseMetric,
         direction: Literal["two-sided", "greater", "less"] = "two-sided",
         description: str = "",
-    ):
+    ) -> None:
         """Initializes a new HypothesisSpec.
 
         Args:

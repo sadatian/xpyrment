@@ -73,7 +73,7 @@ class DefinitiveScreeningDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict):
+    def __init__(self, factors: dict) -> None:
         """Initializes a Definitive Screening Design.
 
         Args:

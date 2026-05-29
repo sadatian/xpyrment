@@ -16,7 +16,7 @@ class NeighborhoodExposure:
     # TODO: Support multi-hop network exposures (e.g., 2-hop exposures where a node is influenced by friends-of-friends) to capture deeper peer cascades.
     """
 
-    def __init__(self, adjacency: np.ndarray):
+    def __init__(self, adjacency: np.ndarray) -> None:
         """Initializes the NeighborhoodExposure estimator.
 
         Args:

@@ -16,7 +16,7 @@ class SyntheticControl:
     # TODO: Support regularized/penalized Synthetic Control (e.g., L1/L2 weights penalization) to handle high-dimensional donor pools where J > T_pre.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the SyntheticControl estimator."""
         self.weights = None
         self.synthetic_outcome = None

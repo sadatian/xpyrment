@@ -61,7 +61,7 @@ class InteractionDetector:
         experiment (Experiment): The completed or active experiment container.
     """
 
-    def __init__(self, experiment):
+    def __init__(self, experiment) -> None:
         """Initializes an InteractionDetector.
 
         Args:

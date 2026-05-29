@@ -1,3 +1,4 @@
+from typing import Literal
 """Auto-tuned hyperparameter optimization for adaptive bandits using Bayesian Optimization.
 
 Optimizes multi-armed bandit hyperparameters (e.g. exploration probability epsilon,

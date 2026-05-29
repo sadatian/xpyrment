@@ -27,7 +27,7 @@ class AnalysisResult:
         balance_checker (Optional[Any]): Fitted balance checker object if covariates were present.
     """
 
-    def __init__(self, raw_results: List[dict], alpha: float = 0.05, balance_checker: Optional[Any] = None):
+    def __init__(self, raw_results: List[dict], alpha: float = 0.05, balance_checker: Optional[Any] = None) -> None:
         """Initializes an AnalysisResult.
 
         Args:

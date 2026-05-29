@@ -73,7 +73,7 @@ class TaguchiDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, array_name: str):
+    def __init__(self, factors: dict, array_name: str) -> None:
         """Initializes a TaguchiDesign.
 
         Args:

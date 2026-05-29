@@ -58,7 +58,7 @@ class BaseMetric(ABC):
         name (str): The unique descriptive name of the metric.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         """Initializes a BaseMetric.
 
         Args:
@@ -184,7 +184,7 @@ class MeanMetric(BaseMetric):
         name: str,
         value_col: str,
         pre_period_col: Optional[str] = None,
-    ):
+    ) -> None:
         """Initializes a MeanMetric.
 
         Args:
@@ -374,7 +374,7 @@ class RatioMetric(BaseMetric):
         denominator_col: str,
         pre_numerator_col: Optional[str] = None,
         pre_denominator_col: Optional[str] = None,
-    ):
+    ) -> None:
         """Initializes a RatioMetric.
 
         Args:

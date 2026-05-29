@@ -46,7 +46,7 @@ class TrafficSplitter:
         allocations: Dict[str, float],
         holdout_percentage: float = 0.0,
         ramp_schedule: List[float] = None,
-    ):
+    ) -> None:
         """Initializes a new TrafficSplitter container.
 
         Validates that the sum of variant allocations and holdout percentages totals exactly 1.0.

@@ -142,7 +142,7 @@ class LiveMonitor:
         shutoff_triggered (bool): Status flag indicating whether an active SRM or critical alert has suspended assignment.
     """
 
-    def __init__(self, df: pd.DataFrame, time_col: str, dispatcher: Optional[WebhookAlertDispatcher] = None):
+    def __init__(self, df: pd.DataFrame, time_col: str, dispatcher: Optional[WebhookAlertDispatcher] = None) -> None:
         """Initializes a LiveMonitor.
 
         Args:

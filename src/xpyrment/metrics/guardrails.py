@@ -37,7 +37,7 @@ class GuardrailMetric:
             ```
     """
 
-    def __init__(self, metric: BaseMetric, max_allowed_change: float = 0.01):
+    def __init__(self, metric: BaseMetric, max_allowed_change: float = 0.01) -> None:
         """Initializes a GuardrailMetric wrapper.
 
         Args:

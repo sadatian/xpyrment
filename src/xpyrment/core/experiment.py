@@ -59,7 +59,7 @@ class Experiment:
         treatment_col: str,
         id_col: Optional[str] = None,
         covariates: Optional[List[str]] = None,
-    ):
+    ) -> None:
         """Initializes a new Experiment orchestration container.
 
         Copies the input DataFrame to guarantee immutability of the source dataset during internal

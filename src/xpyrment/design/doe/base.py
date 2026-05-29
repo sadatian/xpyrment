@@ -37,7 +37,7 @@ class DesignMatrix(ABC):
             of possible levels (floats/integers). For example: `{"temperature": [100.0, 150.0], "pressure": [1.0, 2.0]}`.
     """
 
-    def __init__(self, factors: Dict[str, List[float]]):
+    def __init__(self, factors: Dict[str, List[float]]) -> None:
         """Initializes a new DesignMatrix.
 
         Args:

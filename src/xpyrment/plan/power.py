@@ -41,7 +41,7 @@ class ExperimentDesignResult:
             from the power analysis engine.
     """
 
-    def __init__(self, details: Dict[str, Any]):
+    def __init__(self, details: Dict[str, Any]) -> None:
         """Initializes an ExperimentDesignResult wrapper.
 
         Args:

@@ -36,7 +36,7 @@ class AuditTrail:
         logs (List[Dict[str, str]]): List of chronological, cryptographically linked log events.
     """
 
-    def __init__(self, experiment_id: str, db_path: str = None):
+    def __init__(self, experiment_id: str, db_path: str = None) -> None:
         """Initializes an AuditTrail log.
 
         Args:
@@ -65,7 +65,7 @@ class AuditTrail:
                 )
                 conn.commit()
 
-    def log_event(self, action: str, details: str, signature: str = None, public_key: str = None):
+    def log_event(self, action: str, details: str, signature: str = None, public_key: str = None) -> None:
         """Appends a new event with an active timestamp to the audit trail log.
 
         Calculates timestamps in strict UTC, hashes the event details with the prior block's hash,

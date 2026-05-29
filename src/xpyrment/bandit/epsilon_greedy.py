@@ -15,7 +15,7 @@ class EpsilonGreedyBandit:
     # TODO: Extend with contextual multi-armed bandit variants using online regression base learners.
     """
 
-    def __init__(self, arms: List[str], epsilon: float = 0.1, decay_rate: float = 0.995):
+    def __init__(self, arms: List[str], epsilon: float = 0.1, decay_rate: float = 0.995) -> None:
         """Initializes the bandit.
 
         Args:

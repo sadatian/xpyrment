@@ -39,7 +39,7 @@ class ExperimentCard:
         analysis_summary (dict): Calculated point estimates, confidence intervals, and launch recommendations.
     """
 
-    def __init__(self, experiment_id: str, plan_spec: dict, validation_spec: dict, analysis_summary: dict):
+    def __init__(self, experiment_id: str, plan_spec: dict, validation_spec: dict, analysis_summary: dict) -> None:
         """Initializes a new ExperimentCard.
 
         Args:

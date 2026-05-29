@@ -1,3 +1,4 @@
+from typing import Dict, Any, List, Optional, Tuple, Union, Callable, Set, Iterable
 """Synthetic data generators for validation, profiling, and unit testing.
 
 This module provides the `generate_ab_data` utility, which generates realistic experimental datasets containing continuous,

@@ -54,7 +54,7 @@ class StoppingRules:
             ```
     """
 
-    def __init__(self, alpha: float = 0.05):
+    def __init__(self, alpha: float = 0.05) -> None:
         """Initializes StoppingRules.
 
         Args:

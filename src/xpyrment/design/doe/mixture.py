@@ -64,7 +64,7 @@ class MixtureDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, m: int = 2):
+    def __init__(self, factors: dict, m: int = 2) -> None:
         """Initializes a MixtureDesign.
 
         Args:

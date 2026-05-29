@@ -15,7 +15,7 @@ class UCB1Bandit:
     # TODO: Implement sliding-window UCB versions to better handle non-stationary environments.
     """
 
-    def __init__(self, arms: List[str], c: float = 2.0):
+    def __init__(self, arms: List[str], c: float = 2.0) -> None:
         """Initializes the bandit.
 
         Args:

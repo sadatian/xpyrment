@@ -16,7 +16,7 @@ class PCurve:
     # TODO: Create visualization plots comparing observed significant p-value densities against uniform null curves.
     """
 
-    def __init__(self, p_values: List[float]):
+    def __init__(self, p_values: List[float]) -> None:
         """Initializes the PCurve analyzer.
 
         Args:

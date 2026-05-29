@@ -43,7 +43,7 @@ class DragonNet:
            A_{0} = Z W_{0,h} + b_{0,h}, \quad H_0 = \tanh(A_{0})
            $$
            $$
-           \hat{y}_0 = H_0 W_{0,o} + b_{0,o}
+           \\hat{y}_0 = H_0 W_{0,o} + b_{0,o}
            $$
 
         3. **Treatment Outcome Head ($Y_1$)**:
@@ -52,7 +52,7 @@ class DragonNet:
            A_{1} = Z W_{1,h} + b_{1,h}, \quad H_1 = \tanh(A_{1})
            $$
            $$
-           \hat{y}_1 = H_1 W_{1,o} + b_{1,o}
+           \\hat{y}_1 = H_1 W_{1,o} + b_{1,o}
            $$
 
         4. **Propensity Score Head ($e$)**:
@@ -61,7 +61,7 @@ class DragonNet:
            A_{t} = Z W_{t,h} + b_{t,h}, \quad H_t = \tanh(A_{t})
            $$
            $$
-           E_{\text{logit}} = H_t W_{t,o} + b_{t,o}, \quad \hat{e} = \sigma(E_{\text{logit}})
+           E_{\text{logit}} = H_t W_{t,o} + b_{t,o}, \quad \\hat{e} = \sigma(E_{\text{logit}})
            $$
            where $\sigma(z) = \frac{1}{1 + e^{-z}}$ is the sigmoid activation function.
 
@@ -72,14 +72,14 @@ class DragonNet:
         where:
         - Outcome Loss:
           $$
-          L_{\text{outcome}} = \frac{1}{N} \sum_{i=1}^N \left[ (1 - T_i)(Y_i - \hat{y}_{0,i})^2 + T_i(Y_i - \hat{y}_{1,i})^2 \right]
+          L_{\text{outcome}} = \frac{1}{N} \sum_{i=1}^N \left[ (1 - T_i)(Y_i - \\hat{y}_{0,i})^2 + T_i(Y_i - \\hat{y}_{1,i})^2 \right]
           $$
         - Propensity Cross-Entropy Loss (with clipping $\epsilon$ bounds):
           $$
-          \hat{e}_i^{\text{clipped}} = \text{clip}(\hat{e}_i, \epsilon, 1 - \epsilon)
+          \\hat{e}_i^{\text{clipped}} = \text{clip}(\\hat{e}_i, \epsilon, 1 - \epsilon)
           $$
           $$
-          L_{\text{propensity}} = -\frac{1}{N} \sum_{i=1}^N \left[ T_i \log(\hat{e}_i^{\text{clipped}}) + (1 - T_i) \log(1 - \hat{e}_i^{\text{clipped}}) \right]
+          L_{\text{propensity}} = -\frac{1}{N} \sum_{i=1}^N \left[ T_i \log(\\hat{e}_i^{\text{clipped}}) + (1 - T_i) \log(1 - \\hat{e}_i^{\text{clipped}}) \right]
           $$
         - L2 Regularization Penalty (applied only to weight matrices $\mathcal{W}$):
           $$
@@ -94,25 +94,25 @@ class DragonNet:
 
         - Control outcome gradient:
           $$
-          \delta_{\hat{y}_0} = -\frac{2}{N} (1 - T) \odot (Y - \hat{y}_0)
+          \delta_{\\hat{y}_0} = -\frac{2}{N} (1 - T) \odot (Y - \\hat{y}_0)
           $$
         - Treatment outcome gradient:
           $$
-          \delta_{\hat{y}_1} = -\frac{2}{N} T \odot (Y - \hat{y}_1)
+          \delta_{\\hat{y}_1} = -\frac{2}{N} T \odot (Y - \\hat{y}_1)
           $$
         - Propensity logit gradient (via sigmoid cross-entropy cancellation):
           $$
-          \delta_{E_{\text{logit}}} = \frac{\alpha}{N} (\hat{e}^{\text{clipped}} - T)
+          \delta_{E_{\text{logit}}} = \frac{\alpha}{N} (\\hat{e}^{\text{clipped}} - T)
           $$
 
         Each head propagates its respective gradients back to the shared representation layer:
         - Outcome 0 head representation gradient:
           $$
-          \delta_Z^{(0)} = \left[ (\delta_{\hat{y}_0} W_{0,o}^T) \odot (1 - H_0^2) \right] W_{0,h}^T
+          \delta_Z^{(0)} = \left[ (\delta_{\\hat{y}_0} W_{0,o}^T) \odot (1 - H_0^2) \right] W_{0,h}^T
           $$
         - Outcome 1 head representation gradient:
           $$
-          \delta_Z^{(1)} = \left[ (\delta_{\hat{y}_1} W_{1,o}^T) \odot (1 - H_1^2) \right] W_{1,h}^T
+          \delta_Z^{(1)} = \left[ (\delta_{\\hat{y}_1} W_{1,o}^T) \odot (1 - H_1^2) \right] W_{1,h}^T
           $$
         - Propensity head representation gradient:
           $$
@@ -499,7 +499,7 @@ class DragonNet:
 
         Computes the Conditional Average Treatment Effect (CATE) for each unit:
         $$
-        \hat{\tau}(X) = \hat{y}_1(X) - \hat{y}_0(X)
+        \\hat{\tau}(X) = \\hat{y}_1(X) - \\hat{y}_0(X)
         $$
 
         Args:

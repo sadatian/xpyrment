@@ -76,7 +76,7 @@ class FractionalFactorialDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, generator_string: str):
+    def __init__(self, factors: dict, generator_string: str) -> None:
         """Initializes a FractionalFactorialDesign.
 
         Args:

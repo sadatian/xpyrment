@@ -74,7 +74,7 @@ class LatinHypercubeDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, num_samples: int, seed: int = 42):
+    def __init__(self, factors: dict, num_samples: int, seed: int = 42) -> None:
         """Initializes a LatinHypercubeDesign.
 
         Args:

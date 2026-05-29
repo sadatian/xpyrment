@@ -17,7 +17,7 @@ class MetaAnalysis:
     # TODO: Support Trim-and-Fill algorithms to estimate and adjust pooled estimates for funnel plot asymmetry / publication bias.
     """
 
-    def __init__(self, estimates: List[float], variances: List[float]):
+    def __init__(self, estimates: List[float], variances: List[float]) -> None:
         """Initializes the MetaAnalysis estimator.
 
         Args:

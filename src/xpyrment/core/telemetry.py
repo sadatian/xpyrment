@@ -89,7 +89,7 @@ class ExecutionProfiler:
     resource hot spots, and algorithmic memory leaks (especially within bootstrap, MCMC, or massive-scale matrix solvers).
     """
 
-    def __init__(self, stage_name: str, logger: Optional[logging.Logger] = None):
+    def __init__(self, stage_name: str, logger: Optional[logging.Logger] = None) -> None:
         """Initializes the ExecutionProfiler.
 
         Args:

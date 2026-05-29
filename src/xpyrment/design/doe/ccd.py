@@ -68,7 +68,7 @@ class CentralCompositeDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, alpha: str = "orthogonal", num_center_points: int = 4):
+    def __init__(self, factors: dict, alpha: str = "orthogonal", num_center_points: int = 4) -> None:
         """Initializes a CentralCompositeDesign.
 
         Args:

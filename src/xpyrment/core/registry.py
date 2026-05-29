@@ -40,7 +40,7 @@ class ExperimentRegistry:
             ```
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes an empty registry store."""
         self._registry: Dict[str, Dict[str, Any]] = {}
 

@@ -59,7 +59,7 @@ class BayesianInference:
             Defaults to `"beta_binomial"`.
     """
 
-    def __init__(self, model_type: str = "beta_binomial"):
+    def __init__(self, model_type: str = "beta_binomial") -> None:
         """Initializes a BayesianInference.
 
         Args:

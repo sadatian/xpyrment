@@ -16,7 +16,7 @@ from xpyrment.analyze.orchestrator import AnalysisResult
 class ExperimentReportGenerator:
     """Generates premium standalone Markdown and HTML reports from experiment AnalysisResult instances."""
 
-    def __init__(self, result: AnalysisResult, experiment_name: str = "A/B Experiment Report"):
+    def __init__(self, result: AnalysisResult, experiment_name: str = "A/B Experiment Report") -> None:
         """Initializes the report generator.
 
         Args:
@@ -565,7 +565,7 @@ class ExperimentReportGenerator:
 """
         return html_template
 
-    def save_html(self, filepath: str):
+    def save_html(self, filepath: str) -> None:
         """Saves the beautifully compiled HTML dashboard report to a local file.
 
         Args:
@@ -576,7 +576,7 @@ class ExperimentReportGenerator:
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(self.generate_html())
 
-    def save_markdown(self, filepath: str):
+    def save_markdown(self, filepath: str) -> None:
         """Saves the GitHub-compatible Markdown summary report to a local file.
 
         Args:

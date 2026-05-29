@@ -55,7 +55,7 @@ class BoxBehnkenDesign(DesignMatrix):
         ```
     """
 
-    def __init__(self, factors: dict, num_center_points: int = 3):
+    def __init__(self, factors: dict, num_center_points: int = 3) -> None:
         """Initializes a BoxBehnkenDesign.
 
         Args:

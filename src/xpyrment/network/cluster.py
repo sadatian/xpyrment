@@ -56,7 +56,7 @@ class ClusterRandomizer:
     # TODO: Support cluster-size balancing mechanisms to prevent extreme power decay caused by highly asymmetric community structures.
     """
 
-    def __init__(self, adjacency: np.ndarray):
+    def __init__(self, adjacency: np.ndarray) -> None:
         """Initializes the ClusterRandomizer.
 
         Args:

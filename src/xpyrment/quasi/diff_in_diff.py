@@ -78,7 +78,7 @@ class DifferenceInDifferences:
     # TODO: Implement cluster-robust standard errors to handle correlated errors across repeat-measure cohort panels.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the DiD estimator."""
         self.treatment_effect = 0.0
         self.p_value = 1.0

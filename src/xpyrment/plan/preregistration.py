@@ -43,7 +43,7 @@ class PreregistrationCard:
             ```
     """
 
-    def __init__(self, experiment_id: str, spec: Dict[str, Any]):
+    def __init__(self, experiment_id: str, spec: Dict[str, Any]) -> None:
         """Initializes a new PreregistrationCard and registers its specification.
 
         Args:

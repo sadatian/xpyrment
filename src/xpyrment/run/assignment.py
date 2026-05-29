@@ -38,11 +38,11 @@ class AssignmentLogger:
         ```
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes an empty AssignmentLogger."""
         self._exposures = []
 
-    def log_assignment(self, unit_id: str, variant: str, timestamp: str):
+    def log_assignment(self, unit_id: str, variant: str, timestamp: str) -> None:
         """Logs an assignment exposure event.
 
         Args:

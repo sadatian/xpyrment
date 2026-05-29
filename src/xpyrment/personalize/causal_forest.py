@@ -18,7 +18,7 @@ class CausalTreeNode:
         left: Optional["CausalTreeNode"] = None,
         right: Optional["CausalTreeNode"] = None,
         effect: float = 0.0,
-    ):
+    ) -> None:
         """Initializes a node.
 
         Args:
@@ -42,7 +42,7 @@ class CausalTree:
     # TODO: Implement randomized feature subspace selection (m_try) at each split to increase forest diversity.
     """
 
-    def __init__(self, max_depth: int = 3, min_samples_leaf: int = 5):
+    def __init__(self, max_depth: int = 3, min_samples_leaf: int = 5) -> None:
         """Initializes the CausalTree.
 
         Args:
@@ -147,7 +147,7 @@ class CausalTree:
 class CausalForest:
     """Ensemble of CausalTrees to estimate smooth heterogeneous treatment effects."""
 
-    def __init__(self, n_estimators: int = 10, max_depth: int = 3, min_samples_leaf: int = 5):
+    def __init__(self, n_estimators: int = 10, max_depth: int = 3, min_samples_leaf: int = 5) -> None:
         """Initializes the CausalForest.
 
         Args:

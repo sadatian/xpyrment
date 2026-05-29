@@ -64,7 +64,7 @@ class SwitchbackDesign(DesignMatrix):
             ```
     """
 
-    def __init__(self, factors: dict, unit_window_hours: int = 2):
+    def __init__(self, factors: dict, unit_window_hours: int = 2) -> None:
         """Initializes a SwitchbackDesign.
 
         Args:
