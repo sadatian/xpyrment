@@ -4,8 +4,11 @@ This module provides the `PCurve` class to analyze distributions of significant
 p-values (p < 0.05) for system-level reporting bias and true statistical power.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Tuple
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 from scipy import stats
 
 
@@ -13,7 +16,6 @@ class PCurve:
     """Analyzes significant p-value distributions to evaluate power and flag gaming/p-hacking.
 
     # TODO: Implement analytical estimation of the underlying statistical power curve based on non-central distribution fits.
-    # TODO: Create visualization plots comparing observed significant p-value densities against uniform null curves.
     """
 
     def __init__(self, p_values: List[float]):
@@ -76,3 +78,113 @@ class PCurve:
             "status": status,
             "message": message,
         }
+
+
+    def plot(
+        self,
+        ax: Optional[plt.Axes] = None,
+        title: str = "P-Curve Analysis",
+        figsize: Tuple[int, int] = (8, 6),
+        **kwargs
+    ) -> Tuple[plt.Figure, plt.Axes]:
+        """Generates a P-Curve visualization based on the stored significant p-values.
+
+        Args:
+            ax (matplotlib.axes.Axes, optional): Pre-existing axes for the plot. If None, a new figure
+                and axes are created.
+            title (str): Title of the rendered plot. Defaults to "P-Curve Analysis".
+            figsize (Tuple[int, int]): Dimensions of the figure canvas. Defaults to (8, 6).
+            **kwargs: Additional keyword arguments to pass to the underlying plot function.
+
+        Returns:
+            Tuple[plt.Figure, plt.Axes]: The generated matplotlib Figure and Axes.
+        """
+        return plot_p_curve(
+            p_values=self.significant_p.tolist(),
+            ax=ax,
+            title=title,
+            figsize=figsize,
+            **kwargs
+        )
+
+
+def plot_p_curve(
+    p_values: List[float],
+    ax: Optional[plt.Axes] = None,
+    title: str = "P-Curve Analysis",
+    figsize: Tuple[int, int] = (8, 6),
+    **kwargs
+) -> Tuple[plt.Figure, plt.Axes]:
+    """Visualizes the density of significant p-values against a uniform null curve.
+
+    Args:
+        p_values (List[float]): A list or array of all historical experiment p-values.
+        ax (matplotlib.axes.Axes, optional): Pre-existing axes for the plot. If None, a new figure
+            and axes are created.
+        title (str): Title of the rendered plot.
+        figsize (Tuple[int, int]): Dimensions of the figure canvas.
+        **kwargs: Additional keyword arguments to pass to the plot.
+
+    Returns:
+        Tuple[plt.Figure, plt.Axes]: The generated matplotlib Figure and Axes.
+    """
+    raw_p = np.array(p_values)
+    sig_p = raw_p[(raw_p >= 0.0) & (raw_p < 0.05)]
+
+    if ax is None:
+        fig, ax_to_use = plt.subplots(figsize=figsize)
+    else:
+        fig = ax.figure
+        ax_to_use = ax
+
+    # Bins for p-curve: 0.01, 0.02, 0.03, 0.04, 0.05
+    bins = [0.0, 0.01, 0.02, 0.03, 0.04, 0.05]
+    bin_labels = ["0.01", "0.02", "0.03", "0.04", "0.05"]
+
+    if len(sig_p) == 0:
+        counts = [0, 0, 0, 0, 0]
+        percentages = [0.0, 0.0, 0.0, 0.0, 0.0]
+    else:
+        counts, _ = np.histogram(sig_p, bins=bins)
+        percentages = (counts / len(sig_p)) * 100.0
+
+    df_plot = pd.DataFrame({
+        "p-value": bin_labels,
+        "Percentage": percentages
+    })
+
+    # Use a temporary context to apply seaborn styling locally
+    with sns.axes_style("whitegrid"):
+        # Plot observed p-curve
+        sns.lineplot(
+            data=df_plot,
+            x="p-value",
+            y="Percentage",
+            marker="o",
+            color="#1e88e5",
+            linewidth=2.5,
+            markersize=8,
+            label="Observed P-Curve",
+            ax=ax_to_use,
+            **kwargs
+        )
+
+        # Plot uniform null
+        ax_to_use.axhline(
+            20.0,
+            color="#e53935",
+            linestyle="--",
+            linewidth=2,
+            label="Uniform Null (No Effect)"
+        )
+
+        ax_to_use.set_ylim(0, max(100, max(percentages) + 10 if len(sig_p) > 0 else 100))
+        ax_to_use.set_xlabel("p-value", fontweight="bold")
+        ax_to_use.set_ylabel("Percentage of p-values (%)", fontweight="bold")
+        ax_to_use.set_title(title, fontweight="bold", pad=15)
+        ax_to_use.legend(frameon=True, facecolor="white")
+
+    if ax is None:
+        fig.tight_layout()
+
+    return fig, ax_to_use

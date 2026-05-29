@@ -67,3 +67,31 @@ def test_p_curve_analysis():
     assert res_left["status"] == "Reporting Bias / P-Hacking Detected"
     assert res_left["n_low_half"] == 3
     assert res_left["n_high_half"] == 12
+
+def test_p_curve_plot():
+    """Asserts that PCurve plot generation returns valid matplotlib canvases and does not fail."""
+    import matplotlib.pyplot as plt
+    from xpyrment.governance.p_curve import plot_p_curve, PCurve
+
+    # Test with standard distribution
+    p_vals = [0.001, 0.002, 0.005, 0.01, 0.008, 0.012, 0.004, 0.006, 0.02, 0.045]
+
+    # Test standalone
+    fig, ax = plot_p_curve(p_vals)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close(fig)
+
+    # Test via class method
+    pc = PCurve(p_vals)
+    fig_class, ax_class = pc.plot()
+    assert isinstance(fig_class, plt.Figure)
+    assert isinstance(ax_class, plt.Axes)
+    plt.close(fig_class)
+
+    # Test with empty significant values
+    pc_empty = PCurve([0.1, 0.2, 0.3])
+    fig_empty, ax_empty = pc_empty.plot()
+    assert isinstance(fig_empty, plt.Figure)
+    assert isinstance(ax_empty, plt.Axes)
+    plt.close(fig_empty)
