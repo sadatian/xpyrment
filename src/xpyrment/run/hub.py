@@ -45,13 +45,16 @@ def get_doe_design_summaries() -> list[dict]:
         if name in ("DesignMatrix", "CarryoverDecomposition"):
             continue
         cls = getattr(doe_pkg, name, None)
-        if cls is not None and inspect.isclass(cls):
-            # Filter out any classes imported from other modules
-            if cls.__module__.startswith("xpyrment.design.doe"):
-                doc = inspect.getdoc(cls) or ""
-                first_line = doc.split("\n")[0] if doc else "No description available."
-                first_line = first_line.replace("$", "").replace("|", "\\|")
-                designs[name] = {"summary": first_line}
+        # Filter out any classes imported from other modules
+        if (
+            cls is not None
+            and inspect.isclass(cls)
+            and cls.__module__.startswith("xpyrment.design.doe")
+        ):
+            doc = inspect.getdoc(cls) or ""
+            first_line = doc.split("\n")[0] if doc else "No description available."
+            first_line = first_line.replace("$", "").replace("|", "\\|")
+            designs[name] = {"summary": first_line}
     return [{"name": k, "desc": v["summary"]} for k, v in sorted(designs.items())]
 
 
@@ -141,16 +144,25 @@ class XpyrmentHubServer:
                 else:
                     logger.debug(format, *args)
 
+            def _send_response_raw(self, status_code: int, content_type: str, body: bytes) -> None:
+                self.send_response(status_code)
+                self.send_header("Content-Type", content_type)
+                self.end_headers()
+                self.wfile.write(body)
+
+            def send_json_response(self, status_code: int, data: dict) -> None:
+                self._send_response_raw(status_code, "application/json", json.dumps(data).encode("utf-8"))
+
+            def send_html_response(self, status_code: int, html_content: str) -> None:
+                self._send_response_raw(status_code, "text/html; charset=utf-8", html_content.encode("utf-8"))
+
+            def send_text_response(self, status_code: int, text: str) -> None:
+                self._send_response_raw(status_code, "text/plain", text.encode("utf-8"))
+
             def do_GET(self) -> None:
-                if self.path == "/" or self.path == "/index.html":
-                    self.send_response(200)
-                    self.send_header("Content-Type", "text/html; charset=utf-8")
-                    self.end_headers()
-                    self.wfile.write(server_instance.get_html_content().encode("utf-8"))
+                if self.path in ("/", "/index.html"):
+                    self.send_html_response(200, server_instance.get_html_content())
                 elif self.path == "/api/data/status":
-                    self.send_response(200)
-                    self.send_header("Content-Type", "application/json")
-                    self.end_headers()
                     with server_instance._lock:
                         payload = {
                             "status": "success",
@@ -159,12 +171,111 @@ class XpyrmentHubServer:
                             "columns": list(server_instance.shared_data.columns) if server_instance.shared_data is not None else [],
                             "rows": len(server_instance.shared_data) if server_instance.shared_data is not None else 0
                         }
-                    self.wfile.write(json.dumps(payload).encode("utf-8"))
+                    self.send_json_response(200, payload)
                 else:
-                    self.send_response(404)
-                    self.send_header("Content-Type", "text/plain")
-                    self.end_headers()
-                    self.wfile.write(b"Not Found")
+                    self.send_text_response(404, "Not Found")
+
+            def _handle_data_simulate(self, params: dict) -> None:
+                try:
+                    n_samples = int(params.get("n_samples", 1000))
+                    df = generate_ab_data(n_samples=n_samples)
+                    with server_instance._lock:
+                        server_instance.shared_data = df
+                        server_instance.dataset_name = f"Simulated ({n_samples} rows)"
+                    self.send_json_response(200, {"status": "success", "message": "Simulation successful"})
+                except Exception as e:
+                    self.send_json_response(500, {"status": "error", "message": str(e)})
+
+            def _handle_monitoring_start(self) -> None:
+                try:
+                    port = server_instance.start_monitoring_server(server_instance.host, 0)
+                    self.send_json_response(200, {"status": "success", "port": port})
+                except Exception as e:
+                    self.send_json_response(500, {"status": "error", "message": str(e)})
+
+            def _handle_design_generate(self) -> None:
+                try:
+                    data = get_doe_design_summaries()
+                    self.send_json_response(200, {"status": "success", "data": data})
+                except Exception as e:
+                    self.send_json_response(500, {"status": "error", "message": str(e)})
+
+            def _handle_quasi_analyze(self, params: dict) -> None:
+                if server_instance.shared_data is None:
+                    self.send_json_response(400, {"status": "error", "message": "No data loaded."})
+                    return
+                try:
+                    from xpyrment.quasi.diff_in_diff import fit_ols
+                    df = server_instance.shared_data.copy()
+                    y_col = params.get("y_col", "revenue" if "revenue" in df.columns else df.columns[-1])
+                    if "converted" in df.columns and "revenue" not in df.columns:
+                        y_col = "converted"
+                    x_cols = params.get("x_cols", ["variant"] if "variant" in df.columns else [df.columns[0]])
+                    if "variant" in df.columns:
+                        df["variant"] = df["variant"].map({"treatment": 1, "control": 0}).fillna(0)
+                    X = df[x_cols].to_numpy()
+                    y = df[y_col].to_numpy()
+                    res = fit_ols(X, y)
+                    results = {"intercept": {"coef": res["beta"][0], "p_value": res["p_values"][0], "se": res["standard_errors"][0]}}
+                    for idx, col in enumerate(x_cols):
+                        results[col] = {"coef": res["beta"][idx+1], "p_value": res["p_values"][idx+1], "se": res["standard_errors"][idx+1]}
+                    self.send_json_response(200, {"status": "success", "data": results})
+                except Exception as e:
+                    self.send_json_response(500, {"status": "error", "message": str(e)})
+
+            def _handle_balance(self, params: dict) -> None:
+                from xpyrment.validate.balance import check_covariate_balance
+                if server_instance.shared_data is None:
+                    self.send_json_response(400, {"status": "error", "message": "No data loaded."})
+                    return
+                try:
+                    group_col = params.get("group_col", "variant")
+                    covariates = params.get("covariates", [])
+                    results = check_covariate_balance(server_instance.shared_data, group_col, covariates)
+                    self.send_json_response(200, {"status": "success", "data": results})
+                except Exception as e:
+                    self.send_json_response(500, {"status": "error", "message": str(e)})
+
+            def _handle_personalize_train(self) -> None:
+                if server_instance.shared_data is None:
+                    self.send_json_response(400, {"status": "error", "message": "No data loaded."})
+                    return
+                try:
+                    from xpyrment.personalize.meta_learners import TLearner
+                    df = server_instance.shared_data.copy()
+                    y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
+                    X = df.drop(columns=[y_col, "variant", "user_id"], errors="ignore").to_numpy()
+                    T = df["variant"].map({"treatment": 1, "control": 0}).fillna(0).to_numpy()
+                    y = df[y_col].to_numpy()
+                    learner = TLearner()
+                    learner.fit(X, T, y)
+                    cate = learner.estimate_effect(X)
+                    avg_cate = float(cate.mean())
+                    self.send_json_response(200, {"status": "success", "message": f"T-Learner trained successfully. Average CATE: {avg_cate:.4f}"})
+                except Exception as e:
+                    self.send_json_response(500, {"status": "error", "message": str(e)})
+
+            def _handle_network_cluster(self) -> None:
+                if server_instance.shared_data is None:
+                    self.send_json_response(400, {"status": "error", "message": "No data loaded."})
+                    return
+                try:
+                    num_clusters = run_network_partition(server_instance.shared_data)
+                    self.send_json_response(200, {"status": "success", "message": f"Graph partitioned successfully into {num_clusters} clusters."})
+                except Exception as e:
+                    self.send_json_response(500, {"status": "error", "message": str(e)})
+
+            def _handle_interactions_anova(self) -> None:
+                if server_instance.shared_data is None:
+                    self.send_json_response(400, {"status": "error", "message": "No data loaded."})
+                    return
+                try:
+                    df = server_instance.shared_data.copy()
+                    y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
+                    out = run_anova_interaction_detection(df, y_col)
+                    self.send_json_response(200, {"status": "success", "message": f"ANOVA Calculated:\n{out}"})
+                except Exception as e:
+                    self.send_json_response(500, {"status": "error", "message": str(e)})
 
             def do_POST(self) -> None:
                 content_length = int(self.headers.get("Content-Length", 0))
@@ -175,169 +286,23 @@ class XpyrmentHubServer:
                     params = {}
 
                 if self.path == "/api/data/simulate":
-                    try:
-                        n_samples = int(params.get("n_samples", 1000))
-                        df = generate_ab_data(n_samples=n_samples)
-                        with server_instance._lock:
-                            server_instance.shared_data = df
-                            server_instance.dataset_name = f"Simulated ({n_samples} rows)"
-                        self.send_response(200)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "message": "Simulation successful"}).encode("utf-8"))
-                    except Exception as e:
-                        self.send_response(500)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
-
-                # Implement initiating various backend modules using the shared_data cache
+                    self._handle_data_simulate(params)
                 elif self.path == "/api/module/monitoring/start":
-                    try:
-                        port = server_instance.start_monitoring_server(server_instance.host, 0)
-                        self.send_response(200)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "port": port}).encode("utf-8"))
-                    except Exception as e:
-                        self.send_response(500)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                    self._handle_monitoring_start()
                 elif self.path.startswith("/api/module/design/generate"):
-                    try:
-                        data = get_doe_design_summaries()
-                        self.send_response(200)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "data": data}).encode("utf-8"))
-                    except Exception as e:
-                        self.send_response(500)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                    self._handle_design_generate()
                 elif self.path == "/api/module/quasi/analyze":
-                    if server_instance.shared_data is None:
-                        self.send_response(400)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
-                        return
-                    try:
-                        from xpyrment.quasi.diff_in_diff import fit_ols
-                        df = server_instance.shared_data.copy()
-                        y_col = params.get("y_col", "revenue" if "revenue" in df.columns else df.columns[-1])
-                        if "converted" in df.columns and "revenue" not in df.columns:
-                            y_col = "converted"
-                        x_cols = params.get("x_cols", ["variant"] if "variant" in df.columns else [df.columns[0]])
-                        if "variant" in df.columns:
-                            df["variant"] = df["variant"].map({"treatment": 1, "control": 0}).fillna(0)
-                        X = df[x_cols].to_numpy()
-                        y = df[y_col].to_numpy()
-                        res = fit_ols(X, y)
-                        results = {"intercept": {"coef": res["beta"][0], "p_value": res["p_values"][0], "se": res["standard_errors"][0]}}
-                        for idx, col in enumerate(x_cols):
-                            results[col] = {"coef": res["beta"][idx+1], "p_value": res["p_values"][idx+1], "se": res["standard_errors"][idx+1]}
-                        self.send_response(200)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "data": results}).encode("utf-8"))
-                    except Exception as e:
-                        self.send_response(500)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                    self._handle_quasi_analyze(params)
                 elif self.path == "/api/module/balance":
-                    from xpyrment.validate.balance import check_covariate_balance
-                    if server_instance.shared_data is None:
-                        self.send_response(400)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
-                        return
-                    try:
-                        group_col = params.get("group_col", "variant")
-                        covariates = params.get("covariates", [])
-                        results = check_covariate_balance(server_instance.shared_data, group_col, covariates)
-                        self.send_response(200)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "data": results}).encode("utf-8"))
-                    except Exception as e:
-                        self.send_response(500)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                    self._handle_balance(params)
                 elif self.path == "/api/module/personalize/train":
-                    if server_instance.shared_data is None:
-                        self.send_response(400)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
-                        return
-                    try:
-                        from xpyrment.personalize.meta_learners import TLearner
-                        df = server_instance.shared_data.copy()
-                        y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
-                        X = df.drop(columns=[y_col, "variant", "user_id"], errors="ignore").to_numpy()
-                        T = df["variant"].map({"treatment": 1, "control": 0}).fillna(0).to_numpy()
-                        y = df[y_col].to_numpy()
-                        learner = TLearner()
-                        learner.fit(X, T, y)
-                        cate = learner.estimate_effect(X)
-                        avg_cate = float(cate.mean())
-                        self.send_response(200)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "message": f"T-Learner trained successfully. Average CATE: {avg_cate:.4f}"}).encode("utf-8"))
-                    except Exception as e:
-                        self.send_response(500)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                    self._handle_personalize_train()
                 elif self.path == "/api/module/network/cluster":
-                    if server_instance.shared_data is None:
-                        self.send_response(400)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
-                        return
-                    try:
-                        num_clusters = run_network_partition(server_instance.shared_data)
-                        self.send_response(200)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "message": f"Graph partitioned successfully into {num_clusters} clusters."}).encode("utf-8"))
-                    except Exception as e:
-                        self.send_response(500)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                    self._handle_network_cluster()
                 elif self.path == "/api/module/interactions/anova":
-                    if server_instance.shared_data is None:
-                        self.send_response(400)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": "No data loaded."}).encode("utf-8"))
-                        return
-                    try:
-                        df = server_instance.shared_data.copy()
-                        y_col = "revenue" if "revenue" in df.columns else df.columns[-1]
-                        out = run_anova_interaction_detection(df, y_col)
-                        self.send_response(200)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "success", "message": f"ANOVA Calculated:\n{out}"}).encode("utf-8"))
-                    except Exception as e:
-                        self.send_response(500)
-                        self.send_header("Content-Type", "application/json")
-                        self.end_headers()
-                        self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                    self._handle_interactions_anova()
                 else:
-                    self.send_response(404)
-                    self.send_header("Content-Type", "text/plain")
-                    self.end_headers()
-                    self.wfile.write(b"Not Found")
+                    self.send_text_response(404, "Not Found")
 
         self.server = HTTPServer((self.host, self.port_requested), HubHTTPRequestHandler)
         self.port = self.server.server_address[1]

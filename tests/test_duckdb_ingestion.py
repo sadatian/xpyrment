@@ -419,16 +419,13 @@ def test_load_from_sql_sqlite(tmp_path):
         load_from_sql("SELECT * FROM non_existent", ":memory:")
 
 
-def test_load_from_sql_sqlalchemy_import_error(monkeypatch):
-    """Verifies that load_from_sql raises ImportError when SQLAlchemy is required but missing."""
+def test_load_from_sql_unsupported_database():
+    """Verifies that load_from_sql raises ValueError when trying to connect to a non-SQLite database."""
     from xpyrment.run.ingestion import load_from_sql
 
-    # Mock import of sqlalchemy to raise ImportError
-    import sys
-    monkeypatch.setitem(sys.modules, "sqlalchemy", None)
-
-    with pytest.raises(ImportError, match="sqlalchemy is required"):
+    with pytest.raises(ValueError, match="Non-SQLite databases are not supported"):
         load_from_sql("SELECT * FROM users", "postgresql://user:pass@host/db")
+
 
 
 def test_ingest_dataframe_cleansing_and_imputations():
@@ -488,27 +485,7 @@ def test_ingest_dataframe_key_errors():
         ingest_dataframe(df, categorical_cols=["missing_cat"])
 
 
-def test_load_from_sql_sqlalchemy_execution(monkeypatch):
-    """Verifies load_from_sql SQLAlchemy non-SQLite execution path."""
-    import sys
-    from types import ModuleType
 
-    # Mock sqlalchemy module and create_engine function
-    mock_sqla = ModuleType("sqlalchemy")
-    class MockEngine:
-        pass
-    mock_engine = MockEngine()
-    mock_sqla.create_engine = lambda uri: mock_engine
-    
-    monkeypatch.setitem(sys.modules, "sqlalchemy", mock_sqla)
-
-    mock_df = pd.DataFrame({"user_id": [1]})
-    monkeypatch.setattr(pd, "read_sql_query", lambda query, engine: mock_df if engine is mock_engine else None)
-
-    from xpyrment.run.ingestion import load_from_sql
-    df = load_from_sql("SELECT * FROM users", "postgresql://user:pass@host/db")
-    assert len(df) == 1
-    assert df.iloc[0]["user_id"] == 1
 
 
 def test_ingester_close_exception_handling():

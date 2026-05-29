@@ -196,8 +196,29 @@
   - Verified that `pandera` is imported strictly dynamically within helper functions in `src/xpyrment/run/ingestion.py`, ensuring it remains completely optional at runtime.
   - Confirmed that `pandera` is correctly defined as a PEP 621 optional dependency under the `schema` extra in `pyproject.toml` and verified via `poetry check` that the configuration is 100% valid.
 
+- **SQLAlchemy Library Removal (Completed)**:
+  - Verified 100% baseline test greenness (all 311 tests passed successfully).
+  - Drafted a rigorous implementation plan to permanently remove SQLAlchemy and ensure a clean deprecation path.
+  - Refactored `load_from_sql` in `src/xpyrment/run/ingestion.py` to raise a `ValueError` for unsupported non-SQLite databases, completely eliminating dynamic imports and dependencies on `sqlalchemy`.
+  - Cleaned up obsolete tests in `tests/test_duckdb_ingestion.py` by removing the legacy non-SQLite SQLAlchemy execution path test and replacing the old import error test with `test_load_from_sql_unsupported_database`.
+  - Executed the complete 310-test suite and verified 100% green compliance (310/310 passed).
+- **Sourcery Nested If-Condition Refactoring (Completed)**:
+  - Addressed Sourcery's code-quality warning in `src/xpyrment/run/hub.py` under the dynamic DoE class reflection function `get_doe_design_summaries()`.
+  - Merged two nested `if` statements into a single, clean compound logical condition (`cls is not None and inspect.isclass(cls) and cls.__module__.startswith("xpyrment.design.doe")`) using `and`.
+  - Maintained all existing class filtering logic and inline filter commentary to ensure 100% backward compatibility and exact behavior.
+  - Successfully verified the complete 310-test suite with a 100% green pass.
+- **Sourcery Request Handler Quality Improvement (Completed)**:
+  - Resolved Sourcery warnings in `src/xpyrment/run/hub.py` targeting `HubHTTPRequestHandler` route matching and response sending logic.
+  - Replaced multiple path comparisons (`self.path == "/" or self.path == "/index.html"`) with a cleaner `in` comparison check (`self.path in ("/", "/index.html")`).
+  - Extracted dynamic HTTP response construction logic into three modular, high-cohesion helper methods: `send_json_response(status_code, data)`, `send_html_response(status_code, html_content)`, and `send_text_response(status_code, text)`.
+  - Extracted shared HTTP write sequences (`send_response`, `send_header`, `end_headers`, and `wfile.write`) out from the response helper methods into a single unified core `_send_response_raw(self, status_code, content_type, body)` helper to eliminate all remaining code duplication.
+  - Completely eliminated code duplication across all GET and POST routes, resulting in a cleaner, standard-compliant, and highly maintainable request handler.
+  - Extracted each of the 8 individual route endpoint handlers from the monolith `do_POST` method into dedicated, single-responsibility helper methods (`_handle_data_simulate`, `_handle_monitoring_start`, `_handle_design_generate`, `_handle_quasi_analyze`, `_handle_balance`, `_handle_personalize_train`, `_handle_network_cluster`, and `_handle_interactions_anova`), raising Sourcery's code quality score of `do_POST` to >90%.
+  - Executed and verified the full 310-test suite with 100% green compliance.
+
 ### Next Steps
-- **Main Development Roadmap**: Await the user's instructions for the next sprint features, personalization model updates, or integration testing.
+- **Main Development Roadmap**: Await user instructions for the next sprint features, personalization model updates, or integration testing.
+
 
 
 
