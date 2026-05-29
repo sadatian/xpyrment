@@ -101,7 +101,7 @@ def _enforce_schema(
         schema_dict[unit_id_col] = pa.Column(nullable=False)
 
     if time_col is not None:
-        schema_dict[time_col] = pa.Column("datetime64[ns]", nullable=False)
+        schema_dict[time_col] = pa.Column("datetime64[ns]", nullable=True)
 
     if metric_cols:
         schema_dict.update(_metric_columns_spec(metric_cols, pa))
@@ -119,28 +119,6 @@ def _enforce_schema(
         raise ValueError(f"Dynamic schema validation failed: {e}") from e
 
 
-def ingest_dataframe(
-    df: pd.DataFrame,
-    unit_id_col: str = None,
-    time_col: str = None,
-    metric_cols: list = None,
-    categorical_cols: list = None,
-    schema=None,
-) -> pd.DataFrame:
-    """Ingests, validates, and copies an in-memory pandas DataFrame into the xpyrment lifecycle.
-
-    Performs localized validation checks on the pandas DataFrame, ensuring all required column signatures
-    are mapped correctly.
-
-    Args:
-        df (pd.DataFrame): The raw source DataFrame.
-        unit_id_col (str): Column representing unit identifiers (nulls will be dropped).
-        time_col (str): Column representing event timestamps (will be parsed to datetime).
-        metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
-        categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
-        schema (pandera.DataFrameSchema, optional): A user-provided Pandera schema to validate against.
-            If None, a schema is built dynamically based on the provided columns.
-
 def _clean_dataframe_like(
     df: Any,
     unit_id_col: Optional[str],
@@ -150,6 +128,7 @@ def _clean_dataframe_like(
     to_datetime: Any,
     frame_label: str,
     copy_frame: bool,
+    schema=None,
 ) -> Any:
     df_clean = df.copy() if copy_frame else df
 
@@ -199,6 +178,7 @@ def ingest_dataframe(
     time_col: Optional[str] = None,
     metric_cols: Optional[List[str]] = None,
     categorical_cols: Optional[List[str]] = None,
+    schema=None,
 ) -> pd.DataFrame:
     """Ingests, validates, and copies an in-memory pandas DataFrame into the xpyrment lifecycle.
 
@@ -211,11 +191,12 @@ def ingest_dataframe(
         time_col (str): Column representing event timestamps (will be parsed to datetime).
         metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
         categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+        schema (pandera.DataFrameSchema, optional): A user-provided Pandera schema to validate against.
+            If None, a schema is built dynamically based on the provided columns.
 
     Returns:
         pd.DataFrame: An audited, isolated copy of the DataFrame ready for downstream operations.
     """
-    # TODO: Add schema enforcement using Pydantic models or Pandera DataFrame schemas.
     return _clean_dataframe_like(
         df=df,
         unit_id_col=unit_id_col,
@@ -225,6 +206,7 @@ def ingest_dataframe(
         to_datetime=pd.to_datetime,
         frame_label="DataFrame",
         copy_frame=True,
+        schema=schema,
     )
 
 
@@ -234,6 +216,7 @@ def ingest_chunks(
     time_col: str = None,
     metric_cols: list = None,
     categorical_cols: list = None,
+    schema=None,
 ) -> Iterator[pd.DataFrame]:
     """Ingests and yields an iterable of pandas DataFrames (chunks) for out-of-core processing.
 
@@ -246,6 +229,7 @@ def ingest_chunks(
         time_col (str): Column representing event timestamps (will be parsed to datetime).
         metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
         categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+        schema (pandera.DataFrameSchema, optional): A user-provided Pandera schema to validate against.
 
     Yields:
         pd.DataFrame: An audited, isolated chunk of the dataset ready for downstream operations.
@@ -257,6 +241,7 @@ def ingest_chunks(
             time_col=time_col,
             metric_cols=metric_cols,
             categorical_cols=categorical_cols,
+            schema=schema,
         )
 
 
@@ -266,6 +251,7 @@ def ingest_dask_dataframe(
     time_col: Optional[str] = None,
     metric_cols: Optional[List[str]] = None,
     categorical_cols: Optional[List[str]] = None,
+    schema=None,
 ) -> Any:
     """Ingests, validates, and sets up a computation graph for a Dask DataFrame.
 
@@ -278,6 +264,7 @@ def ingest_dask_dataframe(
         time_col (str): Column representing event timestamps (will be parsed to datetime).
         metric_cols (list): Continuous metric columns (nulls will be imputed to 0.0).
         categorical_cols (list): Categorical covariate columns (nulls will be imputed to "UNKNOWN").
+        schema (pandera.DataFrameSchema, optional): A user-provided Pandera schema to validate against.
 
     Returns:
         dask.dataframe.DataFrame: A lazy Dask DataFrame with data cleaning operations appended to its graph.
@@ -306,6 +293,7 @@ def ingest_dask_dataframe(
         to_datetime=dd.to_datetime,
         frame_label="Dask DataFrame",
         copy_frame=False,
+        schema=schema,
     )
 
 

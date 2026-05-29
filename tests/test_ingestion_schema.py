@@ -43,7 +43,7 @@ def test_ingest_dataframe_schema_type_error():
 
 def test_ingest_dataframe_with_custom_schema():
     """Test that user can provide a custom pandera schema."""
-    pa = pytest.importorskip("pandera.pandas")
+    pa = pytest.importorskip("pandera")
     schema = pa.DataFrameSchema({
         "score": pa.Column(int, pa.Check.ge(0))
     })
@@ -59,7 +59,7 @@ def test_ingest_dataframe_with_custom_schema():
 
 def test_ingest_dataframe_with_custom_schema_multiple_errors():
     """Test that multiple custom schema violations are aggregated correctly."""
-    pa = pytest.importorskip("pandera.pandas")
+    pa = pytest.importorskip("pandera")
     schema = pa.DataFrameSchema({
         "score": pa.Column(int, pa.Check.ge(0)),
         "bonus": pa.Column(float, pa.Check.le(1.0)),

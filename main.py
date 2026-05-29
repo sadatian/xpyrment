@@ -3,11 +3,169 @@ import os
 import re
 import tomllib
 import subprocess
+import shlex
 import importlib
 import inspect
 import pkgutil
+import logging
+from typing import Optional
 
-def sync_versions(force_pypi_version=None):
+def _read_version_from_toml(pyproject_path: str) -> str:
+    """Read the version string from pyproject.toml."""
+    with open(pyproject_path, "rb") as f:
+        config = tomllib.load(f)
+    return config["project"]["version"]
+
+
+def _sync_version_file(version_file_path: str, root_dir: str, version: str) -> None:
+    """Synchronize src/xpyrment/_version.py if its content differs from expected."""
+    expected_version_content = f'__version__ = "{version}"\n'
+    current_version_content = ""
+    if os.path.exists(version_file_path):
+        with open(version_file_path, "r", encoding="utf-8") as f:
+            current_version_content = f.read()
+            
+    if current_version_content != expected_version_content:
+        print(f"📝 Synchronizing {os.path.relpath(version_file_path, root_dir)} -> v{version}")
+        with open(version_file_path, "w", encoding="utf-8") as f:
+            f.write(expected_version_content)
+
+
+def _fetch_pypi_version() -> Optional[str]:
+    """Fetch the latest published version on PyPI, falling back to TestPyPI."""
+    import urllib.request
+    import json
+
+    logger = logging.getLogger(__name__)
+    urls_tried = []
+    last_exception: Optional[BaseException] = None
+
+    for base_url in (
+        "https://pypi.org/pypi/{package}/json",
+        "https://test.pypi.org/pypi/{package}/json",
+    ):
+        url = base_url.format(package="xpyrment")
+        urls_tried.append(url)
+        try:
+            with urllib.request.urlopen(url, timeout=3) as response:
+                if response.status != 200:
+                    logger.warning(
+                        "Failed to fetch version metadata from %s (status %s)",
+                        url,
+                        response.status,
+                    )
+                    continue
+                data = json.loads(response.read().decode("utf-8"))
+                version = data.get("info", {}).get("version")
+                if version:
+                    return version
+                logger.warning("No 'info.version' found in response from %s", url)
+        except Exception as exc:
+            last_exception = exc
+            logger.warning(
+                "Error while fetching version metadata from %s: %s",
+                url,
+                exc,
+            )
+
+    if last_exception is not None:
+        logger.error(
+            "Failed to resolve version from PyPI/TestPyPI after trying %d URL(s): %s. "
+            "Last error: %s",
+            len(urls_tried),
+            ", ".join(urls_tried),
+            last_exception,
+        )
+    else:
+        logger.error(
+            "Failed to resolve version from PyPI/TestPyPI after trying %d URL(s): %s. "
+            "No explicit exceptions were raised, but no usable version was found.",
+            len(urls_tried),
+            ", ".join(urls_tried),
+        )
+
+    return None
+
+
+def _run_pytest_and_get_stats(root_dir: str):
+    """Run pytest and coverage command, parse stdout, and return (passed_count, cov_percent)."""
+    print("🧪 Running test suite and coverage analysis...")
+    try:
+        cmd = ["poetry", "run", "pytest", "--cov=src", "--cov-report=term"]
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=root_dir, encoding="utf-8", shell=False)
+        
+        if result.returncode != 0:
+            print(f"⚠️ Pytest failed with return code {result.returncode}. Skipping badge update.")
+            if result.stderr:
+                print(f"Debug Info:\n{result.stderr}")
+            return None, None
+            
+        stdout = result.stdout
+        tests_match = re.search(r"(\d+)\s+passed", stdout)
+        cov_match = re.search(r"TOTAL\s+\d+\s+\d+\s+(\d+)%", stdout)
+        
+        passed_count = tests_match.group(1) if tests_match else None
+        cov_percent = cov_match.group(1) if cov_match else None
+        
+        if passed_count:
+            print(f"✅ Tests: {passed_count} passed.")
+        if cov_percent:
+            print(f"📊 Coverage: {cov_percent}%")
+            
+        return passed_count, cov_percent
+    except Exception as e:
+        print(f"⚠️ Could not run pytest or coverage: {str(e)}")
+    return None, None
+
+
+def _sync_readme_badges(readme_path: str, root_dir: str, version: str, force_pypi_version: Optional[str] = None, pypi_version: Optional[str] = None) -> None:
+    """Synchronize README.md badges (release, PyPI, tests, and coverage)."""
+    if not os.path.exists(readme_path):
+        return
+        
+    with open(readme_path, "r", encoding="utf-8") as f:
+        readme_content = f.read()
+        
+    # Replace release badge (supporting any digit format)
+    updated_content = re.sub(
+        r"release-v\d+(?:\.\d+)+(?:%20stable)?",
+        f"release-v{version}%20stable",
+        readme_content
+    )
+    
+    # Replace PyPI badge (supporting any digit format)
+    target_pypi_version = force_pypi_version or pypi_version or version
+    print(f"🏷️ Setting PyPI badge to: v{target_pypi_version}")
+    updated_content = re.sub(
+        r"pypi-v\d+(?:\.\d+)+",
+        f"pypi-v{target_pypi_version}",
+        updated_content
+    )
+    
+    # Run pytest and coverage to sync test count and coverage badges
+    passed_count, cov_percent = _run_pytest_and_get_stats(root_dir)
+    
+    if passed_count:
+        updated_content = re.sub(
+            r"tests-\d+%20passed",
+            f"tests-{passed_count}%20passed",
+            updated_content
+        )
+        
+    if cov_percent:
+        updated_content = re.sub(
+            r"coverage-\d+%25",
+            f"coverage-{cov_percent}%25",
+            updated_content
+        )
+        
+    if updated_content != readme_content:
+        print(f"📝 Synchronizing {os.path.relpath(readme_path, root_dir)} badges...")
+        with open(readme_path, "w", encoding="utf-8") as f:
+            f.write(updated_content)
+
+
+def sync_versions(force_pypi_version: Optional[str] = None) -> str:
     """
     Using pyproject.toml as the absolute single source of truth,
     automatically synchronize the version string across:
@@ -18,110 +176,19 @@ def sync_versions(force_pypi_version=None):
     
     # 1. Read version from pyproject.toml
     pyproject_path = os.path.join(root_dir, "pyproject.toml")
-    with open(pyproject_path, "rb") as f:
-        config = tomllib.load(f)
-    version = config["project"]["version"]
+    version = _read_version_from_toml(pyproject_path)
     
     # 2. Synchronize src/xpyrment/_version.py
     version_file_path = os.path.join(root_dir, "src", "xpyrment", "_version.py")
-    expected_version_content = f'__version__ = "{version}"\n'
+    _sync_version_file(version_file_path, root_dir, version)
     
-    current_version_content = ""
-    if os.path.exists(version_file_path):
-        with open(version_file_path, "r", encoding="utf-8") as f:
-            current_version_content = f.read()
-            
-    if current_version_content != expected_version_content:
-        print(f"📝 Synchronizing {os.path.relpath(version_file_path, root_dir)} -> v{version}")
-        with open(version_file_path, "w", encoding="utf-8") as f:
-            f.write(expected_version_content)
-            
-    # 3. Synchronize README.md badges (pypi, release, tests, coverage)
+    # 3. Fetch latest PyPI/TestPyPI version
+    pypi_version = _fetch_pypi_version()
+    
+    # 4. Synchronize README.md badges (pypi, release, tests, coverage)
     readme_path = os.path.join(root_dir, "README.md")
-    if os.path.exists(readme_path):
-        with open(readme_path, "r", encoding="utf-8") as f:
-            readme_content = f.read()
-            
-        # Replace release badge (supporting any digit format)
-        updated_content = re.sub(
-            r"release-v\d+(?:\.\d+)+(?:%20stable)?",
-            f"release-v{version}%20stable",
-            readme_content
-        )
-        # Fetch the latest published version on PyPI or TestPyPI
-        pypi_version = None
-        try:
-            import urllib.request
-            import json
-            # Try PyPI first
-            try:
-                with urllib.request.urlopen("https://pypi.org/pypi/xpyrment/json", timeout=3) as r:
-                    pypi_version = json.loads(r.read().decode("utf-8"))["info"]["version"]
-            except Exception:
-                # Fallback to TestPyPI
-                with urllib.request.urlopen("https://test.pypi.org/pypi/xpyrment/json", timeout=3) as r:
-                    pypi_version = json.loads(r.read().decode("utf-8"))["info"]["version"]
-        except Exception:
-            pass
-
-        # Replace PyPI badge (supporting any digit format)
-        target_pypi_version = force_pypi_version if force_pypi_version else (pypi_version if pypi_version else version)
-        print(f"🏷️ Setting PyPI badge to: v{target_pypi_version}")
-        updated_content = re.sub(
-            r"pypi-v\d+(?:\.\d+)+",
-            f"pypi-v{target_pypi_version}",
-            updated_content
-        )
-
-        
-        # 4. Dynamically run pytest and coverage to sync test count and coverage badges
-        print("🧪 Running test suite and coverage analysis...")
-        try:
-            # We use Poetry to execute pytest to ensure lockfile compliance
-            cmd = ["poetry", "run", "pytest", "--cov=src", "--cov-report=term"]
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=root_dir, encoding="utf-8")
-            
-            if result.returncode == 0:
-                stdout = result.stdout
-                
-                # Extract tests passed
-                tests_match = re.search(r"(\d+)\s+passed", stdout)
-                
-                # Extract coverage percentage from TOTAL row
-                cov_match = re.search(r"TOTAL\s+\d+\s+\d+\s+(\d+)%", stdout)
-                
-                if tests_match:
-                    passed_count = tests_match.group(1)
-                    print(f"✅ Tests: {passed_count} passed.")
-                    # Replace tests badge (e.g., tests-138%20passed)
-                    updated_content = re.sub(
-                        r"tests-\d+%20passed",
-                        f"tests-{passed_count}%20passed",
-                        updated_content
-                    )
-                    
-                if cov_match:
-                    cov_percent = cov_match.group(1)
-                    print(f"📊 Coverage: {cov_percent}%")
-                    # Replace coverage badge (e.g., coverage-100%25 or coverage-93%25)
-                    updated_content = re.sub(
-                        r"coverage-\d+%25",
-                        f"coverage-{cov_percent}%25",
-                        updated_content
-                    )
-            else:
-                print(f"⚠️ Pytest failed with return code {result.returncode}. Skipping badge update.")
-                if result.stderr:
-                    print(f"Debug Info:\n{result.stderr}")
-        except Exception as e:
-            print(f"⚠️ Could not run pytest or coverage: {str(e)}")
-            pass
-        
-        if updated_content != readme_content:
-            print(f"📝 Synchronizing {os.path.relpath(readme_path, root_dir)} badges...")
-            with open(readme_path, "w", encoding="utf-8") as f:
-                f.write(updated_content)
-                
+    _sync_readme_badges(readme_path, root_dir, version, force_pypi_version, pypi_version)
+    
     return version
 
 
@@ -266,7 +333,7 @@ def define_env(env):
 
     # 5. Live Subprocess CLI Command Output Macro
     @env.macro
-    def cli_help(command_args):
+    def cli_help(command_args: str):
         """
         Spawns the real xpyrment CLI locally, captures its stdout, and renders it.
         Guarantees that documentation usage commands are never out of sync!
@@ -277,8 +344,8 @@ def define_env(env):
             # Ensure workspace src is first in path
             env_vars["PYTHONPATH"] = os.path.join(root_dir, "src")
             
-            cmd = [sys.executable, "-m", "xpyrment.cli"] + command_args.split()
-            result = subprocess.run(cmd, capture_output=True, text=True, env=env_vars, encoding="utf-8")
+            cmd = [sys.executable, "-m", "xpyrment.cli"] + shlex.split(command_args)
+            result = subprocess.run(cmd, capture_output=True, text=True, env=env_vars, encoding="utf-8", shell=False)
             
             output = result.stdout or result.stderr
             output_clean = output.strip()
@@ -375,7 +442,7 @@ if __name__ == "__main__":
         print("📦 Building source distribution and wheel packages via Poetry...")
         build_cmd = ["poetry", "build"]
         print(f"📦 Running Poetry build command: {' '.join(build_cmd)}")
-        result = subprocess.run(build_cmd, cwd=root_dir)
+        result = subprocess.run(build_cmd, cwd=root_dir, shell=False)
         if result.returncode == 0:
             print(f"🎉 Build completed successfully. Artifacts saved inside '{os.path.relpath(os.path.join(root_dir, 'dist'), root_dir)}/' directory.")
             if os.path.exists(os.path.join(root_dir, 'dist')):
@@ -408,12 +475,12 @@ if __name__ == "__main__":
             tag_name = f"v{v}"
             print(f"🏷️ Creating local Git tag: {tag_name}...")
             # Delete existing tag if any to avoid collision
-            subprocess.run(["git", "tag", "-d", tag_name], capture_output=True)
-            subprocess.run(["git", "tag", "-a", tag_name, "-m", f"Release {tag_name}\n\n{body}"], check=False)
+            subprocess.run(["git", "tag", "-d", tag_name], capture_output=True, shell=False)
+            subprocess.run(["git", "tag", "-a", tag_name, "-m", f"Release {tag_name}\n\n{body}"], check=False, shell=False)
             
             print(f"🚀 Pushing Git tag {tag_name} to origin...")
-            subprocess.run(["git", "push", "origin", f":refs/tags/{tag_name}"], capture_output=True)  # Delete remote tag if any
-            subprocess.run(["git", "push", "origin", tag_name], check=False)
+            subprocess.run(["git", "push", "origin", f":refs/tags/{tag_name}"], capture_output=True, shell=False)  # Delete remote tag if any
+            subprocess.run(["git", "push", "origin", tag_name], check=False, shell=False)
             
             # Check GITHUB_TOKEN or GH_TOKEN (automatically loaded globally from .env or system environment)
             token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
@@ -430,12 +497,12 @@ if __name__ == "__main__":
             import json
             
             try:
-                remote_result = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, check=True)
+                remote_result = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, check=True, shell=False)
                 remote_url = remote_result.stdout.strip()
                 match = re.search(r"github\.com[:/]([^/]+)/([^.]+)", remote_url)
                 if match:
-                    owner = match.group(1)
-                    repo = match.group(2)
+                    owner = match[1]
+                    repo = match[2]
                 else:
                     owner = "sadatian"
                     repo = "xpyrment"
@@ -509,7 +576,7 @@ if __name__ == "__main__":
             pypi_token = env_vars.get("TESTPYPI_TOKEN") or env_vars.get("PYPI_TOKEN")
             
             # Configure TestPyPI repository in Poetry
-            subprocess.run(["poetry", "config", "repositories.testpypi", "https://test.pypi.org/legacy/"], check=True)
+            subprocess.run(["poetry", "config", "repositories.testpypi", "https://test.pypi.org/legacy/"], check=True, shell=False)
             
             if pypi_token:
                 token_source = "TESTPYPI_TOKEN" if env_vars.get("TESTPYPI_TOKEN") else "PYPI_TOKEN"
@@ -519,7 +586,7 @@ if __name__ == "__main__":
             else:
                 print("⚠️ No API Token found for TestPyPI. Poetry may prompt for credentials.")
             
-            result = subprocess.run(["poetry", "publish", "-r", "testpypi"], cwd=root_dir, env=env_vars)
+            result = subprocess.run(["poetry", "publish", "-r", "testpypi"], cwd=root_dir, env=env_vars, shell=False)
             
             if result.returncode != 0:
                 print("❌ Upload to TestPyPI failed! Reverting PyPI badge in README.md to latest available version...")
@@ -540,7 +607,7 @@ if __name__ == "__main__":
             else:
                 print("⚠️ No PYPI_TOKEN found. Poetry may prompt for credentials.")
                 
-            result = subprocess.run(["poetry", "publish"], cwd=root_dir, env=env_vars)
+            result = subprocess.run(["poetry", "publish"], cwd=root_dir, env=env_vars, shell=False)
             
             if result.returncode != 0:
                 print("❌ Upload to PyPI failed! Reverting PyPI badge in README.md to latest available version...")
