@@ -104,3 +104,12 @@ class AliasError(Exception):
         message (str): Details the confounded factors or resolution constraint violated.
     """
     pass
+
+
+class BoundaryValidationError(ValueError):
+    """Raised when an input parameter or array violates specified dynamic boundaries.
+
+    This exception is raised to prevent runtime failures, division by zero, overflow errors,
+    or statistically nonsensical operations (e.g. negative probabilities, empty datasets, or NaNs).
+    """
+    pass

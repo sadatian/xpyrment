@@ -6,12 +6,13 @@ the underlying pandas DataFrame, tracks added metrics, and enforces phase-gating
 the `ExperimentState` state machine.
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Any
 import pandas as pd
 
-from xpyrment.core.exceptions import PhaseOrderError
+from xpyrment.core.exceptions import PhaseOrderError, BoundaryValidationError
 from xpyrment.core.state import ExperimentState
 from xpyrment.metrics.taxonomy import BaseMetric
+from xpyrment.core.validators import assert_non_empty
 
 
 class Experiment:
@@ -75,6 +76,7 @@ class Experiment:
         Raises:
             ValueError: If `treatment_col` or `id_col` is not found in the input DataFrame columns.
         """
+        assert_non_empty(data, "data")
         self.data = data.copy()
         self.treatment_col = treatment_col
         self.id_col = id_col
@@ -84,9 +86,9 @@ class Experiment:
         self.state = ExperimentState.CREATED
 
         if treatment_col not in self.data.columns:
-            raise ValueError(f"Treatment column '{treatment_col}' not found in DataFrame.")
+            raise BoundaryValidationError(f"Treatment column '{treatment_col}' not found in DataFrame.")
         if id_col and id_col not in self.data.columns:
-            raise ValueError(f"ID column '{id_col}' not found in DataFrame.")
+            raise BoundaryValidationError(f"ID column '{id_col}' not found in DataFrame.")
 
     def transition_to(self, target_state: ExperimentState) -> None:
         r"""Enforces transition logic to guarantee the phase-gated execution flow.

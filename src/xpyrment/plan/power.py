@@ -29,6 +29,8 @@ from typing import Dict, Any, Optional
 import numpy as np
 from scipy import stats
 from xpyrment.core.cache import cached_norm_ppf
+from xpyrment.core.exceptions import BoundaryValidationError
+from xpyrment.core.validators import assert_probability, assert_positive_int, assert_finite
 
 
 class ExperimentDesignResult:
@@ -190,9 +192,17 @@ def design_experiment(
     mde_type = mde_type.lower()
 
     if metric_type not in ["mean", "proportion", "ratio"]:
-        raise ValueError("metric_type must be one of: 'mean', 'proportion', 'ratio'.")
+        raise BoundaryValidationError("metric_type must be one of: 'mean', 'proportion', 'ratio'.")
     if mde_type not in ["relative", "absolute"]:
-        raise ValueError("mde_type must be 'relative' or 'absolute'.")
+        raise BoundaryValidationError("mde_type must be 'relative' or 'absolute'.")
+
+    # Dynamic boundary assertions
+    assert_probability(alpha, "alpha")
+    assert_probability(power, "power")
+    assert_finite(baseline_value, "baseline_value")
+    assert_finite(mde, "mde")
+    if mde <= 0:
+        raise BoundaryValidationError("mde must be positive.")
 
     if mde_type == "relative":
         mde_absolute = baseline_value * mde
@@ -203,11 +213,14 @@ def design_experiment(
 
     if metric_type == "proportion":
         if baseline_value <= 0 or baseline_value >= 1:
-            raise ValueError("For proportions, baseline_value must be strictly between 0 and 1.")
+            raise BoundaryValidationError("For proportions, baseline_value must be strictly between 0 and 1.")
         variance = baseline_value * (1 - baseline_value)
     else:
         if standard_deviation is None:
-            raise ValueError(f"standard_deviation is required for metric type '{metric_type}'.")
+            raise BoundaryValidationError(f"standard_deviation is required for metric type '{metric_type}'.")
+        assert_finite(standard_deviation, "standard_deviation")
+        if standard_deviation <= 0:
+            raise BoundaryValidationError("standard_deviation must be positive.")
         variance = standard_deviation**2
 
     z_alpha = cached_norm_ppf(float(1.0 - alpha / 2.0))
@@ -229,8 +242,9 @@ def design_experiment(
     }
 
     if pre_post_correlation is not None:
+        assert_finite(pre_post_correlation, "pre_post_correlation")
         if not (-1.0 <= pre_post_correlation <= 1.0):
-            raise ValueError("pre_post_correlation must be between -1.0 and 1.0.")
+            raise BoundaryValidationError("pre_post_correlation must be between -1.0 and 1.0.")
 
         vr_factor = 1.0 - (pre_post_correlation**2)
         cuped_sample_size = sample_size * vr_factor
@@ -240,8 +254,7 @@ def design_experiment(
         details["cuped_savings"] = 1.0 - vr_factor
 
     if daily_traffic is not None:
-        if daily_traffic <= 0:
-            raise ValueError("daily_traffic must be positive.")
+        assert_positive_int(daily_traffic, "daily_traffic")
         details["daily_traffic"] = daily_traffic
         details["duration_days_standard"] = (sample_size * 2) / daily_traffic
         if pre_post_correlation is not None:
