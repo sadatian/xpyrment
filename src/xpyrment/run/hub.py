@@ -151,13 +151,29 @@ class XpyrmentHubServer:
                 self.wfile.write(body)
 
             def send_json_response(self, status_code: int, data: dict) -> None:
-                self._send_response_raw(status_code, "application/json", json.dumps(data).encode("utf-8"))
+                self._send_response_raw(
+                    status_code,
+                    "application/json; charset=utf-8",
+                    json.dumps(data).encode("utf-8"),
+                )
 
             def send_html_response(self, status_code: int, html_content: str) -> None:
-                self._send_response_raw(status_code, "text/html; charset=utf-8", html_content.encode("utf-8"))
+                self._send_response_raw(
+                    status_code,
+                    "text/html; charset=utf-8",
+                    html_content.encode("utf-8"),
+                )
 
             def send_text_response(self, status_code: int, text: str) -> None:
-                self._send_response_raw(status_code, "text/plain", text.encode("utf-8"))
+                self._send_response_raw(
+                    status_code,
+                    "text/plain; charset=utf-8",
+                    text.encode("utf-8"),
+                )
+
+            def send_server_error(self, e: Exception, public_message: str = "Internal server error") -> None:
+                logger.error("Hub Server Error: %s", e, exc_info=True)
+                self.send_json_response(500, {"status": "error", "message": public_message})
 
             def do_GET(self) -> None:
                 if self.path in ("/", "/index.html"):
@@ -184,21 +200,21 @@ class XpyrmentHubServer:
                         server_instance.dataset_name = f"Simulated ({n_samples} rows)"
                     self.send_json_response(200, {"status": "success", "message": "Simulation successful"})
                 except Exception as e:
-                    self.send_json_response(500, {"status": "error", "message": str(e)})
+                    self.send_server_error(e, "Simulation failed.")
 
             def _handle_monitoring_start(self) -> None:
                 try:
                     port = server_instance.start_monitoring_server(server_instance.host, 0)
                     self.send_json_response(200, {"status": "success", "port": port})
                 except Exception as e:
-                    self.send_json_response(500, {"status": "error", "message": str(e)})
+                    self.send_server_error(e, "Failed to start monitoring server.")
 
             def _handle_design_generate(self) -> None:
                 try:
                     data = get_doe_design_summaries()
                     self.send_json_response(200, {"status": "success", "data": data})
                 except Exception as e:
-                    self.send_json_response(500, {"status": "error", "message": str(e)})
+                    self.send_server_error(e, "Failed to generate design matrix.")
 
             def _handle_quasi_analyze(self, params: dict) -> None:
                 if server_instance.shared_data is None:
@@ -207,10 +223,26 @@ class XpyrmentHubServer:
                 try:
                     from xpyrment.quasi.diff_in_diff import fit_ols
                     df = server_instance.shared_data.copy()
+                    
                     y_col = params.get("y_col", "revenue" if "revenue" in df.columns else df.columns[-1])
                     if "converted" in df.columns and "revenue" not in df.columns:
                         y_col = "converted"
+                        
                     x_cols = params.get("x_cols", ["variant"] if "variant" in df.columns else [df.columns[0]])
+                    if isinstance(x_cols, str):
+                        x_cols = [x_cols]
+                    elif not isinstance(x_cols, (list, tuple)):
+                        x_cols = list(x_cols)
+
+                    # Validate columns exist in df to avoid KeyError/shape issues
+                    if y_col not in df.columns:
+                        self.send_json_response(400, {"status": "error", "message": f"Target metric column '{y_col}' not found in dataset."})
+                        return
+                    for col in x_cols:
+                        if col not in df.columns:
+                            self.send_json_response(400, {"status": "error", "message": f"Feature column '{col}' not found in dataset."})
+                            return
+
                     if "variant" in df.columns:
                         df["variant"] = df["variant"].map({"treatment": 1, "control": 0}).fillna(0)
                     X = df[x_cols].to_numpy()
@@ -221,7 +253,7 @@ class XpyrmentHubServer:
                         results[col] = {"coef": res["beta"][idx+1], "p_value": res["p_values"][idx+1], "se": res["standard_errors"][idx+1]}
                     self.send_json_response(200, {"status": "success", "data": results})
                 except Exception as e:
-                    self.send_json_response(500, {"status": "error", "message": str(e)})
+                    self.send_server_error(e, "Quasi-experiment analysis failed.")
 
             def _handle_balance(self, params: dict) -> None:
                 from xpyrment.validate.balance import check_covariate_balance
@@ -234,7 +266,7 @@ class XpyrmentHubServer:
                     results = check_covariate_balance(server_instance.shared_data, group_col, covariates)
                     self.send_json_response(200, {"status": "success", "data": results})
                 except Exception as e:
-                    self.send_json_response(500, {"status": "error", "message": str(e)})
+                    self.send_server_error(e, "Covariate balance check failed.")
 
             def _handle_personalize_train(self) -> None:
                 if server_instance.shared_data is None:
@@ -253,7 +285,7 @@ class XpyrmentHubServer:
                     avg_cate = float(cate.mean())
                     self.send_json_response(200, {"status": "success", "message": f"T-Learner trained successfully. Average CATE: {avg_cate:.4f}"})
                 except Exception as e:
-                    self.send_json_response(500, {"status": "error", "message": str(e)})
+                    self.send_server_error(e, "Failed to train meta-learner model.")
 
             def _handle_network_cluster(self) -> None:
                 if server_instance.shared_data is None:
@@ -263,7 +295,7 @@ class XpyrmentHubServer:
                     num_clusters = run_network_partition(server_instance.shared_data)
                     self.send_json_response(200, {"status": "success", "message": f"Graph partitioned successfully into {num_clusters} clusters."})
                 except Exception as e:
-                    self.send_json_response(500, {"status": "error", "message": str(e)})
+                    self.send_server_error(e, "Network partitioning failed.")
 
             def _handle_interactions_anova(self) -> None:
                 if server_instance.shared_data is None:
@@ -275,7 +307,7 @@ class XpyrmentHubServer:
                     out = run_anova_interaction_detection(df, y_col)
                     self.send_json_response(200, {"status": "success", "message": f"ANOVA Calculated:\n{out}"})
                 except Exception as e:
-                    self.send_json_response(500, {"status": "error", "message": str(e)})
+                    self.send_server_error(e, "ANOVA interaction calculation failed.")
 
             def do_POST(self) -> None:
                 content_length = int(self.headers.get("Content-Length", 0))

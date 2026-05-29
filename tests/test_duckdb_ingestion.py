@@ -419,12 +419,20 @@ def test_load_from_sql_sqlite(tmp_path):
         load_from_sql("SELECT * FROM non_existent", ":memory:")
 
 
-def test_load_from_sql_unsupported_database():
+@pytest.mark.parametrize(
+    "database_uri",
+    [
+        "postgresql://user:pass@host/db",
+        "mysql://user:pass@host/db",
+        "mssql://user:pass@host/db",
+    ],
+)
+def test_load_from_sql_unsupported_database(database_uri):
     """Verifies that load_from_sql raises ValueError when trying to connect to a non-SQLite database."""
     from xpyrment.run.ingestion import load_from_sql
 
     with pytest.raises(ValueError, match="Non-SQLite databases are not supported"):
-        load_from_sql("SELECT * FROM users", "postgresql://user:pass@host/db")
+        load_from_sql("SELECT * FROM users", database_uri)
 
 
 
