@@ -1,263 +1,334 @@
-# Gemini Implementation Plan - Phased Sprint Execution (v1.6.0.0)
+# Gemini Implementation Plan: Sprint v1.7.0.0 (Health, Security, and Performance)
 
-## Status: Completed & Verified ✅
+This document establishes the comprehensive technical roadmap, architectural guidelines, and exact implementation specifications for **Sprint v1.7.0.0** of the **`xpyrment`** library. 
 
-### Accomplished (Sprint Setup & Execution)
-- **PR #32 Review Refactoring (Completed)**:
-  - Reverted `pandera.pandas` import in `src/xpyrment/run/ingestion.py` and referenced skips/imports in `tests/test_ingestion_schema.py` to the stable public `pandera` API.
-  - Adjusted the future-dated Dask version constraint from `^2026.3.0` to `^2024.3.0` in `pyproject.toml`.
-  - Refactored `main.py` by importing `Optional` and `logging` from their standard locations, type-annotating version parameters, simplifying the TestPyPI fallback block of `_fetch_pypi_version()` with explicit loops, adding detailed warning and error logging for endpoint request failures to aid in network troubleshooting, inlining the single-use `_parse_pytest_output` logic inside `_run_pytest_and_get_stats`, and simplifying CLI helper argument handling.
-  - Streamlined report generation methods `generate_markdown` and `generate_html` in `src/xpyrment/report/generator.py` by removing redundant local variables to access `metric` properties directly.
-  - Successfully ran verification `poetry run pytest` with 100% green test passes (**310/310 passed**) and executed `poetry run python main.py --sync` to align dynamic README badges.
-- **Ternary Refactoring (Completed)**:
-  - Simplified the complex nested ternary if-expression `force_pypi_version if force_pypi_version else (pypi_version if pypi_version else version)` into a highly readable, idiomatic Python logical expression: `force_pypi_version or pypi_version or version`.
-  - Cleared all associated Sourcery-AI design issues.
-- **Subprocess Command Injection Fix (Completed)**:
-  - Formulated a rigorous security refactoring across all 11 `subprocess.run` calls in `main.py`.
-  - Added strict alphanumeric regex validation inside `cli_help` to secure dynamically split `command_args`.
-  - Replaced the simple `.split()` argument parser with `shlex.split()` to prevent argument injection attacks.
-  - Explicitly specified `shell=False` for all subprocess executions to ensure static analysis compliance and secure command invocation.
-  - Verified 100% test suite greenness (291/291 passed) and successfully verified premium MkDocs builder outputs with zero failures.
-- Verified the virtual environment structure and confirmed `mkdocs.exe` is located at `C:\Users\Dan\projects\xpyrment\.venv\Scripts\mkdocs.exe`.
-- Created the sprint task board in `task.md` tracking all deliverables.
-- Defined generic `developer` and `advisor` subagent types to support the dual-agent pair workflow (Developer + Advisor) for peer-reviewed engineering.
-- Established a **Staggered Phased Execution Strategy** to stay within API rate limiting constraints (`RESOURCE_EXHAUSTED` 429 bounds) while guaranteeing exceptional mathematical and software quality.
-- **Phase 1 (Block 61) Completed**:
-  - Developed and integrated `WebhookAlertDispatcher` and enriched `LiveMonitor` in `src/xpyrment/run/monitor.py`.
-  - Authored comprehensive test suite in `tests/test_monitor_webhooks.py` covering standard/custom/email webhooks, timeout errors, ideal states, low-history bounds, degenerate variance fallbacks, and SPRT sequential runs (177/177 passed).
-  - Cleaned up active Block 61 subagents to save workspace resources.
-- **Phase 2 (Block 62) Completed**:
-  - Fully implemented high-performance stream-based `DuckDBIngester` in `src/xpyrment/run/ingestion.py`.
-  - Integrated math-correct out-of-core functions: `compute_covariate_balance`, `compute_welch_statistics`, and `query`.
-  - Secured stats computation against Scipy chi-square table dimension failures, zero variance arms, empty datasets, and invalid schema queries.
-  - Authored comprehensive test suite in `tests/test_duckdb_ingestion.py` covering standard, categorical, empty, degenerate variance, missing files, and float precision checks (10/10 passed).
-- **Phase 3 (Block 63) Completed**:
-  - Developed a high-performance, mathematically rigorous 3-headed joint representation deep learning estimator `DragonNet` in `src/xpyrment/personalize/dragonnet.py` in pure NumPy.
-  - Implemented exact analytical joint-loss backpropagation equations including custom cross-entropy logit gradient shortcuts and Tanh activations.
-  - Enforced correct weight-decay L2 regularization scaling and propensity probability clipping limits to prevent numerical log(0) and division-by-zero bounds.
-  - Built a clean, efficient learning loop supporting mini-batch shuffling, full-batch optimization, and Adam and SGD-Momentum parameter update solvers.
-  - Authored a comprehensive unit test suite in `tests/test_personalize.py` covering execution paths, CATE estimation directional correctness, Adam vs SGD momentum optimizers, PhaseOrderError gating, and ValueErrors for degenerate edge cases (empty data, tiny data, single-class treatments, and NaN/Inf values).
-  - Documented class methods with perfect MathJax/LaTeX notation inside collapsible pink math admonitions conforming strictly to MkDocs guidelines.
-  - Exposed and integrated the `DragonNet` estimator in the `xpyrment.personalize` namespace.
-- **Phase 4 (Block 64) Completed**:
-  - Developed a high-performance Moving Block Bootstrap (MBB) and Circular Block Bootstrap (CBB) resampling engine in `src/xpyrment/analyze/inference/bootstrap.py` supporting percentile and skewness-adjusted BCa confidence intervals with robust boundary wrap-around logic.
-  - Implemented Newey-West HAC standard error covariance adjustments in `src/xpyrment/analyze/meta_regression.py` for random-effects meta-regression, incorporating weights $w_j = 1/(v_j + \tau^2)$ into study score vectors and applying the Bartlett kernel.
-  - Enforced log-space precision and vectorized safeguards matching 64-bit float precision standards, with robust error fallbacks for small sample sizes, degenerate variance metrics, empty arrays, and negative inputs.
-  - Documented class methods and equations with raw docstring strings and perfect MathJax/LaTeX inside collapsible pink mathboxes.
-  - Exposed `run_block_bootstrap_ci` in the `xpyrment.analyze.inference` namespace.
-  - Authored extensive unit tests in `tests/test_bootstrap_harden.py` and `tests/test_meta_regression.py` achieving 100% green test passes across all suites.
-- **Phase 5 (Block 65) Completed**:
-  - Developed and integrated `ExperimentDashboardServer` in `src/xpyrment/run/webui.py` with custom NumPy serialization safeguards, secure socket-binding, and a beautifully designed glassmorphic Web-UI.
-  - Authored a comprehensive integration test suite `tests/test_webui.py` covering ideal, SRM alert, and traffic drop scenarios on dynamically isolated ports (202/202 passed).
-- **Rules & Environment Update**:
-  - Incorporated the virtual environment activation rule in `implementation-guide.md` as requested.
-  - Prepared and validated documentation serving instructions for the user to run locally.
-  - Encountered PowerShell script execution policy security exception (`UnauthorizedAccess`) blocking `Activate.ps1` on Windows.
-  - Checked the terminal environment and confirmed that it executes commands in **Windows PowerShell (v5.1)** with the working directory starting at **`C:\`**.
-- **Version Synchronization**: Synchronized package version to `1.5.1.3` in `src/xpyrment/_version.py` and `pyproject.toml`.
-- **Sprint Parallelization & Ingestion Setup**:
-  - Pre-installed required dependencies (`duckdb` and `pyarrow`) in the virtual environment.
-  - Approved and formulated detailed design architectures for Blocks 62-65 in `implementation_plan.md`.
-- **Release Documentation Added**: Fully documented all major features, metrics, algorithms, and web dashboards of Sprint v1.5.1.3 in `CHANGELOG.md` and `RELEASE_NOTES.md` (Keep a Changelog standard format).
-- **Release Automation Fixed**: Identified and resolved a critical Python indentation bug in `main.py` where the PyPI/TestPyPI upload loop was nested inside `create_github_release`, which caused an infinite recursive release creation cycle. Properly de-nested the blocks under standard non-recursive conditions.
-- **Interactive Dashboard Planning & Alignment**: Initiated a `/grill-me` design alignment session for next-generation GUI and dashboard enhancements. Created a multi-phase technical roadmap covering an Interactive Traffic Simulator, statistical lift & inference analysis, personalization HTE visualization (DragonNet), dynamic webhook rules console, and potential Vite + React frontend migration.
-- **Phase 1 (Interactive Simulator & Control Panel) Completed**:
-  - Developed and integrated the thread-safe background simulator engine into `ExperimentDashboardServer` (`src/xpyrment/run/webui.py`).
-  - Added HTTP POST endpoints `/api/simulate/toggle`, `/api/simulate/config`, and `/api/simulate/reset` to dynamically control simulation parameters (rates, SRM bias, traffic drops).
-  - Built a gorgeous slide-out settings drawer with glassmorphic styling, HSL tailors, glowing neon sliders, and switches to trigger anomalies in real-time.
-  - Wrote robust end-to-end integration tests `test_dashboard_server_simulation_scenario` in `tests/test_webui.py` covering all state transitions, thread-safe updates, and dataset clears.
-- **Web-UI Testing Coverage & Edge Cases (Completed)**:
-  - Extended the `test_webui.py` integration test suite to cover all edge cases in `src/xpyrment/run/webui.py`, including duplicate start guards, custom favicon handling, malformed/non-JSON POST requests, unhandled REST routes, duplicate simulation controls, simulation traffic dropout branches, and zero/negative simulation rate-limiting threads.
-  - Successfully raised, intercepted, and logged synchronous HTTP/thread runtime exceptions via caplog mock structures.
-  - Achieved a perfect **100% code coverage** (220/220 statements covered) across the entire `webui.py` dashboard module.
-- **Version 1.5.1.3 Finalization & Release Merge (Completed)**:
-  - Updated single-source-of-truth version number to `1.5.1.3` in `pyproject.toml` and package space.
-  - Executed release verification script `main.py --sync` successfully compiling the package and updating documentation stats.
-  - Verified 100% test greenness across the entire repository (205/205 tests passed).
-  - Synchronized and updated all `README.md` live badges showcasing `92%` overall coverage and `205` total passed tests.
-- **Phase 2 (Live Causal Lift & Statistical Inference) Completed (v1.6.0.0)**:
-  - Developed and integrated real-time t-test causal estimations and relative lift percentage computations over registered dashboard metrics.
-  - Implemented correlated causal background data simulator generating $X_i$ covariate and $Y_i$ outcome streams.
-  - Added a REST toggle `/api/cuped/toggle` allowing users to activate or deactivate CUPED adjustments thread-safely.
-  - Implemented premium glassmorphic UI additions including a visual contracting confidence interval bar and live CUPED variance reduction feedback badge.
-  - Authored comprehensive end-to-end integration tests verifying endpoint state transitions and statistical accuracy (10/10 passed).
-  - Synchronized package version to `1.5.2.0` across the codebase and updated README.md badges.
-- **Settings & Usage Guidance (Completed)**: Provided precise instructions on how to access and adjust settings to see model/token usage metrics and quotas within both the desktop application and the terminal-first **Antigravity (Gemini) CLI (`agy`)** utilizing TUI slash commands (`/usage`, `/context`, `/settings`). Specified the manual configuration of the `statusLine` option in `settings.json` to enable active real-time status bar metrics.
+This phase shifts focus from rapid feature delivery to institutionalizing exceptional codebase health, multi-layered security shields, and high-scale, accelerator-backed mathematical performance (supporting CPU, GPU, Polars, and Cython).
 
-- **Phase 3 (Major SPA Dashboard Extension) Completed (v1.6.0.0)**:
-  - Developed and integrated `XpyrmentHubServer` inside `src/xpyrment/run/hub.py`.
-  - Upgraded the CLI by adding the `app` subcommand.
-  - Formed a unified Glassmorphic UI with single-page layout handling multiple modules: Design, Quasi, Governance, Personalize, Network, and Interactions.
-  - Linked backends to a thread-safe shared dataset state that simulates dummy traffic for rapid testing.
-  - Synchronized and updated all `README.md` live badges showcasing `207` total passed tests and `89%` overall coverage.
-- **Detailed Sourcery-AI PR Analysis (Completed)**:
-  - Formulated a highly rigorous, technically granular analysis of sourcery-ai's findings on PR #1.
-  - Documented why the missing HTTP response bug in the design generation API was resolved in commit `41a3cd5`.
-  - Analyzed the critical bug risks of the unresolved global `event` object reference (`event.currentTarget`) in `src/xpyrment/run/hub.py`, specifying incompatibility under strict mode, scope resolution leaks, and Firefox browser variance.
-  - Authored a premium, standard-compliant `implementation_plan.md` proposing direct DOM element passing (`this`) to bypass all global references.
-- **24-Hour Git Changes Review (Completed)**:
-  - Analyzed 40+ commits from the past 24 hours spanning features, security, optimizations, and robust test enhancements.
-  - Verified codebase security mitigations against SQL injection in `DuckDBIngester`.
-  - Audited Pandas performance optimizations (`itertuples()`, vectorization) and SHAP dependency integrations.
-  - Confirmed 100% clean status of the current working tree.
-- **Verification & Bugfixing Suite (Completed)**:
-  - Executed full pytest suite with code coverage on the entire codebase, identifying and fixing three major legacy bugs:
-    - **Missing Pytest Import**: Resolved a `NameError` in `tests/test_interactions.py` by adding the missing `import pytest` statement.
-    - **DuckDB Parameter count mismatch**: Fixed an `InvalidInputException` in `src/xpyrment/run/ingestion.py` where SQL queries were executed with excess bound parameters that had already been safely interpolated.
-    - **DuckDB Double quote path escaping**: Eliminated a file-not-found `IOException` on paths containing single quotes (such as `malicious'name.parquet`) by avoiding double-escaping between `Path.resolve()` and `_quote_string` in `src/xpyrment/run/ingestion.py`.
-    - **Undefined Metric reference in reports**: Fixed a `NameError` where `ExperimentReportGenerator.generate_markdown` and `generate_html` in `src/xpyrment/report/generator.py` referenced undefined `metric` variables by refactoring the loops to use the correct `_iter_metric_rows()` helper.
-  - Confirmed 100% test greenness across the entire repository with **219/219 passed tests** and **87% overall coverage**.
-- **Low-Coverage Code Diagnostics (Completed)**: Scanned and compiled the list of all 20 active Python modules in `src/` with code coverage below the 85% benchmark to direct future testing and sprint backfills.
-- **Experimental Sizing Sprints (Completed)**: Created a new dedicated t-test sizing and CUPED power-planning test suite in `tests/test_plan_power.py`, successfully increasing code coverage of `src/xpyrment/plan/power.py` from 61.4% to a perfect **100%**.
-- **SPA Dashboard Server & Integration Testing (Completed)**:
-  - Debugged and fully resolved three structural runtime bugs in `src/xpyrment/run/hub.py`:
-    1. Fixed `AttributeError` in `/api/module/personalize/train` route by invoking `.estimate_effect(X)` instead of `.predict(X)` on the `TLearner` estimator.
-    2. Resolved `GraphPartitioner` `ImportError` in `/api/module/network/cluster` by importing and correctly invoking `EntropyBalancedGraphPartitioner` over simulated adjacency lists.
-    3. Corrected `InteractionDetector` constructor misalignment inside `/api/module/interactions/anova` route by initializing a valid `Experiment` container via the orchestrator `setup(df)` API and calling `.detect_all()`.
-  - Achieved **100% green passes** across all hub integration tests in `tests/test_hub.py`.
-- **Command-Line Interface Testing & Robust Coverage (Completed)**:
-  - Expanded `tests/test_cli.py` to cover negative parameters error pathways, missing group/covariate column dataset parsing failures, and OLS fit exceptions.
-  - Leveraged `monkeypatch` to comprehensively test standard options and browser launch hooks of the SPA `app` dashboard launcher in `src/xpyrment/cli.py` (achieved 100% green passes).
-  - Confirmed 100% green test passes across the repository with **233/233 passed tests**.
-- **Poetry Virtual Environment Rebuild & Guidelines (Completed)**:
-  - Rebuilt the entire virtual environment `.venv` from scratch using Poetry as the single source of truth based on `pyproject.toml` to avoid dependency conflicts.
-  - Added new clean-rebuild guidelines to `.agents/rules/implementation-guide.md` to prevent future Python dependency issues.
-- **Coverage Expansion across 7 Additional Modules (Completed)**:
-  - Developed and verified 5 premium new unit/integration test suites:
-    1. `tests/test_shap.py`: Robust mocks and import error branches for game-theoretic feature interactions.
-    2. `tests/test_validate_novelty.py`: Standard, novelty, and primacy effect classifications along with singular design matrix error handling.
-    3. `tests/test_network_identity.py`: Graph-based session stitching DSU algorithms and DataFrame multi-column mapping.
-    4. `tests/test_streaming_extreme.py`: Online recursive least squares (StreamingOLS) and offline CUPED adjustment variance reduction.
-    5. `tests/test_frequentist.py`: Welch's t-test Satterthwaite degrees of freedom and non-parametric Mann-Whitney U rank-sum test.
-  - Expanded boundary and exception test coverage inside `tests/test_extreme.py` (GPD tails), `tests/test_outliers.py` (Winsorization), `tests/test_serialization.py` (Custom scientific formats), and `tests/test_sequential.py` (Group sequential spending).
+---
 
-- **Final Sprint Backfill - 7 Target Modules (Completed)**:
-  - Systematically expanded and verified the 7 remaining test files:
-    1. `tests/test_duckdb_ingestion.py`: Added comprehensive unit tests covering continuous/categorical cleansings, SQLite file/memory persistence, `load_from_sql` exceptions, and SQLAlchemy import error fallback paths (raising `ingestion.py` to target coverage).
-    2. `tests/test_core.py`: Added rigorous setup checks for missing `treatment_col` and `id_col` columns, covariate idempotency, duplicate protection, and multiple `register_metric` types including Mean, Proportion, Ratio, and unsupported types (raising `core/experiment.py` to target coverage).
-    3. `tests/test_report.py`: Expanded to cover SQL-backed `AuditTrail` persistence, cryptographic digital signatures, `ExperimentReportGenerator` invalid exceptions, empty result sets, and custom SMD covariate imbalance warnings (raising `report/audit.py` to target coverage).
-    4. `tests/test_design.py`: Added tests covering fallback center setting calculations and default stepping delta values for `EVOPDesign` (raising `design/doe/evop.py` to target coverage).
-    5. `tests/test_bandit.py`: Added unit tests covering default RNG generator initialization within `ThompsonSamplingBandit.select_arm` (raising `bandit/thompson.py` to target coverage).
-    6. `tests/test_metrics.py`: Added unit tests verifying zero-variance Welch t-test stat fallbacks (`se_diff <= 0` branch) and empty group NaNs validation checks for Mean and Ratio metrics (raising `metrics/taxonomy.py` to target coverage).
-    7. `tests/test_interactions.py`: Added tests verifying numpy array auto-coercion and zero predictions denominator boundary cases in `compute_friedman_h_statistic` (raising `interactions/hstat.py` to target coverage).
-  - Cleaned up `src/xpyrment/interactions/hstat.py` by removing the unused local inner function `get_pd`, raising its coverage to a perfect 100%.
-- **Poetry Integration & Best Practices Transition (Completed)**:
-  - Transitioned the package build backend in `pyproject.toml` entirely from `setuptools` to Poetry-native `poetry-core`.
-  - Refactored `main.py` release automation to natively execute Poetry commands (`poetry run pytest`, `poetry build`, `poetry publish`), removing all Twine and Build pip dependencies.
-  - Modernized compliance rule books `implementation-guide.md` and `continuous-testing.md` to enforce standard `poetry run`, `poetry install`, and `poetry add` workflows.
-  - Successfully locked, compiled, and verified the complete 290-test suite under the Poetry environment, achieving a perfect 100% green pass and raising codebase coverage to **94%**.
+## Status: Block 66 Completed & Verified ✅
 
-- **PR Code Review Analysis & Planning (Completed)**:
-  - Formulated a comprehensive implementation plan to address all 11 feedback items from the reviewer, spanning build system checks, token security, helper function modularization in `run/hub.py`, testing improvements in extreme value tail estimation, batch RLS verification, and spelling/rename corrections.
-  - Created the official `implementation_plan.md` artifact for review.
-- **Sprint 1.6.1.1 Code Review Refactoring & Verification (Completed)**:
-  - Addressed all 11 reviewer comments and secured all credentials/tokens inside ephemeral environment variables.
-  - Refactored `run/hub.py` with standalone helper functions and defensive guards for dynamic DoE class reflection.
-  - Extracted GPD boundary clipping into `_clip_shape(self)` inside `ExtremeValueTailEstimator` and updated test suites.
-  - Renamed the agent rules guide to `implementation-guide.md` and corrected all codebase and archive plan references.
-  - Expanded OLS batch updating verification and updated ingestion cleansings tests.
-  - Successfully verified the entire 291-test suite with a 100% green pass and synchronized all dynamic badges to 94% coverage.
-- **Sprint 1.6.1.2 Post-Merge Review Refactoring & Verification (Completed)**:
-  - Updated the agent rules guide `.agents/rules/implementation-guide.md` to explicitly specify the time-tagged branch naming convention (`agy-YYMMDD-HHMM`) for Rule 9.
-  - Gracefully updated `get_doe_design_summaries()` inside `src/xpyrment/run/hub.py` to fall back to `dir(doe_pkg)` (with robust filtering of private elements, internal modules, and non-class objects) when the `__all__` list is not defined in `xpyrment.design.doe`.
-  - Moved the unconditional Poetry CLI check at startup in `main.py` to the command execution branch (when `--sync`, `--build`, `--pypi`, or `--testpypi` is run), allowing `--help` and basic usage to run cleanly without Poetry on the PATH.
-  - Strengthened OLS batch updating verification in `tests/test_streaming_extreme.py` by asserting that the learned coefficients match the known ground-truth generating parameters (`intercept=1.0`, `beta_1=2.0`, `beta_2=1.0`) within a tight `1e-2` absolute/relative tolerance.
-  - Refactored `.agents/rules/create-pr.md` to run `gh` commands natively without exposing personal access token parameters, leveraging the system's global authentication state.
-  - Successfully verified all 291 unit tests with a 100% green pass.
-
-- **Sprint 1.6.1.2 Post-Merge Review Refactoring (Completed)**:
-  - Updated Rule 9 in `.agents/rules/implementation-guide.md` to explicitly enforce the time-tagged branch naming convention (`agy-YYMMDD-HHMM`).
-  - Updated `get_doe_design_summaries()` in `src/xpyrment/run/hub.py` to fall back to `dir(doe_pkg)` when `__all__` is absent, with module-level filtering (`cls.__module__.startswith("xpyrment.design.doe")`) to prevent exposing imported helper classes from other modules.
-  - Moved the Poetry CLI check in `main.py` from global startup into the command-execution branch, so `--help` works without Poetry on PATH.
-  - Strengthened `test_streaming_ols_batch_update` with ground-truth coefficient assertions; added inline rationale for the `1e-2` tolerance (fixed seed, zero noise, small L2 shrinkage).
-  - Refactored `.agents/rules/create-pr.md` to use native `gh` global auth without explicit token injection.
-  - Fixed grammatical typo: "the entire 291 unit tests" → "all 291 unit tests".
-  - Verified all 291 unit tests pass (100% green) after each change.
-- **Sourcery Code Quality Improvement for sync_versions (Completed)**:
-  - Refactored `sync_versions` in `main.py` into highly cohesive and modular helper functions to raise Sourcery's code quality score from 21% to >90%.
-  - Addressed Sourcery's warning to use `contextlib.suppress(Exception)` to silence network request failures in `_fetch_pypi_version`, removing deeply nested `try/except: pass` blocks in favor of idiomatic context managers.
-  - Eliminated the unnecessary `else` block following the guard condition in `_run_pytest_and_get_stats` by checking for the failure condition first and returning early.
-  - Extracted the stdout parsing logic into a separate single-responsibility helper function `_parse_pytest_output`.
-  - Upgraded regular expression match index accesses from `.group(x)` to standard slice/index notation `[x]` (e.g. `tests_match[1]`) across all match handlers in `main.py` for idiomatic compliance.
-  - Verified that all functionality (badge updates, test execution, coverage parsing, version file sync, PyPI/TestPyPI version queries) is fully preserved.
-
-- **Plots.py Code Coverage Diagnostics & Test Setup (In Progress)**:
-  - Scanned the entire repository codebase to analyze coverage profiles.
-  - Verified that there are **zero** files completely missing test coverage in `src/` (all active modules have >0% coverage, with average coverage at 94%).
-  - Identified that `src/xpyrment/interactions/plots.py` currently has 87.88% coverage.
-  - Formulated a comprehensive implementation plan to write a dedicated unit test suite for `src/xpyrment/interactions/plots.py` to achieve 100% coverage, and to document why certain modules have minor gaps.
-- **Skipped Test Suite Investigation (Completed)**:
-  - Audited the test suites `test_ingestion_schema.py` and `test_run.py` to diagnose why 9 tests are skipped.
-  - Verified that all 9 skips are caused by `pytest.importorskip` calls guarding optional third-party integrations (`dask` for out-of-core streaming and `pandera` for schema validation) when they are not installed in the active virtual environment.
-- **Pandera Schema Validation & Import Warning Debugging (Completed)**:
-  - Resolved `ValueError` in `test_ingest_dataframe_cleansing_and_imputations` by making the dynamic timestamp schema column `nullable=True` inside `src/xpyrment/run/ingestion.py`, allowing proper validation of `NaT` (null) values.
-  - Eliminated the deprecated pandera top-level import `FutureWarning` by updating all references in both the source code and the test suites to `pandera.pandas`.
-  - Executed and verified the complete 310-test suite, achieving **100% green passes** and **zero warnings**.
-  - Verified that `pandera` is imported strictly dynamically within helper functions in `src/xpyrment/run/ingestion.py`, ensuring it remains completely optional at runtime.
-  - Confirmed that `pandera` is correctly defined as a PEP 621 optional dependency under the `schema` extra in `pyproject.toml` and verified via `poetry check` that the configuration is 100% valid.
-
-- **SQLAlchemy Library Removal (Completed)**:
-  - Verified 100% baseline test greenness (all 311 tests passed successfully).
-  - Drafted a rigorous implementation plan to permanently remove SQLAlchemy and ensure a clean deprecation path.
-  - Refactored `load_from_sql` in `src/xpyrment/run/ingestion.py` to raise a `ValueError` for unsupported non-SQLite databases, completely eliminating dynamic imports and dependencies on `sqlalchemy`.
-  - Cleaned up obsolete tests in `tests/test_duckdb_ingestion.py` by removing the legacy non-SQLite SQLAlchemy execution path test and replacing the old import error test with `test_load_from_sql_unsupported_database`.
-  - Executed the complete 310-test suite and verified 100% green compliance (310/310 passed).
-- **Sourcery Nested If-Condition Refactoring (Completed)**:
-  - Addressed Sourcery's code-quality warning in `src/xpyrment/run/hub.py` under the dynamic DoE class reflection function `get_doe_design_summaries()`.
-  - Merged two nested `if` statements into a single, clean compound logical condition (`cls is not None and inspect.isclass(cls) and cls.__module__.startswith("xpyrment.design.doe")`) using `and`.
-  - Maintained all existing class filtering logic and inline filter commentary to ensure 100% backward compatibility and exact behavior.
-  - Successfully verified the complete 310-test suite with a 100% green pass.
-- **Sourcery Request Handler Quality Improvement (Completed)**:
-  - Resolved Sourcery warnings in `src/xpyrment/run/hub.py` targeting `HubHTTPRequestHandler` route matching and response sending logic.
-  - Replaced multiple path comparisons (`self.path == "/" or self.path == "/index.html"`) with a cleaner `in` comparison check (`self.path in ("/", "/index.html")`).
-  - Extracted dynamic HTTP response construction logic into three modular, high-cohesion helper methods: `send_json_response(status_code, data)`, `send_html_response(status_code, html_content)`, and `send_text_response(status_code, text)`.
-  - Extracted shared HTTP write sequences (`send_response`, `send_header`, `end_headers`, and `wfile.write`) out from the response helper methods into a single unified core `_send_response_raw(self, status_code, content_type, body)` helper to eliminate all remaining code duplication.
-  - Completely eliminated code duplication across all GET and POST routes, resulting in a cleaner, standard-compliant, and highly maintainable request handler.
-  - Extracted each of the 8 individual route endpoint handlers from the monolith `do_POST` method into dedicated, single-responsibility helper methods (`_handle_data_simulate`, `_handle_monitoring_start`, `_handle_design_generate`, `_handle_quasi_analyze`, `_handle_balance`, `_handle_personalize_train`, `_handle_network_cluster`, and `_handle_interactions_anova`), raising Sourcery's code quality score of `do_POST` to >90%.
-  - Addressed all code review feedback for PR #34, introducing secure generic `send_server_error` handlers to prevent leaking raw exception messages to clients, normalizing and validating feature/metric columns in OLS analysis to remove shape/KeyError bugs, and parametrizing SQL database schemes in unit testing.
-  - Executed and verified the full 312-test suite with 100% green compliance.
+### Accomplished (Block 66 Execution)
+- **Central Caching Layer**: Implemented `StatisticalCache` in `src/xpyrment/core/cache.py` supporting size-bounded LRU eviction and thread-safe locks. Added a robust `@cached_statistical` decorator with automatic bypass for non-hashable inputs.
+- **Central Stats Wrappers**: Centralized and pre-cached cumulative/percent-point lookups for standard `t`, normal, and `chi2` distributions, along with the Welch-Satterthwaite degrees of freedom helper.
+- **Library Integration**: Integrated cached mathematical lookups across frequentist tests (`frequentist.py`), bootstrap engines (`bootstrap.py`), metric calculations (`taxonomy.py`), sample sizing (`power.py`), meta-analysis (`meta_analysis.py`), parquet ingestion (`ingestion.py`), SRM check gates (`srm.py`), and dashboard generators (`generator.py`), resolving all circular imports.
+- **Verification & Validation**: Authored a dedicated unit test suite in `tests/test_cache.py` verifying basic caching, LRU eviction, non-hashable fallbacks, parallel thread-safety under heavy load, and mathematical precision ($<1e-12$ matching Scipy). Successfully ran the test suite with a 100% green pass rate (**317/317 passed**).
 
 ### Next Steps
-- **Main Development Roadmap**: Await user instructions for the next sprint features, personalization model updates, or integration testing.
-
-
-
-
-
-
-
-
-
+- **Block 67 Implementation**: Await user instructions to plan and implement **Block 67: Dynamic Input Validator & Range Assertions** (milestone validators under `core/validators.py` and custom `BoundaryValidationError` exceptions).
 
 ---
 
-## Phased Execution Strategy
+## 🏷️ Sprint Vision & Architectural Goals
 
-We are implementing Blocks 61-65 sequentially. For each block, we spin up:
-1. **Developer Subagent**: Programmatic design, implementation, and test creation.
-2. **Advisor Subagent**: Over-the-shoulder review, mathematical validation, and code aesthetics audit.
+The v1.7.0.0 release aims to transform the codebase into an enterprise-hardened causal inference framework that can scale to multi-gigabyte datasets while maintaining bulletproof execution safety and code quality.
 
-### Phase 1: Block 61 — Dynamic SRM Shutoff Webhooks & Alert System (Completed)
-- **Developer Subagent**: Spawning to implement the pluggable webhook structures and sequential SRM triggers in `run/monitor.py`.
-- **Advisor Subagent**: Spawning to critique math definitions and edge cases.
-
-### Phase 2: Block 62 — High-Performance Parquet & DuckDB Ingestion (Completed)
-- **Developer & Advisor Subagents**: Stream-calculate covariate balance and Welch's standard errors directly from parquet folders via `duckdb`.
-
-### Phase 3: Block 63 — Deep Learning CATE Meta-Learners (Dragonnet / CausalML) (Completed)
-- **Developer & Advisor Subagents**: Build and optimize 3-headed joint representation neural models.
-
-### Phase 4: Block 64 — Autoregressive & Block-Bootstrap Covariance Structures (Completed)
-- **Developer & Advisor Subagents**: Implement Newey-West HAC standard errors and moving block bootstrap.
-
-### Phase 5: Block 65 — Interactive Live-Streaming Dashboard Web-UI (Completed)
-- **Developer & Advisor Subagents**: Design and compile standalone browser-based experiment dashboard.
+```mermaid
+graph TD
+    subgraph Core ["Pillar 1: System Health"]
+        A[Boundary Validation] --> B[BoundaryValidationError]
+        C[Strict Type Safety] --> D[mypy Strict Compliance]
+        E[API Guardrails] --> F[Input Schema Checking]
+    end
+    subgraph Sec ["Pillar 2: Security Shielding"]
+        G[Path Traversal Protection] --> H[Workspace Bounded Checks]
+        I[SQL Injection Audits] --> J[Parameterized Queries & Keywords]
+        K[XSS Sanitizer] --> L[Report Dashboard Protections]
+        M[Telemetry Filter] --> N[Dynamic Credential Masking]
+    end
+    subgraph Perf ["Pillar 3: Performance Accel"]
+        O[High-Scale Ingestion] --> P[Polars & Dask Backends]
+        Q[Stat Constants Caching] --> R[Thread-Safe LRU Cache]
+        S[Math Acceleration] --> T[Cython Loops & GPU CuPy/JAX]
+    end
+```
 
 ---
 
-## Verification Plan
+## 📋 Technical Approach & Architectural Guidelines
 
-### Automated Tests
-- Run `.venv\Scripts\python.exe -m pytest` after each phase.
-- Maintain 100% green test passes across all suites (currently 202/202 green).
+### Pillar 1: Codebase Health, Dynamic Bounds, and Strict Compliance
+
+To eliminate runtime panics, silent mathematical overflows, or invalid configurations, we will establish rigorous boundary checking and strict static analysis gates.
+
+#### 1. Unified Boundary Validation (`core/exceptions.py` & `core/validators.py`)
+- **Objective**: Standardize input parameter auditing across the entire package.
+- **Specification**: 
+  - Introduce `BoundaryValidationError` subclassing `ValueError` under `src/xpyrment/core/exceptions.py`.
+  - Develop a core validator module `src/xpyrment/core/validators.py` providing decorated or explicit range-verification utilities:
+    - `assert_probability(val, name)`: Assures $val \in [0.0, 1.0]$.
+    - `assert_positive_int(val, name)`: Assures $val \ge 1$ and type is integer.
+    - `assert_non_empty(arr, name)`: Validates that arrays or Series have dimensions $> 0$.
+    - `assert_finite(arr, name)`: Audits float arrays to guarantee zero occurrence of `NaN` or `Inf` boundaries.
+
+#### 2. Strict Static Typing & Typeguard Gates
+- **Objective**: Reach $100\%$ type coverage across the library.
+- **Specification**:
+  - Configure `pyproject.toml` or `setup.cfg` to enforce strict standard `mypy` rule compliance (`disallow_untyped_defs = true`, `warn_return_any = true`, `no_implicit_optional = true`).
+  - Eliminate any remaining placeholder `Any` annotations by introducing explicit Generic types (`TypeVar`), union types (`Union[np.ndarray, pd.Series]`), and precise callback protocol signatures (`Callable`).
+
+#### 3. Cyclomatic Complexity & Quality Baselines
+- **Objective**: Enforce high-cohesion, low-complexity modules.
+- **Specification**:
+  - Target a maximum cyclomatic complexity of $10$ per function (using Radon or standard linter metrics).
+  - Extract complex statistical calculation routines out from control flow wrappers into dedicated pure mathematical functions.
+
+---
+
+### Pillar 2: Multi-Layered Security Shielding
+
+We will fortify the project against security vulnerabilities, complying with academic and industry best practices.
+
+#### 1. Path Traversal Protection (`Path.resolve()`)
+- **Objective**: Prevent directory traversal attacks (LFI/RFI) where malicious file inputs (e.g. `../../etc/passwd` or `C:\Windows\System32\cmd.exe`) attempt to read or overwrite critical files.
+- **Academic & Industry Best Practice**: Restrict all file operations to a designated root directory (Workspace Scope) and explicitly validate resolved real-paths against this base using a whitelist.
+- **Specification**:
+  - Implement a central traversal guard function `validate_secure_path(target_path, base_directory=None, allow_temp=True)`:
+    - Resolves the target path to an absolute path using `Path(target_path).resolve()`.
+    - If `base_directory` is not specified, it defaults to the active project workspace root (`C:\Users\Dan\projects\xpyrment`).
+    - Validates that the resolved absolute path starts with the workspace root directory.
+    - If `allow_temp=True` is active, it allows paths starting with the standard system temporary directory (e.g., `C:\Users\Dan\AppData\Local\Temp` on Windows or `/tmp` on Unix-like systems) to support safe execution of temporary cache files and reports.
+    - Raises a `PermissionError` or `BoundaryValidationError` if the path escapes these bounds.
+  - Integrate this guard inside:
+    - `DuckDBIngester.load_from_parquet`
+    - `ExperimentReportGenerator.save_html` and `save_markdown`
+    - Any system-level export/import modules.
+  - **Custom Scripts Check**: Checked existing custom scripts (such as `examples/run_experiment_lifecycle.py` and `install.cmd`). `run_experiment_lifecycle.py` writes report HTMLs to `examples/reports/experiment_report.html` which resides completely inside the workspace root. Our workspace-bounded traversal checks will cleanly support these relative nested folders without breaking any existing files.
+
+#### 2. SQL Injection Audits & Keyword Safeguards (`run/ingestion.py`)
+- **Objective**: Prevent arbitrary query execution or parameter escaping in database ingestion.
+- **Specification**:
+  - For SQLite and DuckDB file loads in `load_from_sql`, permanently mandate parameterized bindings rather than raw string interpolation.
+  - Implement an input query scanner that checks for multiple execution blocks (separated by `;`) and blocks database schema modification keywords (`DROP`, `ALTER`, `TRUNCATE`, `INSERT`, `UPDATE`, `DELETE`) within read-only ingestion contexts.
+
+#### 3. Telemetry and Log Sanitizer (`core/telemetry.py`)
+- **Objective**: Prevent credentials or secure access tokens from leaking into logs or diagnostic JSON dumps.
+- **Specification**:
+  - Extend the `ExecutionProfiler` and logger formatters to intercept log arguments.
+  - Recursively scrub dictionary entries or string values matching token/credential pattern variables (like `password`, `secret`, `token`, `key`, `auth`, `pypi_token`).
+
+#### 4. Cross-Site Scripting (XSS) Sanitization (`report/generator.py`)
+- **Objective**: Block malicious script injection inside compiled premium HTML dashboards.
+- **Specification**:
+  - Escape all user-provided metadata strings (such as experiment names, metric descriptions, custom labels, and user comments) using standard HTML-entity replacements (`&lt;`, `&gt;`, `&quot;`) before embedding them in HTML templates.
+
+---
+
+### Pillar 3: High-Scale Mathematical Performance Optimization
+
+To handle enterprise-scale multi-million row datasets, we will introduce thread-safe caching, parallelization, and compiled mathematical loops.
+
+#### 1. Size-Bounded, Thread-Safe LRU Cache (`core/cache.py`)
+- **Objective**: Bypass expensive recalculations for common mathematical constants or repetitive statistical calculations.
+- **Specification**:
+  - Implement `StatisticalCache` utilizing a thread-safe lock (`threading.Lock`) and an LRU eviction strategy.
+  - Cache outputs for:
+    - Welch t-test Satterthwaite degrees of freedom calculations.
+    - Scipy-based statistical percentiles, normal distributions, and Chi-square table lookups.
+    - High-frequency bootstrap resample matrices under identical seed/dimension footprints.
+
+#### 2. Pluggable Accelerator Support: GPU (CuPy & JAX)
+- **Objective**: Support optional CUDA and ROCm hardware acceleration for high-scale bootstrap resamples, personalization models (DragonNet), and panel regression computations.
+- **Specification**:
+  - Implement a pluggable mathematical backend broker:
+    ```python
+    # Abstract math operations
+    import numpy as xp  # Default
+    
+    # Dynamic backend resolution
+    if config.use_gpu:
+        try:
+            import cupy as xp
+        except ImportError:
+            try:
+                import jax.numpy as xp
+            except ImportError:
+                xp = numpy
+    ```
+  - Optimize the `DragonNet` forward/backward passes to use the dynamic backend broker, boosting weight gradient updates on deep learning models by up to $10\times+$ when running on CUDA-compatible GPUs.
+
+#### 3. Compiled Cython Extensions for Bootstrap Loops
+- **Objective**: Speed up the circular/moving block bootstrap loops (`run_block_bootstrap_ci`) by bypassing Python loop overhead and GIL limitations.
+- **Specification**:
+  - Implement a Cython extension module `src/xpyrment/analyze/inference/_bootstrap_fast.pyx`:
+    - Perform indices extraction, circular block wrapping, and mean evaluations natively in C.
+    - Release the GIL (`with nogil`) to enable true multi-core parallelization during massive resampling runs.
+  - Provide a clean, robust fallback to vectorized NumPy when compiled Cython binaries are not built/available.
+
+#### 4. Alternative High-Performance Data Backends: Polars & Dask
+- **Objective**: Support reading and processing massive multi-gigabyte datasets without memory exhaustion.
+- **Specification**:
+  - Integrate a unified dataframe adapter supporting **Polars** (for highly efficient C++ structured query speeds) and **Dask** (for out-of-core chunked streaming).
+  - Update `DuckDBIngester` to natively accept Polars DataFrames and Dask DataFrames, ensuring that ingestion processes avoid unnecessary intermediate conversion copies to Pandas.
+
+#### 5. Unified Quick-Run Benchmarking sub-command (`main.py`)
+- **Objective**: Provide a simplified benchmarking solution allowing a quick run comparison command across CPU, GPU, Cython, and database backends.
+- **Specification**:
+  - Implement a `--bench` argument in the root orchestrator script `main.py`.
+  - When invoked via `poetry run python main.py --bench`, the script will automatically:
+    1. Initialize synthetic datasets of $1,000,000$ records.
+    2. Execute comparative speed tests for:
+       - Bootstrap resampling (Standard NumPy vs. Cython C-loops vs. CuPy/JAX GPU if available).
+       - DragonNet backpropagation passes (Vectorized CPU vs. JAX/CuPy GPU).
+       - Ingestion queries (Pandas vs. Polars vs. Dask).
+    3. Render a beautiful, styled console ASCII bar chart and comparison table mapping throughput (records/sec) and speed-up factors.
+
+---
+
+## 📂 Component Impact & File Mapping
+
+Below is the file modification taxonomy mapped logically for Sprint v1.7.0.0:
+
+```text
+main.py                      ← Integrates the --bench CLI subcommand for simplified comparison benchmarking.
+
+src/
+└── xpyrment/
+    ├── core/
+    │   ├── [NEW] cache.py       ← Thread-safe, size-bounded LRU cache for stats lookups.
+    │   ├── [NEW] validators.py  ← Unified boundary check helpers and assertions.
+    │   ├── exceptions.py        ← Adds BoundaryValidationError.
+    │   ├── experiment.py        ← Registers schema and input validators at setup.
+    │   └── telemetry.py         ← Dynamic credential and token masking wrappers.
+    │
+    ├── run/
+    │   └── ingestion.py         ← Strict path traversal protection & SQL query scanning.
+    │
+    ├── report/
+    │   └── generator.py         ← XSS HTML escapes and path traversal output blocks.
+    │
+    ├── analyze/
+    │   └── inference/
+    │       ├── [NEW] _bootstrap_fast.pyx  ← Cython compiled circular bootstrap loop in C.
+    │       └── bootstrap.py               ← Accelerator-pluggable (CuPy/JAX) BCa bootstrap logic.
+    │
+    └── quasi/
+        └── matrix_completion.py ← Randomized low-rank SVD optimizations.
+```
+
+---
+
+## 🛠️ Detailed Implementation Guidelines
+
+### 1. Unified Validator Module (`core/validators.py`)
+Ensure validation utilities throw clean `BoundaryValidationError` exceptions with clear, descriptive variables. Example structure:
+```python
+def assert_probability(val: float, name: str) -> None:
+    if not (0.0 <= val <= 1.0):
+        raise BoundaryValidationError(f"Parameter '{name}' must be in range [0.0, 1.0], got {val}")
+```
+
+### 2. Standard-Compliant Path Traversal Safeguards
+Path traversal checks must adhere strictly to `Path.resolve()` boundary comparisons:
+```python
+from pathlib import Path
+import tempfile
+
+def validate_secure_path(target: str, base_dir: str = None, allow_temp: bool = True) -> Path:
+    target_path = Path(target).resolve()
+    
+    # Workspace baseline
+    workspace_dir = Path(base_dir or "c:/Users/Dan/projects/xpyrment").resolve()
+    
+    # System temporary baseline
+    temp_dir = Path(tempfile.gettempdir()).resolve()
+    
+    # Check if target resides in workspace or temp directory
+    in_workspace = target_path.is_relative_to(workspace_dir)
+    in_temp = allow_temp and target_path.is_relative_to(temp_dir)
+    
+    if not (in_workspace or in_temp):
+        raise PermissionError(f"Security Block: Resolved path '{target_path}' escapes secure boundaries.")
+    
+    return target_path
+```
+
+### 3. Accelerated Math Brokering
+Expose pluggable mathematical backends cleanly without leaking external library imports globally:
+```python
+import numpy as np
+
+def get_math_backend(use_gpu: bool = False):
+    if use_gpu:
+        try:
+            import cupy as cp
+            return cp
+        except ImportError:
+            try:
+                import jax.numpy as jnp
+                return jnp
+            except ImportError:
+                pass
+    return np
+```
+
+---
+
+## 🧪 Verification & Benchmarking Plan
+
+### 1. Automated Tests (`tests/`)
+- **Security Guardrails (`tests/test_security_guards.py`)**:
+  - Verify that directory traversal strings (e.g. `reports/../../secret.txt`) trigger `PermissionError` inside report generation and parquet loading.
+  - Verify that SQL keyword breaches inside `load_from_sql` raise `BoundaryValidationError`.
+  - Validate log sanitization by writing dummy secret tokens toCaplog and checking that outputs are replaced with masked indicators (`[MASKED]`).
+- **Typing Integrity**:
+  - Run `poetry run mypy src/` and ensure a $100\%$ clean result without any typing errors.
+- **Accurate Mathematical Regression**:
+  - Verify that both the optimized SVD inside `matrix_completion.py` and the Cython-accelerated bootstrap loop match standard baseline estimations within a tight relative error delta ($<1e-5$).
+
+### 2. High-Scale Micro-Benchmarking & Quick-Run comparisons
+- **Quick Run Comparison Command**:
+  - Run `poetry run python main.py --bench` for a simplified, instant comparison report rendered in your terminal.
+- **Detailed Profiling & Reports (`bench/`)**:
+  - Run `poetry run python bench/run_benchmarks.py` to compile deep, microsecond-accurate statistical comparison reports:
+    - Measure computation speed-ups for circular and moving block bootstraps (NumPy vs Cython vs CuPy).
+    - Track memory profiles during massive SVT panel regressions (Standard SVD vs Randomized low-rank SVD).
+    - Output results directly into a structured console summary.
+
+---
+
+## 📋 Next 10 Blocks of Development (Blocks 66-75)
+
+To execute Sprint v1.7.0.0 systematically, we break the development down into 10 cohesive, sequential, and highly verified milestone blocks:
+
+### 📌 Block 66: Thread-Safe LRU Cache & Lookup Store
+- **Goal**: Implement `core/cache.py` size-bounded cache layer.
+- **Technical Spec**: Thread-safe `StatisticalCache` using locks caching Welch t-test Satterthwaite degrees of freedom and scipy normal/chi-square percentiles to cut recalculation costs.
+
+### 📌 Block 67: Dynamic Input Validator & Range Assertions
+- **Goal**: Add robust boundary checking and validation gates.
+- **Technical Spec**: Develop `core/validators.py` and raise `BoundaryValidationError` on invalid ranges, null inputs, infinite floats, or dimension mismatches across public API entry points.
+
+### 📌 Block 68: Workspace Bounded Path Traversal Safeguards
+- **Goal**: Secure filesystem writes/reads against traversal attacks (LFI/RFI).
+- **Technical Spec**: Implement `Path.resolve()` absolute whitelist check, restricting read/writes to active project workspace root while cleanly whitelisting OS temp directories.
+
+### 📌 Block 69: Telemetry log scrubbing & XSS HTML Escapes
+- **Goal**: Prevent logging credential leakages and report XSS vectors.
+- **Technical Spec**: Extend the `ExecutionProfiler` logs writer to mask dictionary keys matching token pattern strings and escape user-provided metadata strings in generated HTML report cards.
+
+### 📌 Block 70: Polars & Dask DataFrame Ingestion Adapters
+- **Goal**: Support high-scale out-of-core multi-gigabyte ingestion.
+- **Technical Spec**: Integrate unified DataFrame adapters accepting Polars and Dask inputs inside `DuckDBIngester` to avoid pandas copying overheads.
+
+### 📌 Block 71: Compiled Cython Circular Bootstrap Loops
+- **Goal**: Accelerate moving and circular block bootstraps.
+- **Technical Spec**: Build a compiled Cython C-extension module `_bootstrap_fast.pyx` releasing the GIL for microsecond-accurate circular resample loops (with vectorized NumPy fallbacks).
+
+### 📌 Block 72: Pluggable Hardware Math Accelerators (CuPy & JAX)
+- **Goal**: Dynamic GPU (CUDA and ROCm) array support.
+- **Technical Spec**: Construct abstract math backend broker loading `cupy` or `jax.numpy` dynamically if present, optimizing outcome predictions in `DragonNet`.
+
+### 📌 Block 73: Randomized SVD Matrix Panel Completion
+- **Goal**: Speed up massive panel completions under SVT constraints.
+- **Technical Spec**: Replace full exact SVD allocations in `quasi/matrix_completion.py` with randomized low-rank approximations to reduce Panel Regression memory overhead.
+
+### 📌 Block 74: Unified Command-Line micro-benchmarker (`main.py --bench`)
+- **Goal**: Provide a simplified quick comparison benchmarking command.
+- **Technical Spec**: Add the `--bench` argument to `main.py` rendering instant ASCII bar charts comparing CPU vs GPU vs Cython math throughput in terminal.
+
+### 📌 Block 75: Security & Quality Integration Test Suite
+- **Goal**: Comprehensive verification and green test runs.
+- **Technical Spec**: Author `tests/test_security_guards.py` covering path traversal limits, SQL injections, log sanitization masking, mypy strict typing, and benchmark routines with $100\%$ green passes.
+
 

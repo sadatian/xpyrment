@@ -15,6 +15,18 @@ from xpyrment.core.state import ExperimentState
 from xpyrment.core.types import MetricType, MetricResult
 from xpyrment.core.serialization import make_serializable, serialize_to_json
 from xpyrment.core.telemetry import configure_telemetry, get_logger, ExecutionProfiler
+from xpyrment.core.cache import (
+    StatisticalCache,
+    statistical_cache,
+    cached_statistical,
+    cached_t_cdf,
+    cached_t_ppf,
+    cached_norm_cdf,
+    cached_norm_ppf,
+    cached_chi2_cdf,
+    cached_chi2_sf,
+    cached_chi2_ppf,
+)
 
 __all__ = [
     "Experiment",
@@ -30,4 +42,14 @@ __all__ = [
     "configure_telemetry",
     "get_logger",
     "ExecutionProfiler",
+    "StatisticalCache",
+    "statistical_cache",
+    "cached_statistical",
+    "cached_t_cdf",
+    "cached_t_ppf",
+    "cached_norm_cdf",
+    "cached_norm_ppf",
+    "cached_chi2_cdf",
+    "cached_chi2_sf",
+    "cached_chi2_ppf",
 ]

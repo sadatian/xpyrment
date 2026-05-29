@@ -8,6 +8,23 @@ without relying on asymptotic parametric assumptions.
 from typing import Optional
 import numpy as np
 from scipy.stats import norm
+from xpyrment.core.cache import (
+    statistical_cache,
+    cached_statistical,
+    cached_norm_cdf,
+    cached_norm_ppf,
+)
+
+
+@cached_statistical(statistical_cache)
+def _get_cached_bootstrap_indices(n: int, num_resamples: int, random_seed: Optional[int]) -> np.ndarray:
+    """Deterministically generates and caches bootstrap resample index matrices.
+
+    This avoids high-frequency allocations and CPU-intensive RNG draws under
+    identical sequence length, iteration count, and random seed footprints.
+    """
+    rng = np.random.default_rng(random_seed)
+    return rng.choice(n, size=(num_resamples, n), replace=True)
 
 
 def run_bootstrap_ci(
@@ -25,44 +42,44 @@ def run_bootstrap_ci(
     estimator's mathematical variance cannot be easily derived analytically.
 
     Mathematical and Algorithmic Formulation:
-        Let \\mathbf{x} = (x_1, x_2, \\dots, x_n) be the observed sample of size $n$, and let \\hat{\\theta} = s(\\mathbf{x})
+        Let \mathbf{x} = (x_1, x_2, \dots, x_n) be the observed sample of size $n$, and let \hat{\theta} = s(\mathbf{x})
         be the point estimate of interest.
         
         The bootstrap sampling distribution is constructed as follows:
-        1. Draw a bootstrap sample \\mathbf{x}^{*b} of size $n$ by sampling uniformly **with replacement** from the
-           original sample \\mathbf{x}$.
-        2. Calculate the bootstrap replication of the estimator: \\hat{\\theta}^{*b} = s(\\mathbf{x}^{*b})$.
-        3. Repeat steps 1-2 a large number of times $B$ (where $B = \\text{num\\_resamples}$, typically $B \\ge 2000$),
-           generating a set of replicates: \\{\\hat{\\theta}^{*1}, \\hat{\\theta}^{*2}, \\dots, \\hat{\\theta}^{*B}\\}.
+        1. Draw a bootstrap sample \mathbf{x}^{*b} of size $n$ by sampling uniformly **with replacement** from the
+           original sample \mathbf{x}$.
+        2. Calculate the bootstrap replication of the estimator: \hat{\theta}^{*b} = s(\mathbf{x}^{*b}).
+        3. Repeat steps 1-2 a large number of times $B$ (where $B = \text{num\_resamples}$, typically $B \ge 2000$),
+           generating a set of replicates: \{\hat{\theta}^{*1}, \hat{\theta}^{*2}, \dots, \hat{\theta}^{*B}\}.
 
     Confidence Interval Methods:
         1. **Percentile Bootstrap** (Simple and intuitive):
-           Sorts the bootstrap replicates in ascending order: \\hat{\\theta}^{*(1)} \\le \\hat{\\theta}^{*(2)} \\le \\dots \\le \\hat{\\theta}^{*(B)}.
-           For a confidence level of $1 - \\alpha$ (e.g., $0.95$ with $\\alpha = 0.05$), the interval endpoints are the
-           $\\alpha/2$ and $1 - \\alpha/2$ percentiles of the empirical bootstrap distribution:
+           Sorts the bootstrap replicates in ascending order: \hat{\theta}^{*(1)} \le \hat{\theta}^{*(2)} \le \dots \le \hat{\theta}^{*(B)}.
+           For a confidence level of $1 - \alpha$ (e.g., $0.95$ with $\alpha = 0.05$), the interval endpoints are the
+           $\alpha/2$ and $1 - \alpha/2$ percentiles of the empirical bootstrap distribution:
            $$
-           \\left[ \\hat{\\theta}^{*(\\lfloor B \\cdot \\alpha/2 \\rfloor)}, \\ \\hat{\\theta}^{*(\\lfloor B \\cdot (1 - \\alpha/2) \\rfloor)} \\right]
+           \left[ \hat{\theta}^{*(\lfloor B \cdot \alpha/2 \rfloor)}, \ \hat{\theta}^{*(\lfloor B \cdot (1 - \alpha/2) \rfloor)} \right]
            $$
         2. **Bias-Corrected and Accelerated (BCa) Bootstrap** (Robust and accurate):
            Adjusts the percentile endpoints to correct for both median bias (displacement of the bootstrap distribution
            from the point estimate) and skewness (non-constant variance, represented by acceleration $a$).
            - The bias-correction factor $z_0$ is:
-             $$
-             z_0 = \\Phi^{-1} \\left( \\frac{\\#\\{\\hat{\\theta}^{*b} < \\hat{\\theta}\\}}{B} \\right)
-             $$
-             where $\\Phi^{-1}$ is the inverse cumulative distribution function of the standard normal distribution.
+              $$
+              z_0 = \Phi^{-1} \left( \frac{\#\{\hat{\theta}^{*b} < \hat{\theta}\}}{B} \right)
+              $$
+              where \Phi^{-1} is the inverse cumulative distribution function of the standard normal distribution.
            - The acceleration parameter $a$ is computed using jackknife (leave-one-out) estimators:
-             $$
-             a = \\frac{\\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^3}{6 \\left[ \\sum_{i=1}^{n} (\\bar{\\theta}_{(\\cdot)} - \\theta_{(i)})^2 \\right]^{3/2}}
-             $$
-             where $\\theta_{(i)}$ is the estimate of $\\theta$ calculated by omitting the $i$-th observation, and
-             $\\bar{\\theta}_{(\\cdot)}$ is the average of these jackknife estimates.
+              $$
+              a = \frac{\sum_{i=1}^{n} (\bar{\theta}_{(\cdot)} - \theta_{(i)})^3}{6 \left[ \sum_{i=1}^{n} (\bar{\theta}_{(\cdot)} - \theta_{(i)})^2 \right]^{3/2}}
+              $$
+              where \theta_{(i)} is the estimate of \theta calculated by omitting the $i$-th observation, and
+              \bar{\theta}_{(\cdot)} is the average of these jackknife estimates.
            - Transformed confidence percentiles are then mapped back to the sorted replicates to construct the interval.
 
     Args:
         data_group (np.ndarray): The raw 1D array of observed values.
         num_resamples (int): The number of bootstrap iterations ($B$). Defaults to 2000.
-        confidence_level (float): The desired confidence interval width ($1 - \\alpha$). Defaults to 0.95.
+        confidence_level (float): The desired confidence interval width ($1 - \alpha$). Defaults to 0.95.
         method (str): The bootstrap method to utilize (`"percentile"` or `"bca"`). Defaults to `"bca"`.
         random_seed (Optional[int]): Random seed for numpy generator reproducibility. Defaults to None.
 
@@ -93,7 +110,7 @@ def run_bootstrap_ci(
 
     if total_elements <= max_elements:
         # Fully vectorized execution in a single fast NumPy operation
-        indices = rng.choice(n, size=(num_resamples, n), replace=True)
+        indices = _get_cached_bootstrap_indices(n, num_resamples, random_seed)
         replicates = np.mean(data_group[indices], axis=1)
     else:
         # Chunked vectorized evaluation to prevent memory spike
@@ -121,7 +138,7 @@ def run_bootstrap_ci(
             prop = np.mean(replicates < point_est)
             # Clip proportion to prevent norm.ppf boundary infinities
             prop = np.clip(prop, 1e-6, 1.0 - 1e-6)
-            z0 = norm.ppf(prop)
+            z0 = cached_norm_ppf(float(prop))
 
             # 2. Acceleration parameter a using jackknife means
             if n > 1:
@@ -136,14 +153,14 @@ def run_bootstrap_ci(
                 a = 0.0
 
             # 3. Corrected percentiles
-            z_alpha_2 = norm.ppf(alpha / 2.0)
-            z_1_alpha_2 = norm.ppf(1.0 - alpha / 2.0)
+            z_alpha_2 = cached_norm_ppf(float(alpha / 2.0))
+            z_1_alpha_2 = cached_norm_ppf(float(1.0 - alpha / 2.0))
 
             den1 = 1.0 - a * (z0 + z_alpha_2)
             den2 = 1.0 - a * (z0 + z_1_alpha_2)
 
-            alpha_1 = norm.cdf(z0 + (z0 + z_alpha_2) / (den1 if abs(den1) > 1e-12 else 1e-12))
-            alpha_2 = norm.cdf(z0 + (z0 + z_1_alpha_2) / (den2 if abs(den2) > 1e-12 else 1e-12))
+            alpha_1 = cached_norm_cdf(float(z0 + (z0 + z_alpha_2) / (den1 if abs(den1) > 1e-12 else 1e-12)))
+            alpha_2 = cached_norm_cdf(float(z0 + (z0 + z_1_alpha_2) / (den2 if abs(den2) > 1e-12 else 1e-12)))
 
             # Clamp back mapping boundaries
             alpha_1 = np.clip(alpha_1, 1e-6, 1.0 - 1e-6)
@@ -292,7 +309,7 @@ def run_block_bootstrap_ci(
             prop = np.mean(replicates < point_est)
             # Clip proportion to prevent norm.ppf boundary infinities
             prop = np.clip(prop, 1e-6, 1.0 - 1e-6)
-            z0 = norm.ppf(prop)
+            z0 = cached_norm_ppf(float(prop))
 
             # 2. Acceleration parameter a using jackknife means
             if n > 1:
@@ -307,14 +324,14 @@ def run_block_bootstrap_ci(
                 a = 0.0
 
             # 3. Corrected percentiles
-            z_alpha_2 = norm.ppf(alpha / 2.0)
-            z_1_alpha_2 = norm.ppf(1.0 - alpha / 2.0)
+            z_alpha_2 = cached_norm_ppf(float(alpha / 2.0))
+            z_1_alpha_2 = cached_norm_ppf(float(1.0 - alpha / 2.0))
 
             den1 = 1.0 - a * (z0 + z_alpha_2)
             den2 = 1.0 - a * (z0 + z_1_alpha_2)
 
-            alpha_1 = norm.cdf(z0 + (z0 + z_alpha_2) / (den1 if abs(den1) > 1e-12 else 1e-12))
-            alpha_2 = norm.cdf(z0 + (z0 + z_1_alpha_2) / (den2 if abs(den2) > 1e-12 else 1e-12))
+            alpha_1 = cached_norm_cdf(float(z0 + (z0 + z_alpha_2) / (den1 if abs(den1) > 1e-12 else 1e-12)))
+            alpha_2 = cached_norm_cdf(float(z0 + (z0 + z_1_alpha_2) / (den2 if abs(den2) > 1e-12 else 1e-12)))
 
             # Clamp back mapping boundaries
             alpha_1 = np.clip(alpha_1, 1e-6, 1.0 - 1e-6)
