@@ -7,6 +7,8 @@ import shlex
 import importlib
 import inspect
 import pkgutil
+import logging
+from typing import Optional
 
 def _read_version_from_toml(pyproject_path: str) -> str:
     """Read the version string from pyproject.toml."""
@@ -29,41 +31,60 @@ def _sync_version_file(version_file_path: str, root_dir: str, version: str) -> N
             f.write(expected_version_content)
 
 
-def _fetch_pypi_version() -> str:
+def _fetch_pypi_version() -> Optional[str]:
     """Fetch the latest published version on PyPI, falling back to TestPyPI."""
     import urllib.request
     import json
-    import contextlib
-    pypi_version = None
-    
-    # Try PyPI first
-    with contextlib.suppress(Exception):
-        with urllib.request.urlopen("https://pypi.org/pypi/xpyrment/json", timeout=3) as r:
-            pypi_version = json.loads(r.read().decode("utf-8"))["info"]["version"]
-            
-    # Fallback to TestPyPI
-    if pypi_version is None:
-        with contextlib.suppress(Exception):
-            with urllib.request.urlopen("https://test.pypi.org/pypi/xpyrment/json", timeout=3) as r:
-                pypi_version = json.loads(r.read().decode("utf-8"))["info"]["version"]
-                
-    return pypi_version
 
+    logger = logging.getLogger(__name__)
+    urls_tried = []
+    last_exception: Optional[BaseException] = None
 
-def _parse_pytest_output(stdout: str):
-    """Parse pytest stdout to extract (passed_count, cov_percent)."""
-    tests_match = re.search(r"(\d+)\s+passed", stdout)
-    cov_match = re.search(r"TOTAL\s+\d+\s+\d+\s+(\d+)%", stdout)
-    
-    passed_count = tests_match[1] if tests_match else None
-    cov_percent = cov_match[1] if cov_match else None
-    
-    if passed_count:
-        print(f"✅ Tests: {passed_count} passed.")
-    if cov_percent:
-        print(f"📊 Coverage: {cov_percent}%")
-        
-    return passed_count, cov_percent
+    for base_url in (
+        "https://pypi.org/pypi/{package}/json",
+        "https://test.pypi.org/pypi/{package}/json",
+    ):
+        url = base_url.format(package="xpyrment")
+        urls_tried.append(url)
+        try:
+            with urllib.request.urlopen(url, timeout=3) as response:
+                if response.status != 200:
+                    logger.warning(
+                        "Failed to fetch version metadata from %s (status %s)",
+                        url,
+                        response.status,
+                    )
+                    continue
+                data = json.loads(response.read().decode("utf-8"))
+                version = data.get("info", {}).get("version")
+                if version:
+                    return version
+                logger.warning("No 'info.version' found in response from %s", url)
+        except Exception as exc:
+            last_exception = exc
+            logger.warning(
+                "Error while fetching version metadata from %s: %s",
+                url,
+                exc,
+            )
+
+    if last_exception is not None:
+        logger.error(
+            "Failed to resolve version from PyPI/TestPyPI after trying %d URL(s): %s. "
+            "Last error: %s",
+            len(urls_tried),
+            ", ".join(urls_tried),
+            last_exception,
+        )
+    else:
+        logger.error(
+            "Failed to resolve version from PyPI/TestPyPI after trying %d URL(s): %s. "
+            "No explicit exceptions were raised, but no usable version was found.",
+            len(urls_tried),
+            ", ".join(urls_tried),
+        )
+
+    return None
 
 
 def _run_pytest_and_get_stats(root_dir: str):
@@ -79,13 +100,25 @@ def _run_pytest_and_get_stats(root_dir: str):
                 print(f"Debug Info:\n{result.stderr}")
             return None, None
             
-        return _parse_pytest_output(result.stdout)
+        stdout = result.stdout
+        tests_match = re.search(r"(\d+)\s+passed", stdout)
+        cov_match = re.search(r"TOTAL\s+\d+\s+\d+\s+(\d+)%", stdout)
+        
+        passed_count = tests_match.group(1) if tests_match else None
+        cov_percent = cov_match.group(1) if cov_match else None
+        
+        if passed_count:
+            print(f"✅ Tests: {passed_count} passed.")
+        if cov_percent:
+            print(f"📊 Coverage: {cov_percent}%")
+            
+        return passed_count, cov_percent
     except Exception as e:
         print(f"⚠️ Could not run pytest or coverage: {str(e)}")
     return None, None
 
 
-def _sync_readme_badges(readme_path: str, root_dir: str, version: str, force_pypi_version: str = None, pypi_version: str = None) -> None:
+def _sync_readme_badges(readme_path: str, root_dir: str, version: str, force_pypi_version: Optional[str] = None, pypi_version: Optional[str] = None) -> None:
     """Synchronize README.md badges (release, PyPI, tests, and coverage)."""
     if not os.path.exists(readme_path):
         return
@@ -132,7 +165,7 @@ def _sync_readme_badges(readme_path: str, root_dir: str, version: str, force_pyp
             f.write(updated_content)
 
 
-def sync_versions(force_pypi_version=None):
+def sync_versions(force_pypi_version: Optional[str] = None) -> str:
     """
     Using pyproject.toml as the absolute single source of truth,
     automatically synchronize the version string across:
@@ -300,7 +333,7 @@ def define_env(env):
 
     # 5. Live Subprocess CLI Command Output Macro
     @env.macro
-    def cli_help(command_args):
+    def cli_help(command_args: str):
         """
         Spawns the real xpyrment CLI locally, captures its stdout, and renders it.
         Guarantees that documentation usage commands are never out of sync!
@@ -310,10 +343,6 @@ def define_env(env):
             env_vars = os.environ.copy()
             # Ensure workspace src is first in path
             env_vars["PYTHONPATH"] = os.path.join(root_dir, "src")
-            
-            # Validate that command_args contains only safe characters to prevent argument/command injection
-            if not re.match(r"^[a-zA-Z0-9_\-\s\.]+$", command_args):
-                raise ValueError("Invalid characters in command arguments")
             
             cmd = [sys.executable, "-m", "xpyrment.cli"] + shlex.split(command_args)
             result = subprocess.run(cmd, capture_output=True, text=True, env=env_vars, encoding="utf-8", shell=False)

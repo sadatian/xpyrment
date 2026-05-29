@@ -6,7 +6,7 @@ from xpyrment.run.ingestion import ingest_dataframe
 
 def test_ingest_dataframe_schema_success():
     """Test dynamic schema enforcement with valid data types."""
-    pytest.importorskip("pandera.pandas")
+    pytest.importorskip("pandera")
     df = pd.DataFrame({
         "id": ["u1", "u2"],
         "joined": ["2026-05-01", "2026-05-02"],
@@ -32,7 +32,7 @@ def test_ingest_dataframe_schema_success():
 
 def test_ingest_dataframe_schema_type_error():
     """Test that schema validation fails when types are incorrect."""
-    pytest.importorskip("pandera.pandas")
+    pytest.importorskip("pandera")
     df = pd.DataFrame({
         "id": ["u1", "u2"],
         "metric": ["not_a_number", "20.0"] # This should fail since we expect a float
@@ -43,7 +43,7 @@ def test_ingest_dataframe_schema_type_error():
 
 def test_ingest_dataframe_with_custom_schema():
     """Test that user can provide a custom pandera schema."""
-    pa = pytest.importorskip("pandera.pandas")
+    pa = pytest.importorskip("pandera")
     schema = pa.DataFrameSchema({
         "score": pa.Column(int, pa.Check.ge(0))
     })
@@ -59,7 +59,7 @@ def test_ingest_dataframe_with_custom_schema():
 
 def test_ingest_dataframe_with_custom_schema_multiple_errors():
     """Test that multiple custom schema violations are aggregated correctly."""
-    pa = pytest.importorskip("pandera.pandas")
+    pa = pytest.importorskip("pandera")
     schema = pa.DataFrameSchema({
         "score": pa.Column(int, pa.Check.ge(0)),
         "bonus": pa.Column(float, pa.Check.le(1.0)),

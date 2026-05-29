@@ -78,7 +78,7 @@ def _enforce_schema(
     schema=None,
 ) -> pd.DataFrame:
     try:
-        import pandera.pandas as pa
+        import pandera as pa
         import pandera.errors as pa_errors
     except ImportError as exc:
         if schema is not None:

@@ -157,19 +157,11 @@ class ExperimentReportGenerator:
 
         for metric in self._iter_metric_rows():
             sig = self._metric_significance(metric)
-            m_name = metric.name
-            m_type = metric.type
-            c_mean = metric.control_mean
-            t_mean = metric.treatment_mean
-            lift = metric.lift
-            p_val = metric.p_value
-            sig_badge = sig["sig_badge_md"]
-            cuped = "🟢 CUPED" if metric.cuped_applied else "⚪ Standard"
             lines.append(
-                f"| **{m_name}** | `{m_type}` | "
-                f"{c_mean:.4f} | {t_mean:.4f} | "
-                f"**{lift:+.2%}** | `{p_val:.5f}` | "
-                f"{sig_badge} | {cuped} |"
+                f"| **{metric.name}** | `{metric.type}` | "
+                f"{metric.control_mean:.4f} | {metric.treatment_mean:.4f} | "
+                f"**{metric.lift:+.2%}** | `{metric.p_value:.5f}` | "
+                f"{sig['sig_badge_md']} | {'🟢 CUPED' if metric.cuped_applied else '⚪ Standard'} |"
             )
 
         if self.balance_checker is not None:
@@ -220,25 +212,16 @@ class ExperimentReportGenerator:
             sig = self._metric_significance(metric)
             lift_fmt = self._metric_lift_presentation(metric)
             cuped_badge = self._metric_cuped_badge_html(metric)
-            m_name = metric.name
-            m_type = metric.type
-            c_mean = metric.control_mean
-            t_mean = metric.treatment_mean
-            lift_class = lift_fmt["lift_class_html"]
-            lift_str = lift_fmt["lift_str"]
-            p_val = metric.p_value
-            sig_class = sig["sig_class_html"]
-            sig_text = sig["sig_text_html"]
 
             table_rows.append(f"""
             <tr>
-                <td><strong>{m_name}</strong></td>
-                <td><span class="badge-type">{m_type}</span></td>
-                <td>{c_mean:.4f}</td>
-                <td>{t_mean:.4f}</td>
-                <td><span class="{lift_class}">{lift_str}</span></td>
-                <td><code>{p_val:.5f}</code></td>
-                <td><span class="{sig_class}">{sig_text}</span></td>
+                <td><strong>{metric.name}</strong></td>
+                <td><span class="badge-type">{metric.type}</span></td>
+                <td>{metric.control_mean:.4f}</td>
+                <td>{metric.treatment_mean:.4f}</td>
+                <td><span class="{lift_fmt['lift_class_html']}">{lift_fmt['lift_str']}</span></td>
+                <td><code>{metric.p_value:.5f}</code></td>
+                <td><span class="{sig['sig_class_html']}">{sig['sig_text_html']}</span></td>
                 <td>{cuped_badge}</td>
             </tr>
             """)
