@@ -41,16 +41,9 @@ def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
             conn.close()
             raise e
     else:
-        try:
-            import sqlalchemy
-
-            engine = sqlalchemy.create_engine(connection_string)
-            df = pd.read_sql_query(query, engine)
-            return df
-        except ImportError:
-            raise ImportError(
-                "sqlalchemy is required to connect to non-SQLite databases."
-            )
+        raise ValueError(
+            "Non-SQLite databases are not supported because sqlalchemy has been removed from the project."
+        )
 
 
 from typing import Any, Iterable, Iterator, List, Optional
