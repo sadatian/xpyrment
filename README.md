@@ -2,9 +2,9 @@
 
 <p align="left">
   <img src="https://img.shields.io/badge/pypi-v1.6.1.2-800020?style=flat&logo=pypi&logoColor=black&labelColor=e1dae3" alt="PyPI version" />
-  <img src="https://img.shields.io/badge/release-v1.6.1.2%20stable-5c0632?style=flat&logo=git&logoColor=black&labelColor=e1dae3" alt="Release" />
+  <img src="https://img.shields.io/badge/release-v1.7.3.0%20stable-5c0632?style=flat&logo=git&logoColor=black&labelColor=e1dae3" alt="Release" />
   <img src="https://img.shields.io/badge/python-3.11%20%7C%20...%20%7C%203.14-4a0e4e?style=flat&logo=python&logoColor=black&labelColor=e1dae3" alt="Python Support" />
-  <img src="https://img.shields.io/badge/tests-317%20passed-6a0dad?style=flat&logo=pytest&logoColor=black&labelColor=e1dae3" alt="Tests" />
+  <img src="https://img.shields.io/badge/tests-329%20passed-6a0dad?style=flat&logo=pytest&logoColor=black&labelColor=e1dae3" alt="Tests" />
   <img src="https://img.shields.io/badge/coverage-95%25-e0115f?style=flat&logo=codecov&logoColor=black&labelColor=e1dae3" alt="Coverage" />
   <img src="https://img.shields.io/badge/license-AI%20Slop-c70039?style=flat&logo=creative-commons&logoColor=black&labelColor=e1dae3" alt="License" />
   <img src="https://img.shields.io/badge/stats-Welch%20%7C%20mSPRT%20%7C%20CUPED-da70d6?style=flat&logo=googleanalytics&logoColor=black&labelColor=e1dae3" alt="Statistical Engine" />

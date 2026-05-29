@@ -14,6 +14,7 @@ from typing import Dict, Any, List, Optional, Tuple
 
 from typing import Dict, Any
 from xpyrment.analyze.orchestrator import AnalysisResult
+from xpyrment.core.validators import validate_secure_path
 
 
 class ExperimentReportGenerator:
@@ -629,9 +630,10 @@ class ExperimentReportGenerator:
         Args:
             filepath (str): Full target file path.
         """
+        validated_path = validate_secure_path(filepath)
         # Ensure parent directories exist
-        os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
-        with open(filepath, "w", encoding="utf-8") as f:
+        os.makedirs(os.path.dirname(validated_path), exist_ok=True)
+        with open(validated_path, "w", encoding="utf-8") as f:
             f.write(self.generate_html())
 
     def save_markdown(self, filepath: str):
@@ -640,9 +642,10 @@ class ExperimentReportGenerator:
         Args:
             filepath (str): Full target file path.
         """
+        validated_path = validate_secure_path(filepath)
         # Ensure parent directories exist
-        os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
-        with open(filepath, "w", encoding="utf-8") as f:
+        os.makedirs(os.path.dirname(validated_path), exist_ok=True)
+        with open(validated_path, "w", encoding="utf-8") as f:
             f.write(self.generate_markdown())
 
     def _get_icon_base64(self, filename: str) -> str:

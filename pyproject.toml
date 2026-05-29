@@ -8,7 +8,7 @@ include = ["src/xpyrment/assets/images/*"]
 
 [project]
 name = "xpyrment"
-version = "1.6.1.2"
+version = "1.7.3.0"
 authors = [
     { name = "Dan Sadatian", email = "dan.sadatian@gmail.com" }
 ]

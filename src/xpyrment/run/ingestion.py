@@ -6,6 +6,7 @@ server-side datasets (such as SQL tables or CSVs) into the `xpyrment` experiment
 
 import pandas as pd
 from xpyrment.core.cache import cached_t_cdf, cached_t_ppf, welch_satterthwaite_df
+from xpyrment.core.validators import validate_secure_path
 
 
 def load_from_sql(query: str, connection_string: str) -> pd.DataFrame:
@@ -449,15 +450,14 @@ class DuckDBIngester:
         import numpy as np
         from scipy import stats
 
-        # 1. Verify file existence
-        if not os.path.exists(parquet_path):
+        # 1. Path Traversal & Existence check
+        validated_path = validate_secure_path(parquet_path)
+        if not os.path.exists(validated_path):
             raise FileNotFoundError(
                 f"Parquet file/directory not found at path: {parquet_path}"
             )
 
-        path_str = (
-            str(Path(parquet_path).resolve()).replace("\\", "/")
-        )
+        path_str = str(validated_path).replace("\\", "/")
 
         # 2. Schema pre-validation & column presence verification
         safe_path_str = _quote_string(path_str)
@@ -719,15 +719,14 @@ class DuckDBIngester:
         import numpy as np
         from scipy import stats
 
-        # 1. Verify file existence
-        if not os.path.exists(parquet_path):
+        # 1. Path Traversal & Existence check
+        validated_path = validate_secure_path(parquet_path)
+        if not os.path.exists(validated_path):
             raise FileNotFoundError(
                 f"Parquet file/directory not found at path: {parquet_path}"
             )
 
-        path_str = (
-            str(Path(parquet_path).resolve()).replace("\\", "/")
-        )
+        path_str = str(validated_path).replace("\\", "/")
 
         # 2. Schema pre-validation & column presence verification
         safe_path_str = _quote_string(path_str)
