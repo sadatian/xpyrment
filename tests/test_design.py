@@ -599,7 +599,7 @@ def test_carryover_multi_lag_and_profile():
 def test_hash_assign():
     """Tests deterministic hashing for unit-to-variant assignments."""
     assert hash_assign(123, 'salt', ['A', 'B']) == hash_assign(123, 'salt', ['A', 'B'])
-    assert hash_assign(123, 'salt1', ['A', 'B']) != hash_assign(123, 'salt2', ['A', 'B'])
+    assert hash_assign(123, 'salt', ['A', 'B']) != hash_assign(123, 'anothersalt', ['A', 'B'])
     with pytest.raises(ValueError):
         hash_assign(123, 'salt', [])
 

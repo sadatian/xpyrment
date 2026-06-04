@@ -10,12 +10,14 @@ from typing import List, Union
 
 
 def hash_assign(unit_id: Union[str, int], salt: str, variants: List[str]) -> str:
-    r"""Assigns a unit to a variant deterministically using MD5 hashing and modulo arithmetic.
+    r"""Assigns a unit to a variant deterministically using SHA-256 hashing and modulo arithmetic.
 
     To distribute units (e.g., user IDs or device hashes) uniformly and orthogonally across multiple
     concurrent experiments without storing state, we concatenate a static experiment-level unique identifier
-    (the "salt") with the unit's unique identifier. The resulting string is hashed, and the lower slice is mapped
-    into the variant array using modulo arithmetic.
+    (the "salt") with the unit's unique identifier. The resulting string is hashed using a cryptographically
+    secure algorithm (SHA-256), and the lower slice is mapped into the variant array using modulo arithmetic.
+    This prevents malicious manipulation of assignments (e.g., forcing a user into a specific variant)
+    which could be possible with weaker, compromised algorithms like MD5.
 
     Mathematical Representation:
         Let $u$ be the unit identifier, $S$ be the unique experiment salt, and $V = (v_1, v_2, \dots, v_k)$
@@ -24,10 +26,10 @@ def hash_assign(unit_id: Union[str, int], salt: str, variants: List[str]) -> str
         $$
         K = S \mathbin{\Vert} \text{str}(u)
         $$
-        We compute the MD5 digest of $K$ (yielding a 128-bit hex string) and extract the first 8 characters,
+        We compute the SHA-256 digest of $K$ (yielding a 256-bit hex string) and extract the first 8 characters,
         representing a 32-bit integer $H$:
         $$
-        H = \text{hex\_to\_int}(\text{MD5}(K)[0:8])
+        H = \text{hex\_to\_int}(\text{SHA256}(K)[0:8])
         $$
         The target variant index $i$ is calculated using the modulo operator:
         $$
@@ -38,7 +40,7 @@ def hash_assign(unit_id: Union[str, int], salt: str, variants: List[str]) -> str
     Properties of Hash-based Assignment:
         1. **Repeatability**: For a given unit ID $u$ and salt $S$, the returned variant is always identical,
            eliminating the need for distributed database lookups.
-        2. **Uniformity**: The MD5 hash exhibits avalanche-effect characteristics, distributing assignment
+        2. **Uniformity**: The SHA-256 hash exhibits strong avalanche-effect characteristics, distributing assignment
            probabilities uniformly: $P(\text{Variant} = v) \approx 1/k$.
         3. **Orthogonal Decorrelation**: By using different salts for different experiments ($S_A \neq S_B$),
            user allocations in experiment A are statistically independent of their allocations in experiment B,
@@ -72,7 +74,7 @@ def hash_assign(unit_id: Union[str, int], salt: str, variants: List[str]) -> str
 
     # Simple hash-based assignment
     hash_input = f"{salt}:{unit_id}".encode("utf-8")
-    hash_hex = hashlib.md5(hash_input).hexdigest()
+    hash_hex = hashlib.sha256(hash_input).hexdigest()
     # Take first 8 chars, convert to int, and modulo by variants length
     hash_val = int(hash_hex[:8], 16)
     idx = hash_val % len(variants)
